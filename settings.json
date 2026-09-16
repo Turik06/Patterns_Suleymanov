@@ -1,0 +1,28 @@
+{
+  "restaurants": [
+    {
+      "id": "",
+      "name": "",
+      "address": "",
+      "phone": ""
+    }
+  ],
+  "database": {
+    "host": "",
+    "port": "",
+    "name": "",
+    "login": "",
+    "password": ""
+  },
+  "production": {
+    "name": "",
+    "address": "",
+    "warehouses": [
+      {
+        "id": "",
+        "name": "",
+        "room": ""
+      }
+    ]
+  }
+}
