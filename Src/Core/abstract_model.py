@@ -22,6 +22,16 @@ class name_id(ABC):
         """
         return self.__id
 
+    @id.setter
+    def id(self, value):
+        """
+        Задаёт строковый идентификатор объекта.
+        """
+        if value is not None and str(value).strip() != "":
+            self.__id = str(value).strip()
+        else:
+            raise argument_exception("id", "Идентификатор не должен быть пустым")
+
     @property
     def name(self):
         """
