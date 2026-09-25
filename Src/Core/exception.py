@@ -50,5 +50,41 @@ class argument_exception(Exception):
         return "\n".join(parts)
 
 
+
+class max_length_exception(argument_exception):
+    """
+    Исключение при превышении максимальной длины строкового поля.
+    """
+
+    def __init__(self, field="", current_length=0, max_length=0):
+        """
+        Конструктор исключения превышения длины.
+        <param name="field">Наименование поля, в котором превышена длина</param>
+        <param name="current_length">Текущая длина значения</param>
+        <param name="max_length">Максимально допустимая длина</param>
+        """
+        self.__current_length = current_length
+        self.__max_length = max_length
+        message = (
+            f"Превышена максимальная длина поля! "
+            f"Текущая: {current_length}, максимальная: {max_length}"
+        )
+        super().__init__(field, message)
+
+    @property
+    def current_length(self):
+        """
+        Текущая длина значения поля.
+        """
+        return self.__current_length
+
+    @property
+    def max_length(self):
+        """
+        Максимально допустимая длина поля.
+        """
+        return self.__max_length
+
+
 # Алиас для обратной совместимости
 arguments_exception = argument_exception
