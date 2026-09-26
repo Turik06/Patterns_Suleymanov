@@ -11,11 +11,13 @@ class organization_model(name_id):
     def __init__(self, name="", inn="", bik="", account="", ownership_form=""):
         """
         Конструктор организации.
-        <param name="name">Наименование организации (до 50 символов)</param>
-        <param name="inn">ИНН (10 или 12 цифр)</param>
-        <param name="bik">БИК (9 цифр)</param>
-        <param name="account">Расчётный счёт (20 цифр)</param>
-        <param name="ownership_form">Форма собственности (например, "ООО", "ИП", "ПАО", до 5 символов)</param>
+
+        Параметры:
+            name: Наименование организации (до 50 символов)
+            inn: ИНН (10 или 12 цифр)
+            bik: БИК (9 цифр)
+            account: Расчётный счёт (20 цифр)
+            ownership_form: Форма собственности (например, "ООО", "ИП", "ПАО", до 5 символов)
         """
         super().__init__()
         self.name = name

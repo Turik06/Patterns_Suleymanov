@@ -10,7 +10,9 @@ class nomenclature_group_model(name_id):
     def __init__(self, name=""):
         """
         Конструктор группы номенклатуры.
-        <param name="name">Наименование группы (до 50 символов)</param>
+
+        Параметры:
+            name: Наименование группы (до 50 символов)
         """
         super().__init__()
         self.name = name

@@ -11,9 +11,11 @@ class range_model(name_id):
     def __init__(self, name="", conversion_factor=1, base_range=None):
         """
         Конструктор единицы измерения.
-        <param name="name">Наименование единицы (например, "грамм", "кг")</param>
-        <param name="conversion_factor">Коэффициент пересчёта относительно базовой единицы</param>
-        <param name="base_range">Базовая единица измерения (экземпляр range_model). Если None — единица является базовой</param>
+
+        Параметры:
+            name: Наименование единицы (например, "грамм", "кг")
+            conversion_factor: Коэффициент пересчёта относительно базовой единицы
+            base_range: Базовая единица измерения (экземпляр range_model). Если None — единица является базовой
         """
         super().__init__()
         self.name = name

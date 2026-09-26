@@ -16,10 +16,12 @@ class nomenclature_model(name_id):
     def __init__(self, name="", full_name="", group=None, range=None):
         """
         Конструктор номенклатуры.
-        <param name="name">Краткое наименование (до 50 символов)</param>
-        <param name="full_name">Полное наименование (до 255 символов)</param>
-        <param name="group">Группа номенклатуры (экземпляр nomenclature_group_model)</param>
-        <param name="range">Единица измерения (экземпляр range_model)</param>
+
+        Параметры:
+            name: Краткое наименование (до 50 символов)
+            full_name: Полное наименование (до 255 символов)
+            group: Группа номенклатуры (экземпляр nomenclature_group_model)
+            range: Единица измерения (экземпляр range_model)
         """
         super().__init__()
         self.name = name

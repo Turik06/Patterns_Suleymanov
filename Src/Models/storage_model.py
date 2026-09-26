@@ -10,7 +10,9 @@ class storage_model(name_id):
     def __init__(self, name=""):
         """
         Конструктор склада.
-        <param name="name">Наименование склада (до 50 символов)</param>
+
+        Параметры:
+            name: Наименование склада (до 50 символов)
         """
         super().__init__()
         self.name = name

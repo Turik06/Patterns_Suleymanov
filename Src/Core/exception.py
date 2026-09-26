@@ -8,9 +8,11 @@ class argument_exception(Exception):
     def __init__(self, field="", message="", stack_trace=""):
         """
         Конструктор исключения некорректного аргумента.
-        <param name="field">Наименование ошибочного аргумента/поля</param>
-        <param name="message">Поясняющее сообщение об ошибке</param>
-        <param name="stack_trace">Стек вызовов (трассировка)</param>
+
+        Параметры:
+            field: Наименование ошибочного аргумента/поля
+            message: Поясняющее сообщение об ошибке
+            stack_trace: Стек вызовов (трассировка)
         """
         self.__field = str(field).strip() if field is not None else ""
         self.__message = str(message).strip() if message is not None else ""
@@ -59,9 +61,11 @@ class max_length_exception(argument_exception):
     def __init__(self, field="", current_length=0, max_length=0):
         """
         Конструктор исключения превышения длины.
-        <param name="field">Наименование поля, в котором превышена длина</param>
-        <param name="current_length">Текущая длина значения</param>
-        <param name="max_length">Максимально допустимая длина</param>
+
+        Параметры:
+            field: Наименование поля, в котором превышена длина
+            current_length: Текущая длина значения
+            max_length: Максимально допустимая длина
         """
         self.__current_length = current_length
         self.__max_length = max_length
