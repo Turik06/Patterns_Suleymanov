@@ -8,7 +8,7 @@ def test_success_range_model_create_base_unit():
     Ожидание: Успешное создание базовой единицы измерения.
     Метод: range_model.__init__
     Описание: Базовая единица (грамм, коэффициент 1) создаётся без передачи base_range.
-              Свойство base_range должно ссылаться на сам объект.
+              Свойство base_range должно быть None.
     """
     # Arrange & Act (Подготовка и Действие)
     gram = range_model("грамм", 1)
