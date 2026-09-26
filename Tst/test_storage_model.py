@@ -15,6 +15,32 @@ def test_success_storage_model_creation():
     # Assert (Проверка)
     assert storage.name == "Основной склад"
     assert storage.id is not None
+    assert storage.address == ""
+
+
+def test_success_storage_model_creation_with_address():
+    """
+    Ожидание: Успешное создание склада с указанием адреса.
+    Метод: storage_model.__init__
+    Описание: Склад с наименованием и адресом корректно сохраняет оба параметра.
+    """
+    # Arrange & Act (Подготовка и Действие)
+    storage = storage_model("Основной склад", "г. Москва, ул. Мира, д. 10")
+
+    # Assert (Проверка)
+    assert storage.name == "Основной склад"
+    assert storage.address == "г. Москва, ул. Мира, д. 10"
+
+
+def test_argument_exception_storage_model_invalid_address_type():
+    """
+    Ожидание: Выброс argument_exception при передаче нестрокового адреса.
+    Метод: storage_model.address (setter)
+    Описание: Адрес склада должен быть строкой.
+    """
+    # Arrange, Act & Assert (Подготовка, Действие и Проверка)
+    with pytest.raises(argument_exception):
+        storage_model("Основной склад", 12345)
 
 
 def test_argument_exception_storage_model_empty_name():
