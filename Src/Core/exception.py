@@ -8,9 +8,11 @@ class argument_exception(Exception):
     def __init__(self, field="", message="", stack_trace=""):
         """
         Конструктор исключения некорректного аргумента.
-        <param name="field">Наименование ошибочного аргумента/поля</param>
-        <param name="message">Поясняющее сообщение об ошибке</param>
-        <param name="stack_trace">Стек вызовов (трассировка)</param>
+
+        Параметры:
+            field: Наименование ошибочного аргумента/поля
+            message: Поясняющее сообщение об ошибке
+            stack_trace: Стек вызовов (трассировка)
         """
         self.__field = str(field).strip() if field is not None else ""
         self.__message = str(message).strip() if message is not None else ""
@@ -48,6 +50,44 @@ class argument_exception(Exception):
         if self.__stack_trace:
             parts.append(self.__stack_trace)
         return "\n".join(parts)
+
+
+
+class max_length_exception(argument_exception):
+    """
+    Исключение при превышении максимальной длины строкового поля.
+    """
+
+    def __init__(self, field="", current_length=0, max_length=0):
+        """
+        Конструктор исключения превышения длины.
+
+        Параметры:
+            field: Наименование поля, в котором превышена длина
+            current_length: Текущая длина значения
+            max_length: Максимально допустимая длина
+        """
+        self.__current_length = current_length
+        self.__max_length = max_length
+        message = (
+            f"Превышена максимальная длина поля! "
+            f"Текущая: {current_length}, максимальная: {max_length}"
+        )
+        super().__init__(field, message)
+
+    @property
+    def current_length(self):
+        """
+        Текущая длина значения поля.
+        """
+        return self.__current_length
+
+    @property
+    def max_length(self):
+        """
+        Максимально допустимая длина поля.
+        """
+        return self.__max_length
 
 
 # Алиас для обратной совместимости
