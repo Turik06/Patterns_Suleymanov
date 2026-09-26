@@ -24,6 +24,8 @@ classDiagram
     }
 
     class storage_model {
+        -str __address
+        +address str
     }
 
     class organization_model {
