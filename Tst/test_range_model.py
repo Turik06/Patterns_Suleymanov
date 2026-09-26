@@ -16,7 +16,8 @@ def test_success_range_model_create_base_unit():
     # Assert (Проверка)
     assert gram.name == "грамм"
     assert gram.conversion_factor == 1
-    assert gram.base_range is gram
+    assert gram.base_range is None
+    assert gram.base is None
 
 
 def test_success_range_model_create_derived_unit():

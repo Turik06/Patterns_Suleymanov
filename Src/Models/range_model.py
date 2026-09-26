@@ -15,7 +15,7 @@ class range_model(name_id):
         Параметры:
             name: Наименование единицы (например, "грамм", "кг")
             conversion_factor: Коэффициент пересчёта относительно базовой единицы
-            base_range: Базовая единица измерения (экземпляр range_model). Если None — единица является базовой
+            base_range: Базовая единица измерения (экземпляр range_model). Для базовой единицы передаётся None
         """
         super().__init__()
         self.name = name
@@ -43,23 +43,33 @@ class range_model(name_id):
         self.__conversion_factor = value
 
     @property
+    def coefficient(self):
+        """
+        Алиас для conversion_factor.
+        """
+        return self.__conversion_factor
+
+    @property
     def base_range(self):
         """
         Возвращает базовую единицу измерения.
-        Если единица сама является базовой, возвращает ссылку на себя.
+        Для базовой единицы возвращает None.
         """
         return self.__base_range
 
     @base_range.setter
     def base_range(self, value):
         """
-        Задаёт базовую единицу измерения. Если None — единица ссылается на себя.
+        Задаёт базовую единицу измерения. Для базовой единицы устанавливается None.
         """
-        if value is None:
-            self.__base_range = self
-            return
-
-        if not isinstance(value, range_model):
+        if value is not None and not isinstance(value, range_model):
             raise argument_exception("base_range", "Базовая единица измерения должна быть типа range_model")
 
         self.__base_range = value
+
+    @property
+    def base(self):
+        """
+        Алиас для base_range.
+        """
+        return self.__base_range
