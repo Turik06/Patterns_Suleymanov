@@ -10,6 +10,8 @@ class settings_model(abstract_model):
     __boss_name: str = ""
     # Наименование главного бухгалтера
     __account_name: str = ""
+    # Флаг первого старта приложения
+    __is_first_start: bool = False
 
     """
     Карточка организации
@@ -57,3 +59,15 @@ class settings_model(abstract_model):
     def account_name(self, value: str) -> None:
         validator.validate(value, str, 255)
         self.__account_name = value.strip()
+
+    """
+    Флаг первого старта приложения
+    """
+    @property
+    def is_first_start(self) -> bool:
+        return self.__is_first_start
+
+    @is_first_start.setter
+    def is_first_start(self, value: bool) -> None:
+        validator.validate(value, bool)
+        self.__is_first_start = value
