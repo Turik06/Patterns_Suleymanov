@@ -64,3 +64,6 @@ class name_id(ABC):
         if isinstance(other, name_id):
             return str(self.id) == str(other.id)
         return False
+
+
+abstract_model = name_id
