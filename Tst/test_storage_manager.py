@@ -5,6 +5,7 @@ from Src.Models.storage_model import storage_model
 from Src.Models.range_model import range_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.nomenclature_group_model import nomenclature_group_model
+from Src.Models.settings_model import settings_model
 
 
 """
@@ -249,24 +250,21 @@ def test_success_storage_manager_convert_idempotent():
 def test_empty_storage_manager_convert_is_first_start_false():
     """
     Ожидание: Пустые коллекции при is_first_start == False.
-    Метод: storage_manager.convert
-    Описание: Если флаг первого старта False, генерация первичных данных не выполняется,
-              все коллекции остаются пустыми. convert() возвращает True.
+    Метод: storage_manager.convert(settings)
+    Описание: При передаче настроек с is_first_start == False (DI) генерация первичных данных
+              не выполняется, все коллекции остаются пустыми.
     """
     # Сбрасываем синглтон для чистого теста
     if hasattr(storage_manager, 'instance'):
         del storage_manager.instance
 
-    # Временно меняем флаг первого старта
-    s_manager = settings_manager()
-    if not s_manager.is_loaded:
-        s_manager.load()
-    original_value = s_manager.settings.is_first_start
-    s_manager.settings.is_first_start = False
+    # Создаём настройки с флагом False без чтения диска
+    custom_settings = settings_model()
+    custom_settings.is_first_start = False
 
     try:
         manager = storage_manager()
-        result = manager.convert()
+        result = manager.convert(settings=custom_settings)
 
         assert result == True
         assert len(manager.ranges) == 0
@@ -274,7 +272,5 @@ def test_empty_storage_manager_convert_is_first_start_false():
         assert len(manager.nomenclatures) == 0
         assert len(manager.storages) == 0
     finally:
-        # Восстанавливаем исходное состояние
-        s_manager.settings.is_first_start = original_value
         if hasattr(storage_manager, 'instance'):
             del storage_manager.instance

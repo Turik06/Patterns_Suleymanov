@@ -30,20 +30,22 @@ class storage_manager(abstract_manager):
             cls.instance.__is_initialized = False
         return cls.instance
 
-    def convert(self) -> bool:
+    def convert(self, settings=None) -> bool:
         """
         Переопределенный метод abstract_manager.
         Если запуск первый (is_first_start == True) — генерирует первичные данные.
+        При передаче settings извне — использует переданный объект (для тестов).
         """
         if self.__is_initialized:
             return True
 
         try:
-            s_manager = settings_manager()
-            if not s_manager.is_loaded:
-                s_manager.load()
+            if settings is None:
+                s_manager = settings_manager()
+                if not s_manager.is_loaded:
+                    s_manager.load()
+                settings = s_manager.settings
 
-            settings = s_manager.settings
             if settings and settings.is_first_start:
                 self._initialize_primary_data()
 
