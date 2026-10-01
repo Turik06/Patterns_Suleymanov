@@ -19,7 +19,7 @@ classDiagram
         -_groups: dict
         -__is_initialized: bool
         +__new__(cls) storage_manager
-        +convert() bool
+        +convert(settings: settings_model = None) bool
         +add_storage(item) bool
         +add_range(item) bool
         +add_nomenclature(item) bool
@@ -30,6 +30,12 @@ classDiagram
         +groups: dict
         +data: dict
         +is_initialized: bool
+        +is_loaded: bool
+    }
+
+    class settings_manager {
+        <<Singleton>>
+        +settings: settings_model
     }
 
     class storage_model {
@@ -75,6 +81,8 @@ classDiagram
     storage_manager o-- range_model : _ranges
     storage_manager o-- nomenclature_group_model : _groups
     storage_manager o-- nomenclature_model : _nomenclatures
+
+    storage_manager ..> settings_manager : uses
 
     nomenclature_model o-- nomenclature_group_model : group
     nomenclature_model o-- range_model : range
