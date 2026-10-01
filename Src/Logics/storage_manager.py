@@ -77,17 +77,20 @@ class storage_manager(abstract_manager):
         """Генерация групп номенклатуры под технологическую карту."""
         grocery = nomenclature_group_model(name="Бакалея")
         dairy = nomenclature_group_model(name="Молочные продукты")
+        dishes = nomenclature_group_model(name="Блюда")
 
         self.add_group(grocery)
         self.add_group(dairy)
+        self.add_group(dishes)
 
     def __create_nomenclatures(self) -> None:
-        """Генерация номенклатуры (ингредиенты для рецепта)."""
+        """Генерация номенклатуры (ингредиенты для рецепта и готовые блюда)."""
         groups_by_name = {g.name: g for g in self._groups.values()}
         ranges_by_name = {r.name: r for r in self._ranges.values()}
 
         grocery = groups_by_name.get("Бакалея")
         dairy = groups_by_name.get("Молочные продукты")
+        dishes = groups_by_name.get("Блюда")
 
         kg = ranges_by_name.get("килограмм")
         liter = ranges_by_name.get("литр")
@@ -100,6 +103,7 @@ class storage_manager(abstract_manager):
             nomenclature_model("Масло сливочное", "Масло сливочное крестьянское 72.5%", dairy, kg),
             nomenclature_model("Сахар", "Сахар белый кристаллический", grocery, kg),
             nomenclature_model("Соль", "Соль поваренная пищевая", grocery, kg),
+            nomenclature_model("Блины классические", "Блины классические тонкие", dishes, piece),
         ]
 
         for item in items:
@@ -112,7 +116,6 @@ class storage_manager(abstract_manager):
 
         self.add_storage(main_storage)
         self.add_storage(fridge)
-
 
     def add_storage(self, item: storage_model) -> bool:
         """Добавить склад. Возвращает True, если добавлен; False, если дубликат или неверный тип."""
@@ -141,8 +144,6 @@ class storage_manager(abstract_manager):
             return False
         self._groups[item.id] = item
         return True
-
-
 
     @property
     def storages(self) -> dict:
@@ -177,4 +178,9 @@ class storage_manager(abstract_manager):
     @property
     def is_initialized(self) -> bool:
         """Флаг завершения инициализации."""
+        return self.__is_initialized
+
+    @property
+    def is_loaded(self) -> bool:
+        """Флаг готовности данных (переопределение abstract_manager)."""
         return self.__is_initialized

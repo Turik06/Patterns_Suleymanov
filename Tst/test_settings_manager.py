@@ -11,7 +11,12 @@ from Src.Models.organization_model import organization_model
 
 
 def test_not_raise_settings_manager_load():
-    """Загрузка настроек не вызывает исключений."""
+    """
+    Ожидание: Загрузка настроек не вызывает исключений.
+    Метод: settings_manager.load
+    Описание: Проверяет, что вызов load() с дефолтным файлом settings.json
+              завершается без выброса operation_exception или иных ошибок.
+    """
     manager = settings_manager()
     try:
         manager.load()
@@ -22,7 +27,11 @@ def test_not_raise_settings_manager_load():
 
 
 def test_not_empty_settings_manager_load():
-    """Проверить загрузку настроек. Настройки не пустые."""
+    """
+    Ожидание: Настройки не пустые после загрузки.
+    Метод: settings_manager.settings (getter)
+    Описание: После вызова load() свойство settings не должно быть None.
+    """
     manager = settings_manager()
     try:
         manager.load()
@@ -32,15 +41,23 @@ def test_not_empty_settings_manager_load():
     assert manager.settings is not None
 
 
-def test_equall_settings_manager_create():
-    """Проверить работу шаблона Singletone."""
+def test_equal_settings_manager_create():
+    """
+    Ожидание: Два экземпляра settings_manager равны (Singleton).
+    Метод: settings_manager.__new__
+    Описание: Проверяет работу шаблона Singleton — оператор == возвращает True.
+    """
     instance1 = settings_manager()
     instance2 = settings_manager()
     assert instance1 == instance2
 
 
-def test_is_loaded_settings_manager_true():
-    """Проверить загрузку и конвертацию настроек."""
+def test_true_settings_manager_is_loaded():
+    """
+    Ожидание: is_loaded возвращает True после загрузки.
+    Метод: settings_manager.is_loaded (getter)
+    Описание: После успешного вызова load() и convert() флаг is_loaded становится True.
+    """
     manager = settings_manager()
     try:
         manager.load()
@@ -51,7 +68,11 @@ def test_is_loaded_settings_manager_true():
 
 
 def test_same_strings_settings_manager_create():
-    """Проверить создание settings_manager: одинаковые строки и ссылки (Singletone)."""
+    """
+    Ожидание: Строковые представления и ссылки двух инстансов совпадают (Singleton).
+    Метод: settings_manager.__new__
+    Описание: Проверяет, что str() и оператор is подтверждают единственность экземпляра.
+    """
     instance1 = settings_manager()
     instance2 = settings_manager()
     try:
@@ -61,15 +82,23 @@ def test_same_strings_settings_manager_create():
         assert False
 
 
-def test_convert_settings_manager_returns_true():
-    """Проверить, что convert() возвращает True после успешной загрузки."""
+def test_true_settings_manager_convert():
+    """
+    Ожидание: convert() возвращает True после загрузки данных.
+    Метод: settings_manager.convert
+    Описание: После load() метод convert() успешно маппит JSON в settings_model.
+    """
     manager = settings_manager()
     manager.load()
     assert manager.convert() == True
 
 
-def test_convert_settings_manager_organization_fields():
-    """Проверить корректность маппинга всех полей организации."""
+def test_success_settings_manager_convert_organization_fields():
+    """
+    Ожидание: Все поля организации корректно заполнены после convert().
+    Метод: settings_manager.convert
+    Описание: Проверяет маппинг полей organization из JSON: name, inn, bik, account, ownership_form.
+    """
     manager = settings_manager()
     manager.load()
 
@@ -82,8 +111,12 @@ def test_convert_settings_manager_organization_fields():
     assert org.ownership_form == "ООО"
 
 
-def test_convert_settings_manager_boss_and_accountant():
-    """Проверить корректность маппинга ФИО руководителя и бухгалтера."""
+def test_success_settings_manager_convert_boss_and_accountant():
+    """
+    Ожидание: ФИО руководителя и бухгалтера корректно заполнены.
+    Метод: settings_manager.convert
+    Описание: Проверяет маппинг строковых полей boss_name и account_name из JSON.
+    """
     manager = settings_manager()
     manager.load()
 
@@ -91,18 +124,24 @@ def test_convert_settings_manager_boss_and_accountant():
     assert manager.settings.account_name == "Петрова Анна Сергеевна"
 
 
-def test_convert_settings_manager_is_first_start():
-    """Проверить корректность маппинга флага первого старта."""
+def test_true_settings_manager_is_first_start():
+    """
+    Ожидание: Флаг is_first_start равен True (согласно settings.json).
+    Метод: settings_manager.convert
+    Описание: Проверяет корректный маппинг булевого флага первого старта.
+    """
     manager = settings_manager()
     manager.load()
 
     assert manager.settings.is_first_start == True
 
 
-def test_singleton_settings_manager_settings_are_same():
+def test_same_settings_manager_singleton_identity():
     """
-    Тест с пары: проверить, что в двух инстансах settings_manager
-    настройки одинаковые и ссылаются на один и тот же объект.
+    Ожидание: Настройки в двух инстансах ссылаются на один объект (Singleton).
+    Метод: settings_manager.settings (getter)
+    Описание: Тест с пары — в двух инстансах settings_manager объект settings
+              один и тот же (is), а организация совпадает (==).
     """
     m1 = settings_manager()
     m1.load()
