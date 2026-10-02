@@ -22,8 +22,13 @@ def test_same_instance_storage_manager_singleton():
     Метод: storage_manager.__new__
     Описание: Проверяет оператор is — оба инстанса ссылаются на один объект.
     """
+    # Подготовка
     m1 = storage_manager()
     m2 = storage_manager()
+
+    # Действие
+
+    # Проверки
     assert m1 is m2
 
 
@@ -33,8 +38,13 @@ def test_equal_storage_manager_singleton():
     Метод: storage_manager.__new__
     Описание: Проверяет равенство двух инстансов синглтона.
     """
+    # Подготовка
     m1 = storage_manager()
     m2 = storage_manager()
+
+    # Действие
+
+    # Проверки
     assert m1 == m2
 
 
@@ -44,10 +54,14 @@ def test_shared_data_storage_manager_singleton():
     Метод: storage_manager.__new__
     Описание: Тест с пары — коллекции ranges и nomenclatures ссылаются на одни объекты.
     """
+    # Подготовка
     m1 = storage_manager()
-    m1.convert()
     m2 = storage_manager()
 
+    # Действие
+    m1.convert()
+
+    # Проверки
     assert m1.ranges is m2.ranges
     assert m1.nomenclatures is m2.nomenclatures
     assert len(m1.ranges) == len(m2.ranges)
@@ -62,8 +76,14 @@ def test_true_storage_manager_convert():
     Метод: storage_manager.convert
     Описание: Проверяет успешность выполнения метода convert().
     """
+    # Подготовка
     manager = storage_manager()
-    assert manager.convert() == True
+
+    # Действие
+    result = manager.convert()
+
+    # Проверки
+    assert result == True
 
 
 def test_true_storage_manager_is_initialized():
@@ -72,8 +92,13 @@ def test_true_storage_manager_is_initialized():
     Метод: storage_manager.is_initialized (getter)
     Описание: После вызова convert() внутренний флаг инициализации становится True.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие
     manager.convert()
+
+    # Проверки
     assert manager.is_initialized == True
 
 
@@ -84,8 +109,13 @@ def test_true_storage_manager_is_loaded():
     Описание: Проверяет контракт базового класса abstract_manager: после успешной
               конвертации свойство is_loaded должно возвращать True.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие
     manager.convert()
+
+    # Проверки
     assert manager.is_loaded == True
 
 
@@ -95,10 +125,15 @@ def test_success_storage_manager_first_start_ranges():
     Метод: storage_manager.convert
     Описание: Проверяет наличие грамм, килограмм, штука, литр, миллилитр.
               Килограмм — производная от грамма с коэффициентом 1000.
+              Литр — производная от миллилитра с коэффициентом 1000.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие
     manager.convert()
 
+    # Проверки
     assert len(manager.ranges) == 5
     names = [r.name for r in manager.ranges.values()]
     assert "грамм" in names
@@ -107,11 +142,24 @@ def test_success_storage_manager_first_start_ranges():
     assert "миллилитр" in names
     assert "штука" in names
 
-    # Проверка связи производной единицы
+    # Проверка связи производной единицы массы (кг -> грамм)
     kg = next(r for r in manager.ranges.values() if r.name == "килограмм")
     assert kg.conversion_factor == 1000
     assert kg.base_range is not None
     assert kg.base_range.name == "грамм"
+
+    # Проверка связи производной единицы объема (литр -> миллилитр)
+    liter = next(r for r in manager.ranges.values() if r.name == "литр")
+    assert liter.conversion_factor == 1000
+    assert liter.base_range is not None
+    assert liter.base_range.name == "миллилитр"
+
+    # Проверка базовых единиц
+    gram = next(r for r in manager.ranges.values() if r.name == "грамм")
+    assert gram.base_range is None
+
+    ml = next(r for r in manager.ranges.values() if r.name == "миллилитр")
+    assert ml.base_range is None
 
 
 def test_success_storage_manager_first_start_groups():
@@ -120,9 +168,13 @@ def test_success_storage_manager_first_start_groups():
     Метод: storage_manager.convert
     Описание: Проверяет наличие групп Бакалея, Молочные продукты и Блюда.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие
     manager.convert()
 
+    # Проверки
     assert len(manager.groups) == 3
     group_names = [g.name for g in manager.groups.values()]
     assert "Бакалея" in group_names
@@ -137,9 +189,13 @@ def test_success_storage_manager_first_start_nomenclatures():
     Описание: 6 ингредиентов для рецепта и 1 готовое блюдо (Блины классические).
               Проверяет корректные связи номенклатуры с группами и единицами.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие
     manager.convert()
 
+    # Проверки
     assert len(manager.nomenclatures) == 7
     nom_names = [n.name for n in manager.nomenclatures.values()]
     assert "Мука пшеничная" in nom_names
@@ -165,9 +221,13 @@ def test_success_storage_manager_first_start_storages():
     Метод: storage_manager.convert
     Описание: Проверяет наличие Основного склада и Холодильника цеха.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие
     manager.convert()
 
+    # Проверки
     assert len(manager.storages) == 2
     storage_names = [s.name for s in manager.storages.values()]
     assert "Основной склад" in storage_names
@@ -183,13 +243,16 @@ def test_false_storage_manager_add_duplicate_range():
     Метод: storage_manager.add_range
     Описание: Уникальность по id — объект с тем же id не добавляется повторно.
     """
+    # Подготовка
     manager = storage_manager()
     manager.convert()
-
     existing_range = list(manager.ranges.values())[0]
     count_before = len(manager.ranges)
 
+    # Действие
     result = manager.add_range(existing_range)
+
+    # Проверки
     assert result == False
     assert len(manager.ranges) == count_before
 
@@ -200,13 +263,16 @@ def test_true_storage_manager_add_new_storage():
     Метод: storage_manager.add_storage
     Описание: Добавление нового склада с уникальным id увеличивает размер коллекции.
     """
+    # Подготовка
     manager = storage_manager()
     manager.convert()
-
     count_before = len(manager.storages)
     new_storage = storage_model(name="Архивный склад", address="ул. Складская, 1")
 
+    # Действие
     result = manager.add_storage(new_storage)
+
+    # Проверки
     assert result == True
     assert len(manager.storages) == count_before + 1
 
@@ -217,7 +283,10 @@ def test_false_storage_manager_add_invalid_type():
     Метод: storage_manager.add_storage, add_range, add_nomenclature, add_group
     Описание: Передача строки, числа, None или списка вместо моделей возвращает False.
     """
+    # Подготовка
     manager = storage_manager()
+
+    # Действие и проверки
     assert manager.add_storage("не склад") == False
     assert manager.add_range(123) == False
     assert manager.add_nomenclature(None) == False
@@ -231,14 +300,16 @@ def test_success_storage_manager_convert_idempotent():
     Описание: Идемпотентность — второй вызов convert() возвращает True,
               но количество элементов не меняется.
     """
+    # Подготовка
     manager = storage_manager()
     manager.convert()
-
     count_ranges = len(manager.ranges)
     count_noms = len(manager.nomenclatures)
 
-    # Повторный вызов
+    # Действие
     result = manager.convert()
+
+    # Проверки
     assert result == True
     assert len(manager.ranges) == count_ranges
     assert len(manager.nomenclatures) == count_noms
@@ -254,18 +325,19 @@ def test_empty_storage_manager_convert_is_first_start_false():
     Описание: При передаче настроек с is_first_start == False (DI) генерация первичных данных
               не выполняется, все коллекции остаются пустыми.
     """
-    # Сбрасываем синглтон для чистого теста
+    # Подготовка
     if hasattr(storage_manager, 'instance'):
         del storage_manager.instance
 
-    # Создаём настройки с флагом False без чтения диска
     custom_settings = settings_model()
     custom_settings.is_first_start = False
+    manager = storage_manager()
 
+    # Действие
     try:
-        manager = storage_manager()
         result = manager.convert(settings=custom_settings)
 
+        # Проверки
         assert result == True
         assert len(manager.ranges) == 0
         assert len(manager.groups) == 0
