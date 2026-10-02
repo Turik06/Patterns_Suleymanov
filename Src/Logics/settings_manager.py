@@ -49,8 +49,14 @@ class settings_manager(abstract_manager):
 
             # 1. Заполняем организацию
             org = self.__data.get("organization")
-            if isinstance(org, dict) and org.get("name") and org.get("inn"):
-                self._settings.organization = organization_model(**org)
+            if isinstance(org, dict):
+                name = str(org.get("name", "")).strip()
+                inn = str(org.get("inn", "")).strip()
+                if name and inn:
+                    try:
+                        self._settings.organization = organization_model(**org)
+                    except Exception:
+                        pass
 
             # 2. Заполняем ФИО руководителя и бухгалтера
             for key in ("boss_name", "account_name"):

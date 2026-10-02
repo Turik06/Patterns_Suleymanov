@@ -192,3 +192,30 @@ def test_same_settings_manager_singleton_identity():
     # Проверки
     assert m1.settings is m2.settings
     assert m1.settings.organization == m2.settings.organization
+
+
+def test_not_raise_settings_manager_convert_empty_organization_name():
+    """
+    Ожидание: Конвертация не падает, если имя организации пустое или состоит из пробелов.
+    Метод: settings_manager.convert
+    Описание: Проверяет безопасную обработку невалидного имени организации: метод convert()
+              завершается успешно, не выбрасывая исключение и не ломая загрузку остальных настроек.
+    """
+    # Подготовка
+    manager = settings_manager()
+    manager._settings_manager__data = {
+        "organization": {
+            "name": "   ",
+            "inn": "7736050003"
+        },
+        "boss_name": "Иванов Иван",
+        "is_first_start": True
+    }
+
+    # Действие
+    result = manager.convert()
+
+    # Проверки
+    assert result == True
+    assert manager.settings.boss_name == "Иванов Иван"
+    assert manager.settings.is_first_start == True
