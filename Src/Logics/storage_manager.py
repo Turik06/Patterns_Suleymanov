@@ -68,11 +68,11 @@ class storage_manager(abstract_manager):
         """Генерация базовых и производных единиц измерения."""
         gram = range_model(name="грамм", conversion_factor=1, base_range=None)
         kilogram = range_model(name="килограмм", conversion_factor=1000, base_range=gram)
+        milliliter = range_model(name="миллилитр", conversion_factor=1, base_range=None)
+        liter = range_model(name="литр", conversion_factor=1000, base_range=milliliter)
         piece = range_model(name="штука", conversion_factor=1, base_range=None)
-        liter = range_model(name="литр", conversion_factor=1, base_range=None)
-        milliliter = range_model(name="миллилитр", conversion_factor=0.001, base_range=liter)
 
-        for r in (gram, kilogram, piece, liter, milliliter):
+        for r in (gram, kilogram, milliliter, liter, piece):
             self.add_range(r)
 
     def __create_groups(self) -> None:

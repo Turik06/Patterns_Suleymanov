@@ -28,12 +28,12 @@ class settings_model(abstract_model):
 
     @property
     def company(self) -> organization_model:
-        """Алиас для карточки организации."""
+        """Псевдоним для карточки организации."""
         return self.__organization
 
     @company.setter
     def company(self, value: organization_model) -> None:
-        """Задаёт карточку организации (алиас)."""
+        """Задаёт карточку организации (псевдоним)."""
         self.organization = value
 
     @property
