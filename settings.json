@@ -1,27 +1,37 @@
 {
+  "is_first_start": true,
+  "organization": {
+    "name": "Ромашка",
+    "inn": "7736050003",
+    "bik": "044525225",
+    "account": "40702810400000000001",
+    "ownership_form": "ООО"
+  },
+  "boss_name": "Иванов Иван Иванович",
+  "account_name": "Петрова Анна Сергеевна",
   "restaurants": [
     {
-      "id": "",
-      "name": "",
-      "address": "",
-      "phone": ""
+      "id": "1",
+      "name": "Ромашка на Ленина",
+      "address": "ул. Ленина, 10",
+      "phone": "+7-999-111-22-33"
     }
   ],
   "database": {
-    "host": "",
-    "port": "",
-    "name": "",
-    "login": "",
-    "password": ""
+    "host": "localhost",
+    "port": "5432",
+    "name": "romashka_db",
+    "login": "admin",
+    "password": "secret"
   },
   "production": {
-    "name": "",
-    "address": "",
+    "name": "Производственный цех",
+    "address": "ул. Промышленная, 5",
     "warehouses": [
       {
-        "id": "",
-        "name": "",
-        "room": ""
+        "id": "1",
+        "name": "Основной склад",
+        "room": "101"
       }
     ]
   }

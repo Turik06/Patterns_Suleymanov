@@ -92,3 +92,44 @@ class max_length_exception(argument_exception):
 
 # Алиас для обратной совместимости
 arguments_exception = argument_exception
+
+
+class operation_exception(Exception):
+    """
+    Пользовательское исключение при выполнении бизнес-операций.
+    """
+
+    def __init__(self, message="", stack_trace=""):
+        """
+        Конструктор исключения бизнес-операции.
+
+        Параметры:
+            message: Поясняющее сообщение об ошибке
+            stack_trace: Стек вызовов (трассировка)
+        """
+        self.__message = str(message).strip() if message is not None else ""
+        self.__stack_trace = str(stack_trace).strip() if stack_trace is not None else ""
+        super().__init__(str(self))
+
+    @property
+    def message(self):
+        """
+        Сообщение об ошибке.
+        """
+        return self.__message
+
+    @property
+    def stack_trace(self):
+        """
+        Трассировка стека ошибки.
+        """
+        return self.__stack_trace
+
+    def __str__(self):
+        """
+        Строковое представление ошибки.
+        """
+        parts = [f"Ошибка операции: {self.__message}".strip()]
+        if self.__stack_trace:
+            parts.append(self.__stack_trace)
+        return "\n".join(parts)
