@@ -124,3 +124,27 @@ class nomenclature_model(name_id):
     def create_pancakes(group, range_unit):
         """Фабричный метод: Готовое блюдо 'Блины классические'."""
         return nomenclature_model("Блины классические", "Блины классические тонкие", group, range_unit)
+
+    @staticmethod
+    def create_primary_list(groups: dict, ranges: dict) -> list:
+        """
+        Фабричный метод: создать первичный список номенклатуры под технологическую карту.
+        """
+        grocery = groups.get("Бакалея")
+        dairy = groups.get("Молочные продукты")
+        dishes = groups.get("Блюда")
+
+        kg = ranges.get("килограмм")
+        liter = ranges.get("литр")
+        piece = ranges.get("штука")
+
+        return [
+            nomenclature_model.create_flour(grocery, kg),
+            nomenclature_model.create_milk(dairy, liter),
+            nomenclature_model.create_eggs(dairy, piece),
+            nomenclature_model.create_butter(dairy, kg),
+            nomenclature_model.create_sugar(grocery, kg),
+            nomenclature_model.create_salt(grocery, kg),
+            nomenclature_model.create_pancake_dough(dishes, piece),
+            nomenclature_model.create_pancakes(dishes, piece),
+        ]

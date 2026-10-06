@@ -46,3 +46,11 @@ class storage_model(name_id):
     def create_fridge():
         """Фабричный метод: создать 'Холодильник цеха'."""
         return storage_model(name="Холодильник цеха", address="ул. Промышленная, 5, пом. 102")
+
+    @staticmethod
+    def create_primary_list() -> list:
+        """Фабричный метод: создать первичный список всех складов."""
+        return [
+            storage_model.create_main(),
+            storage_model.create_fridge(),
+        ]

@@ -152,3 +152,35 @@ class recipe_model(name_id):
         recipe.add_row(recipe_row_model.create_sub_recipe(dough_dish, sub_recipe=dough_recipe, netto=175.0))
         recipe.add_row(recipe_row_model.create_ingredient(butter, brutto=12.5, netto=12.5))
         return recipe
+
+    @staticmethod
+    def create_primary_list(nomenclatures: dict) -> list:
+        """
+        Фабричный метод: создать первичный список рецептов (полуфабрикат и готовое блюдо).
+        """
+        flour = nomenclatures.get("Мука пшеничная")
+        milk = nomenclatures.get("Молоко 3.2%")
+        eggs = nomenclatures.get("Яйца куриные")
+        butter = nomenclatures.get("Масло сливочное")
+        sugar = nomenclatures.get("Сахар")
+        salt = nomenclatures.get("Соль")
+        dough = nomenclatures.get("Тесто для блинов")
+        pancakes = nomenclatures.get("Блины классические")
+
+        dough_recipe = recipe_model.create_pancake_dough_recipe(
+            dough_dish=dough,
+            flour=flour,
+            milk=milk,
+            eggs=eggs,
+            sugar=sugar,
+            salt=salt,
+        )
+
+        pancakes_recipe = recipe_model.create_pancakes_recipe(
+            pancakes_dish=pancakes,
+            dough_dish=dough,
+            dough_recipe=dough_recipe,
+            butter=butter,
+        )
+
+        return [dough_recipe, pancakes_recipe]

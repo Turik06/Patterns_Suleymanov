@@ -31,3 +31,12 @@ class nomenclature_group_model(name_id):
     def create_dishes():
         """Фабричный метод: создать группу 'Блюда'."""
         return nomenclature_group_model(name="Блюда")
+
+    @staticmethod
+    def create_primary_list() -> list:
+        """Фабричный метод: создать первичный список всех групп номенклатуры."""
+        return [
+            nomenclature_group_model.create_grocery(),
+            nomenclature_group_model.create_dairy(),
+            nomenclature_group_model.create_dishes(),
+        ]
