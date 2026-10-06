@@ -133,3 +133,20 @@ def test_argument_exception_range_model_invalid_base_type():
     # Arrange, Act & Assert (Подготовка, Действие и Проверка)
     with pytest.raises(argument_exception):
         range_model("кг", 1000, "грамм")
+
+
+def test_success_range_model_create_killogramm():
+    """
+    Ожидание: Фабричный метод create_killogramm возвращает единицу 'Килограмм' со значением 1000 и базой 'Грамм'.
+    Метод: range_model.create_killogramm
+    Описание: Проверяет работу фабричного метода создания килограмма.
+    """
+    # Act
+    kg = range_model.create_killogramm()
+
+    # Assert
+    assert kg.name == "Килограмм"
+    assert kg.value == 1000
+    assert kg.base is not None
+    assert kg.base.name == "Грамм"
+

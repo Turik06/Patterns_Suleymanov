@@ -18,7 +18,10 @@ class range_model(name_id):
             base_range: Базовая единица измерения (экземпляр range_model). Для базовой единицы передаётся None
         """
         super().__init__()
-        self.name = name
+        self.__conversion_factor = 1
+        self.__base_range = None
+        if name and str(name).strip() != "":
+            self.name = name
         self.conversion_factor = conversion_factor
         self.base_range = base_range
 
@@ -50,6 +53,17 @@ class range_model(name_id):
         return self.__conversion_factor
 
     @property
+    def value(self):
+        """
+        Значение коэффициента пересчёта (псевдоним для conversion_factor).
+        """
+        return self.__conversion_factor
+
+    @value.setter
+    def value(self, val):
+        self.conversion_factor = val
+
+    @property
     def base_range(self):
         """
         Возвращает базовую единицу измерения.
@@ -73,3 +87,22 @@ class range_model(name_id):
         Псевдоним для base_range.
         """
         return self.__base_range
+
+    @base.setter
+    def base(self, value):
+        self.base_range = value
+
+    @staticmethod
+    def create_killogramm():
+        """
+        Фабричный метод - создать килограмм.
+        """
+        gramm = range_model()
+        gramm.name = "Грамм"
+
+        result = range_model()
+        result.value = 1000
+        result.base = gramm
+        result.name = "Килограмм"
+
+        return result

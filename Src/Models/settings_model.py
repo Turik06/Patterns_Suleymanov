@@ -68,3 +68,14 @@ class settings_model(abstract_model):
         """Задаёт флаг первого старта приложения."""
         validator.validate(value, bool)
         self.__is_first_start = value
+
+    @property
+    def first_start(self) -> bool:
+        """Флаг первого старта (псевдоним для is_first_start)."""
+        return self.__is_first_start
+
+    @first_start.setter
+    def first_start(self, value: bool) -> None:
+        """Задаёт флаг первого старта (псевдоним для is_first_start)."""
+        validator.validate(value, bool)
+        self.__is_first_start = value

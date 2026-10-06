@@ -16,6 +16,7 @@ from Src.Models.settings_model import settings_model
 # 1. Проверка шаблона Singleton
 
 
+
 def test_same_instance_storage_manager_singleton():
     """
     Ожидание: Два вызова возвращают один и тот же объект в памяти.
