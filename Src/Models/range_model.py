@@ -45,7 +45,7 @@ class range_model(name_id):
     @property
     def coefficient(self):
         """
-        Алиас для conversion_factor.
+        Псевдоним для conversion_factor.
         """
         return self.__conversion_factor
 
@@ -70,6 +70,6 @@ class range_model(name_id):
     @property
     def base(self):
         """
-        Алиас для base_range.
+        Псевдоним для base_range.
         """
         return self.__base_range
