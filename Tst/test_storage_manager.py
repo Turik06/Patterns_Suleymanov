@@ -185,9 +185,9 @@ def test_success_storage_manager_first_start_groups():
 
 def test_success_storage_manager_first_start_nomenclatures():
     """
-    Ожидание: Сформировано 7 позиций номенклатуры с корректными связями.
+    Ожидание: Сформировано 8 позиций номенклатуры с корректными связями (включая полуфабрикат).
     Метод: storage_manager.convert
-    Описание: 6 ингредиентов для рецепта и 1 готовое блюдо (Блины классические).
+    Описание: 6 ингредиентов, 1 полуфабрикат (Тесто для блинов) и 1 готовое блюдо (Блины классические).
               Проверяет корректные связи номенклатуры с группами и единицами.
     """
     # Подготовка
@@ -197,12 +197,13 @@ def test_success_storage_manager_first_start_nomenclatures():
     manager.convert()
 
     # Проверки
-    assert len(manager.nomenclatures) == 7
+    assert len(manager.nomenclatures) == 8
     nom_names = [n.name for n in manager.nomenclatures.values()]
     assert "Мука пшеничная" in nom_names
     assert "Молоко 3.2%" in nom_names
     assert "Яйца куриные" in nom_names
     assert "Масло сливочное" in nom_names
+    assert "Тесто для блинов" in nom_names
     assert "Блины классические" in nom_names
 
     # Проверяем связи ингредиента
