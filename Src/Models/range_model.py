@@ -93,16 +93,72 @@ class range_model(name_id):
         self.base_range = value
 
     @staticmethod
-    def create_killogramm():
+    def create_killogramm(name: str = "Килограмм", base_name: str = "Грамм"):
         """
         Фабричный метод - создать килограмм.
         """
         gramm = range_model()
-        gramm.name = "Грамм"
+        gramm.name = base_name
 
         result = range_model()
         result.value = 1000
         result.base = gramm
-        result.name = "Килограмм"
+        result.name = name
 
+        return result
+
+    @staticmethod
+    def create_kilogram(name: str = "килограмм", base_name: str = "грамм"):
+        """
+        Фабричный метод - создать килограмм.
+        """
+        return range_model.create_killogramm(name=name, base_name=base_name)
+
+    @staticmethod
+    def create_gramm(name: str = "грамм"):
+        """
+        Фабричный метод - создать грамм.
+        """
+        result = range_model()
+        result.name = name
+        result.value = 1
+        return result
+
+    @staticmethod
+    def create_gram(name: str = "грамм"):
+        """
+        Фабричный метод - создать грамм (алиас).
+        """
+        return range_model.create_gramm(name=name)
+
+    @staticmethod
+    def create_milliliter(name: str = "миллилитр"):
+        """
+        Фабричный метод - создать миллилитр.
+        """
+        result = range_model()
+        result.name = name
+        result.value = 1
+        return result
+
+    @staticmethod
+    def create_liter(name: str = "литр", base_name: str = "миллилитр"):
+        """
+        Фабричный метод - создать литр с базовой единицей миллилитр.
+        """
+        ml = range_model.create_milliliter(name=base_name)
+        result = range_model()
+        result.value = 1000
+        result.base = ml
+        result.name = name
+        return result
+
+    @staticmethod
+    def create_piece(name: str = "штука"):
+        """
+        Фабричный метод - создать штуку.
+        """
+        result = range_model()
+        result.name = name
+        result.value = 1
         return result

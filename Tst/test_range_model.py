@@ -150,3 +150,67 @@ def test_success_range_model_create_killogramm():
     assert kg.base is not None
     assert kg.base.name == "Грамм"
 
+
+def test_success_range_model_create_kilogram_custom():
+    """
+    Ожидание: Фабричный метод create_kilogram возвращает единицу 'килограмм' со значением 1000 и базой 'грамм'.
+    Метод: range_model.create_kilogram
+    Описание: Проверяет работу фабричного метода создания килограмма со строчными именами.
+    """
+    # Act
+    kg = range_model.create_kilogram()
+
+    # Assert
+    assert kg.name == "килограмм"
+    assert kg.value == 1000
+    assert kg.base is not None
+    assert kg.base.name == "грамм"
+
+
+def test_success_range_model_create_gram():
+    """
+    Ожидание: Фабричный метод create_gram возвращает единицу 'грамм' со значением 1 и базой None.
+    Метод: range_model.create_gram
+    Описание: Проверяет работу фабричного метода создания грамма.
+    """
+    # Act
+    gram = range_model.create_gram()
+
+    # Assert
+    assert gram.name == "грамм"
+    assert gram.value == 1
+    assert gram.base is None
+
+
+def test_success_range_model_create_liter_and_milliliter():
+    """
+    Ожидание: Фабричный метод create_liter возвращает единицу 'литр' со значением 1000 и базой 'миллилитр'.
+    Метод: range_model.create_liter
+    Описание: Проверяет работу фабричного метода создания литра и миллилитра.
+    """
+    # Act
+    liter = range_model.create_liter()
+
+    # Assert
+    assert liter.name == "литр"
+    assert liter.value == 1000
+    assert liter.base is not None
+    assert liter.base.name == "миллилитр"
+    assert liter.base.value == 1
+
+
+def test_success_range_model_create_piece():
+    """
+    Ожидание: Фабричный метод create_piece возвращает единицу 'штука' со значением 1 и базой None.
+    Метод: range_model.create_piece
+    Описание: Проверяет работу фабричного метода создания штуки.
+    """
+    # Act
+    piece = range_model.create_piece()
+
+    # Assert
+    assert piece.name == "штука"
+    assert piece.value == 1
+    assert piece.base is None
+
+

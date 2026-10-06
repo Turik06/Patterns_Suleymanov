@@ -65,12 +65,12 @@ class storage_manager(abstract_manager):
         self.__create_storages()
 
     def __create_ranges(self) -> None:
-        """Генерация базовых и производных единиц измерения."""
-        gram = range_model(name="грамм", conversion_factor=1, base_range=None)
-        kilogram = range_model(name="килограмм", conversion_factor=1000, base_range=gram)
-        milliliter = range_model(name="миллилитр", conversion_factor=1, base_range=None)
-        liter = range_model(name="литр", conversion_factor=1000, base_range=milliliter)
-        piece = range_model(name="штука", conversion_factor=1, base_range=None)
+        """Генерация базовых и производных единиц измерения с использованием фабричных методов."""
+        kilogram = range_model.create_kilogram()
+        gram = kilogram.base
+        liter = range_model.create_liter()
+        milliliter = liter.base
+        piece = range_model.create_piece()
 
         for r in (gram, kilogram, milliliter, liter, piece):
             self.add_range(r)

@@ -25,6 +25,13 @@ class settings_manager(abstract_manager):
         """
         return range_model.create_killogramm()
 
+    @staticmethod
+    def create_kilogram() -> range_model:
+        """
+        Фабричный метод - создать килограмм (делегирует создание range_model).
+        """
+        return range_model.create_kilogram()
+
 
 
     # Singleton
