@@ -16,3 +16,18 @@ class nomenclature_group_model(name_id):
         """
         super().__init__()
         self.name = name
+
+    @staticmethod
+    def create_grocery():
+        """Фабричный метод: создать группу 'Бакалея'."""
+        return nomenclature_group_model(name="Бакалея")
+
+    @staticmethod
+    def create_dairy():
+        """Фабричный метод: создать группу 'Молочные продукты'."""
+        return nomenclature_group_model(name="Молочные продукты")
+
+    @staticmethod
+    def create_dishes():
+        """Фабричный метод: создать группу 'Блюда'."""
+        return nomenclature_group_model(name="Блюда")
