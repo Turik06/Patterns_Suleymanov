@@ -5,6 +5,7 @@ from Src.Models.storage_model import storage_model
 from Src.Models.range_model import range_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.nomenclature_group_model import nomenclature_group_model
+from Src.Models.recipe_model import recipe_model
 
 
 class storage_manager(abstract_manager):
@@ -17,6 +18,7 @@ class storage_manager(abstract_manager):
     _ranges: dict = None
     _nomenclatures: dict = None
     _groups: dict = None
+    _recipes: dict = None
     __is_initialized: bool = False
 
     # Singleton
@@ -27,6 +29,7 @@ class storage_manager(abstract_manager):
             cls.instance._ranges = {}
             cls.instance._nomenclatures = {}
             cls.instance._groups = {}
+            cls.instance._recipes = {}
             cls.instance.__is_initialized = False
         return cls.instance
 
@@ -56,13 +59,29 @@ class storage_manager(abstract_manager):
 
     def _initialize_primary_data(self) -> None:
         """
-        Инициализация первичных данных.
-        Порядок важен: номенклатура зависит от единиц измерения и групп.
+        Инициализация первичных данных с использованием фабричных методов доменных моделей.
+        Порядок важен: номенклатура зависит от единиц измерения и групп, а рецепты — от номенклатуры.
         """
         self.__create_ranges()
-        self.__create_groups()
-        self.__create_nomenclatures()
-        self.__create_storages()
+
+        # Группы номенклатуры
+        for group in nomenclature_group_model.create_primary_list():
+            self.add_group(group)
+
+        # Склады
+        for storage in storage_model.create_primary_list():
+            self.add_storage(storage)
+
+        # Номенклатура
+        groups = {g.name: g for g in self._groups.values()}
+        ranges = {r.name: r for r in self._ranges.values()}
+        for item in nomenclature_model.create_primary_list(groups, ranges):
+            self.add_nomenclature(item)
+
+        # Технологические карты (рецепты)
+        nomenclatures = {n.name: n for n in self._nomenclatures.values()}
+        for recipe in recipe_model.create_primary_list(nomenclatures):
+            self.add_recipe(recipe)
 
     def __create_ranges(self) -> None:
         """Генерация базовых и производных единиц измерения с использованием фабричных методов."""
@@ -74,50 +93,6 @@ class storage_manager(abstract_manager):
 
         for r in (gram, kilogram, milliliter, liter, piece):
             self.add_range(r)
-
-    def __create_groups(self) -> None:
-        """Генерация групп номенклатуры под технологическую карту."""
-        grocery = nomenclature_group_model(name="Бакалея")
-        dairy = nomenclature_group_model(name="Молочные продукты")
-        dishes = nomenclature_group_model(name="Блюда")
-
-        self.add_group(grocery)
-        self.add_group(dairy)
-        self.add_group(dishes)
-
-    def __create_nomenclatures(self) -> None:
-        """Генерация номенклатуры (ингредиенты для рецепта и готовые блюда)."""
-        groups_by_name = {g.name: g for g in self._groups.values()}
-        ranges_by_name = {r.name: r for r in self._ranges.values()}
-
-        grocery = groups_by_name.get("Бакалея")
-        dairy = groups_by_name.get("Молочные продукты")
-        dishes = groups_by_name.get("Блюда")
-
-        kg = ranges_by_name.get("килограмм")
-        liter = ranges_by_name.get("литр")
-        piece = ranges_by_name.get("штука")
-
-        items = [
-            nomenclature_model("Мука пшеничная", "Мука пшеничная высший сорт", grocery, kg),
-            nomenclature_model("Молоко 3.2%", "Молоко коровье пастеризованное 3.2%", dairy, liter),
-            nomenclature_model("Яйца куриные", "Яйца куриные столовые С0", dairy, piece),
-            nomenclature_model("Масло сливочное", "Масло сливочное крестьянское 72.5%", dairy, kg),
-            nomenclature_model("Сахар", "Сахар белый кристаллический", grocery, kg),
-            nomenclature_model("Соль", "Соль поваренная пищевая", grocery, kg),
-            nomenclature_model("Блины классические", "Блины классические тонкие", dishes, piece),
-        ]
-
-        for item in items:
-            self.add_nomenclature(item)
-
-    def __create_storages(self) -> None:
-        """Генерация складов."""
-        main_storage = storage_model(name="Основной склад", address="ул. Промышленная, 5, пом. 101")
-        fridge = storage_model(name="Холодильник цеха", address="ул. Промышленная, 5, пом. 102")
-
-        self.add_storage(main_storage)
-        self.add_storage(fridge)
 
     def add_storage(self, item: storage_model) -> bool:
         """Добавить склад. Возвращает True, если добавлен; False, если дубликат или неверный тип."""
@@ -147,6 +122,13 @@ class storage_manager(abstract_manager):
         self._groups[item.id] = item
         return True
 
+    def add_recipe(self, item: recipe_model) -> bool:
+        """Добавить технологическую карту (рецепт)."""
+        if not isinstance(item, recipe_model) or item.id in self._recipes:
+            return False
+        self._recipes[item.id] = item
+        return True
+
     @property
     def storages(self) -> dict:
         """Словарь складов {id: storage_model}."""
@@ -168,13 +150,19 @@ class storage_manager(abstract_manager):
         return self._groups
 
     @property
+    def recipes(self) -> dict:
+        """Словарь технологических карт {id: recipe_model}."""
+        return self._recipes
+
+    @property
     def data(self) -> dict:
         """Все данные хранилища по категориям."""
         return {
             "storages": self._storages,
             "ranges": self._ranges,
             "nomenclatures": self._nomenclatures,
-            "groups": self._groups
+            "groups": self._groups,
+            "recipes": self._recipes,
         }
 
     @property
