@@ -95,3 +95,60 @@ class recipe_model(name_id):
 
     def clear_rows(self) -> None:
         self.__rows.clear()
+
+    @staticmethod
+    def create_pancake_dough_recipe(
+        dough_dish: nomenclature_model,
+        flour: nomenclature_model,
+        milk: nomenclature_model,
+        eggs: nomenclature_model,
+        sugar: nomenclature_model,
+        salt: nomenclature_model,
+    ):
+        """
+        Фабричный метод: Технологическая карта полуфабриката 'Тесто для блинов' (на 1 порцию).
+        """
+        recipe = recipe_model(
+            name="Тесто для блинов",
+            dish=dough_dish,
+            cooking_time=15,
+            instructions=[
+                "В глубокую емкость разбить яйца, добавить сахар и соль, взбить венчиком.",
+                "Влить теплое молоко (около 30°C), перемешать.",
+                "Постепенно ввести просеянную муку, вымешивая венчиком до однородного жидкого теста.",
+            ],
+            portions=1,
+        )
+        recipe.add_row(recipe_row_model.create_ingredient(flour, brutto=50.0, netto=50.0))
+        recipe.add_row(recipe_row_model.create_ingredient(milk, brutto=125.0, netto=125.0))
+        recipe.add_row(recipe_row_model.create_ingredient(eggs, brutto=25.0, netto=22.0))
+        recipe.add_row(recipe_row_model.create_ingredient(sugar, brutto=7.5, netto=7.5))
+        recipe.add_row(recipe_row_model.create_ingredient(salt, brutto=1.25, netto=1.25))
+        return recipe
+
+    @staticmethod
+    def create_pancakes_recipe(
+        pancakes_dish: nomenclature_model,
+        dough_dish: nomenclature_model,
+        dough_recipe,
+        butter: nomenclature_model,
+    ):
+        """
+        Фабричный метод: Технологическая карта блюда 'Блины классические' (на 1 порцию).
+        Включает полуфабрикат 'Тесто для блинов' и сливочное масло.
+        """
+        recipe = recipe_model(
+            name="Блины классические",
+            dish=pancakes_dish,
+            cooking_time=25,
+            instructions=[
+                "Разогреть блинную сковороду до 180-200°C и смазать тонким слоем масла.",
+                "Половником налить порцию теста и равномерно распределить по сковороде.",
+                "Выпекать 60-80 секунд с одной стороны и 30-40 секунд с обратной.",
+                "Готовый блин переложить на блюдо и смазать сливочным маслом.",
+            ],
+            portions=1,
+        )
+        recipe.add_row(recipe_row_model.create_sub_recipe(dough_dish, sub_recipe=dough_recipe, netto=175.0))
+        recipe.add_row(recipe_row_model.create_ingredient(butter, brutto=12.5, netto=12.5))
+        return recipe
