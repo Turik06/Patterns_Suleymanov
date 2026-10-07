@@ -1,17 +1,17 @@
 from Src.Core.validator import argument_exception
 
 
-"""
-Набор общих статических методов
-"""
 class common:
+    """
+    Набор общих статических методов.
+    """
 
-    """
-    Получить полный список полей любой модели
-        - is_common = True - исключить из списка словари и списки
-    """
     @staticmethod
     def get_fields(source, is_common: bool = False) -> list:
+        """
+        Получить полный список полей любой модели.
+            - is_common = True - исключить из списка словари и списки.
+        """
         if source is None:
             raise argument_exception("Некорректно переданы аргументы!")
 
