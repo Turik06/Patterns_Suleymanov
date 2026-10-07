@@ -23,6 +23,9 @@ class storage_manager(abstract_manager):
 
     # Singleton
     def __new__(cls):
+        """
+        Реализация шаблона Singleton. Возвращает единственный экземпляр класса.
+        """
         if not hasattr(cls, "instance"):
             cls.instance = super(storage_manager, cls).__new__(cls)
             cls.instance._storages = {}

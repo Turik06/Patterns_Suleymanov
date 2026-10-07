@@ -61,6 +61,9 @@ class range_model(name_id):
 
     @value.setter
     def value(self, val):
+        """
+        Устанавливает значение коэффициента пересчёта (псевдоним для conversion_factor).
+        """
         self.conversion_factor = val
 
     @property
@@ -90,6 +93,9 @@ class range_model(name_id):
 
     @base.setter
     def base(self, value):
+        """
+        Устанавливает базовую единицу измерения (псевдоним для base_range).
+        """
         self.base_range = value
 
     @staticmethod

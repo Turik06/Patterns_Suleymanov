@@ -18,6 +18,16 @@ class recipe_model(name_id):
         instructions: list = None,
         portions: int = 1
     ):
+        """
+        Конструктор технологической карты (рецепта).
+
+        Параметры:
+            name: Наименование рецепта
+            dish: Целевое блюдо или полуфабрикат (номенклатура)
+            cooking_time: Время приготовления в минутах
+            instructions: Список шагов приготовления
+            portions: Количество порций (по умолчанию 1)
+        """
         super().__init__()
         self.__dish = dish
         self.__rows = []
@@ -30,42 +40,69 @@ class recipe_model(name_id):
 
     @property
     def dish(self) -> nomenclature_model:
+        """
+        Возвращает номенклатуру готового блюда или полуфабриката.
+        """
         return self.__dish
 
     @dish.setter
     def dish(self, value: nomenclature_model):
+        """
+        Устанавливает номенклатуру готового блюда или полуфабриката.
+        """
         validator.validate(value, nomenclature_model)
         self.__dish = value
 
     @property
     def rows(self) -> list:
+        """
+        Возвращает список строк технологической карты.
+        """
         return self.__rows
 
     @property
     def cooking_time(self) -> int:
+        """
+        Возвращает время приготовления блюда в минутах.
+        """
         return self.__cooking_time
 
     @cooking_time.setter
     def cooking_time(self, value: int):
+        """
+        Устанавливает время приготовления блюда в минутах.
+        """
         if not isinstance(value, int) or value < 0:
             raise argument_exception("cooking_time", "Время приготовления должно быть неотрицательным")
         self.__cooking_time = value
 
     @property
     def instructions(self) -> list:
+        """
+        Возвращает список шагов технологического процесса.
+        """
         return self.__instructions
 
     @instructions.setter
     def instructions(self, value: list):
+        """
+        Устанавливает список шагов технологического процесса.
+        """
         validator.validate(value, list)
         self.__instructions = value
 
     @property
     def portions(self) -> int:
+        """
+        Возвращает количество порций, на которое рассчитана карта.
+        """
         return self.__portions
 
     @portions.setter
     def portions(self, value: int):
+        """
+        Устанавливает количество порций. Должно быть больше нуля.
+        """
         if not isinstance(value, int) or value <= 0:
             raise argument_exception("portions", "Количество порций должно быть больше нуля")
         self.__portions = value
@@ -94,6 +131,7 @@ class recipe_model(name_id):
         return len(self.__rows) < initial_len
 
     def clear_rows(self) -> None:
+        """Очистить все строки рецепта."""
         self.__rows.clear()
 
     @staticmethod

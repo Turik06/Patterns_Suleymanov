@@ -18,6 +18,16 @@ class recipe_row_model(name_id):
         range_unit: range_model = None,
         sub_recipe = None,
     ):
+        """
+        Конструктор строки технологической карты.
+
+        Параметры:
+            nomenclature: Позиция номенклатуры (ингредиент или полуфабрикат)
+            brutto: Масса брутто (в единицах измерения или граммах)
+            netto: Масса нетто (в единицах измерения или граммах)
+            range_unit: Единица измерения
+            sub_recipe: Вложенный рецепт (если строка является полуфабрикатом)
+        """
         super().__init__()
         self.__nomenclature = nomenclature
         self.__range = range_unit or getattr(nomenclature, "range", None)
@@ -30,28 +40,46 @@ class recipe_row_model(name_id):
 
     @property
     def nomenclature(self) -> nomenclature_model:
+        """
+        Возвращает номенклатуру строки рецепта.
+        """
         return self.__nomenclature
 
     @nomenclature.setter
     def nomenclature(self, value: nomenclature_model):
+        """
+        Устанавливает номенклатуру строки рецепта.
+        """
         validator.validate(value, nomenclature_model)
         self.__nomenclature = value
 
     @property
     def range(self) -> range_model:
+        """
+        Возвращает единицу измерения строки рецепта.
+        """
         return self.__range
 
     @range.setter
     def range(self, value: range_model):
+        """
+        Устанавливает единицу измерения строки рецепта.
+        """
         validator.validate(value, range_model)
         self.__range = value
 
     @property
     def sub_recipe(self):
+        """
+        Возвращает вложенный рецепт (полуфабрикат), если строка ссылается на него.
+        """
         return self.__sub_recipe
 
     @sub_recipe.setter
     def sub_recipe(self, value):
+        """
+        Устанавливает вложенный рецепт (полуфабрикат).
+        """
         if value is not None and not hasattr(value, "brutto"):
             raise argument_exception("sub_recipe", "Вложенный рецепт должен иметь свойство brutto")
         self.__sub_recipe = value
@@ -63,6 +91,9 @@ class recipe_row_model(name_id):
 
     @brutto.setter
     def brutto(self, value: float):
+        """
+        Устанавливает массу брутто. Должна быть неотрицательным числом.
+        """
         if not isinstance(value, (int, float)) or value < 0:
             raise argument_exception("brutto", "Масса брутто должна быть неотрицательным числом")
         self.__brutto = float(value)
@@ -74,6 +105,9 @@ class recipe_row_model(name_id):
 
     @netto.setter
     def netto(self, value: float):
+        """
+        Устанавливает массу нетто. Должна быть неотрицательным числом.
+        """
         if not isinstance(value, (int, float)) or value < 0:
             raise argument_exception("netto", "Масса нетто должна быть неотрицательным числом")
         self.__netto = float(value)
