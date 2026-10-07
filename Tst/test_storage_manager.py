@@ -345,6 +345,38 @@ def test_empty_storage_manager_convert_is_first_start_false():
         assert len(manager.groups) == 0
         assert len(manager.nomenclatures) == 0
         assert len(manager.storages) == 0
+        assert len(manager.recipes) == 0
     finally:
         if hasattr(storage_manager, 'instance'):
             del storage_manager.instance
+
+
+def test_success_storage_manager_first_start_recipes():
+    """
+    Ожидание: При первом старте сформированы 2 технологические карты (Тесто и Блины).
+    Метод: storage_manager.convert
+    Описание: Проверяет наличие рецептов, расчет брутто/нетто и наличие ключа в data.
+    """
+    # Подготовка
+    manager = storage_manager()
+
+    # Действие
+    manager.convert()
+
+    # Проверки
+    assert len(manager.recipes) == 2
+    assert "recipes" in manager.data
+
+    recipe_names = [r.name for r in manager.recipes.values()]
+    assert "Тесто для блинов" in recipe_names
+    assert "Блины классические" in recipe_names
+
+    dough_recipe = next(r for r in manager.recipes.values() if r.name == "Тесто для блинов")
+    assert dough_recipe.portions == 1
+    assert dough_recipe.brutto == 208.75
+    assert dough_recipe.netto == 205.75
+
+    pancakes_recipe = next(r for r in manager.recipes.values() if r.name == "Блины классические")
+    assert pancakes_recipe.portions == 1
+    assert pancakes_recipe.brutto == 221.25
+    assert pancakes_recipe.netto == 187.5
