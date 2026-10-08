@@ -87,7 +87,6 @@ class settings_manager(abstract_manager):
             company = self._settings.organization or organization_model()
             company_fields = common.get_fields(company, is_common=True)
 
-            # Вариант А: вложенный словарь {"organization": {...}} или {"company": {...}}
             org_data = self.__data.get("organization") or self.__data.get("company")
             if isinstance(org_data, dict):
                 for field in company_fields:
@@ -101,7 +100,6 @@ class settings_manager(abstract_manager):
                             except Exception:
                                 pass
 
-            # Вариант Б: плоские ключи вида "company_<field>" (например, "company_name", "company_inn")
             for field in company_fields:
                 key = f"company_{field}"
                 if key in self.__data:
@@ -112,7 +110,6 @@ class settings_manager(abstract_manager):
                         except Exception:
                             pass
 
-            # Если у компании есть обязательные поля (например, name), привязываем к настройкам
             if company.name:
                 self._settings.organization = company
 
