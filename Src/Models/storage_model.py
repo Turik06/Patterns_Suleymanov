@@ -36,3 +36,21 @@ class storage_model(name_id):
             raise argument_exception("address", "Адрес должен быть строкой")
 
         self.__address = value.strip()
+
+    @staticmethod
+    def create_main():
+        """Фабричный метод: создать 'Основной склад'."""
+        return storage_model(name="Основной склад", address="ул. Промышленная, 5, пом. 101")
+
+    @staticmethod
+    def create_fridge():
+        """Фабричный метод: создать 'Холодильник цеха'."""
+        return storage_model(name="Холодильник цеха", address="ул. Промышленная, 5, пом. 102")
+
+    @staticmethod
+    def create_primary_list() -> list:
+        """Фабричный метод: создать первичный список всех складов."""
+        return [
+            storage_model.create_main(),
+            storage_model.create_fridge(),
+        ]

@@ -89,6 +89,7 @@ classDiagram
         -dict _ranges
         -dict _nomenclatures
         -dict _groups
+        -dict _recipes
         -bool __is_initialized
         +__new__(cls) storage_manager
         +convert(settings: settings_model = None) bool
@@ -96,13 +97,51 @@ classDiagram
         +add_range(item) bool
         +add_nomenclature(item) bool
         +add_group(item) bool
+        +add_recipe(item) bool
         +storages: dict
         +ranges: dict
         +nomenclatures: dict
         +groups: dict
+        +recipes: dict
         +data: dict
         +is_initialized: bool
         +is_loaded: bool
+    }
+
+    class recipe_row_model {
+        -nomenclature_model __nomenclature
+        -range_model __range
+        -recipe_model __sub_recipe
+        -float __brutto
+        -float __netto
+        +nomenclature: nomenclature_model
+        +range: range_model
+        +sub_recipe: recipe_model
+        +brutto: float
+        +netto: float
+        +create_ingredient(nomenclature, brutto, netto) recipe_row_model
+        +create_sub_recipe(nomenclature, sub_recipe, netto) recipe_row_model
+    }
+
+    class recipe_model {
+        -nomenclature_model __dish
+        -list __rows
+        -int __cooking_time
+        -list __instructions
+        -int __portions
+        +dish: nomenclature_model
+        +rows: list
+        +cooking_time: int
+        +instructions: list
+        +portions: int
+        +brutto: float
+        +netto: float
+        +add_row(row) bool
+        +remove_row(row_or_id) bool
+        +clear_rows() void
+        +create_pancake_dough_recipe() recipe_model
+        +create_pancakes_recipe() recipe_model
+        +create_primary_list(nomenclatures) list
     }
 
     name_id <|-- range_model
@@ -111,6 +150,8 @@ classDiagram
     name_id <|-- organization_model
     name_id <|-- nomenclature_model
     name_id <|-- settings_model
+    name_id <|-- recipe_row_model
+    name_id <|-- recipe_model
 
     abstract_manager <|-- settings_manager
     abstract_manager <|-- storage_manager
@@ -126,6 +167,13 @@ classDiagram
     storage_manager o-- range_model : _ranges
     storage_manager o-- nomenclature_group_model : _groups
     storage_manager o-- nomenclature_model : _nomenclatures
+    storage_manager o-- recipe_model : _recipes
+
+    recipe_model *-- recipe_row_model : rows
+    recipe_model o-- nomenclature_model : dish
+    recipe_row_model o-- nomenclature_model : nomenclature
+    recipe_row_model o-- range_model : range
+    recipe_row_model o-- recipe_model : sub_recipe
 
     storage_manager ..> settings_manager : uses
 ```

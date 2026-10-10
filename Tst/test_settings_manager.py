@@ -219,3 +219,39 @@ def test_not_raise_settings_manager_convert_empty_organization_name():
     assert result == True
     assert manager.settings.boss_name == "Иванов Иван"
     assert manager.settings.is_first_start == True
+
+
+def test_true_settings_manager_build():
+    """
+    Ожидание: Метод build() возвращает True после загрузки.
+    Метод: settings_manager.build
+    Описание: Проверяет сборку настроек через метод build() с использованием интроспекции полей.
+    """
+    # Подготовка
+    manager = settings_manager()
+    manager.load()
+
+    # Действие
+    result = manager.build()
+
+    # Проверки
+    assert result == True
+
+
+def test_success_settings_manager_load_flat_format():
+    """
+    Ожидание: Корректная загрузка настроек из плоского формата c префиксами полей (company_name).
+    Метод: settings_manager.load
+    Описание: Проверяет работу интроспекции через common.get_fields для плоских ключей из Tst/settings.json.
+    """
+    # Подготовка
+    manager = settings_manager()
+
+    # Действие
+    manager.load("./Tst/settings.json")
+
+    # Проверки
+    assert manager.is_loaded == True
+    assert manager.settings.organization.name == "ООО Ромашка"
+    assert manager.settings.boss_name == "Воловиков Александр Сергеевич"
+    assert manager.settings.first_start == manager.settings.is_first_start

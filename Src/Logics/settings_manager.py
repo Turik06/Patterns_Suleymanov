@@ -1,71 +1,124 @@
+import os
+import json
 from Src.Core.abstract_manager import abstract_manager
 from Src.Core.validator import validator, operation_exception
+from Src.Core.common import common
 from Src.Models.settings_model import settings_model
 from Src.Models.organization_model import organization_model
-import json
 
 
 class settings_manager(abstract_manager):
+    """
+    Менеджер для работы с настройками приложения.
+    Реализует шаблон Singleton и загрузку данных через интроспекцию моделей.
+    """
     __default_file_name: str = "settings.json"
 
     _settings: settings_model = None
-    __is_loaded: bool = False
     __data: dict = None
 
     # Singleton
     def __new__(cls):
+        """
+        Реализация шаблона Singleton. Возвращает единственный экземпляр класса.
+        """
         if not hasattr(cls, "instance"):
             cls.instance = super(settings_manager, cls).__new__(cls)
         return cls.instance
+
+    def __init__(self):
+        """
+        Конструктор менеджера настроек. Инициализирует поля модели настроек и данных.
+        """
+        if not hasattr(self, "_settings") or self._settings is None:
+            self._settings = settings_model()
+            self.__data = {}
 
     def load(self, file_name: str = "") -> None:
         """
         Загружает данные настроек из JSON файла.
         """
-        file_name = file_name.strip() or self.__default_file_name
-        validator.validate(file_name, str)
+        inner_file_name = file_name.strip() if file_name.strip() != "" else self.__default_file_name
+        validator.validate(inner_file_name, str)
+
+        full_file_name = os.path.abspath(inner_file_name)
+        if not os.path.exists(full_file_name):
+            raise operation_exception(f"Не найден указанный файл {full_file_name}")
 
         try:
-            with open(file_name, "r", encoding="utf-8") as file:
+            with open(full_file_name, "r", encoding="utf-8") as file:
                 self.__data = json.load(file)
 
-            self.__is_loaded = self.convert()
+            self.is_loaded = self.build()
+            if not self.is_loaded:
+                self._settings = self.__create_default_data()
 
+        except operation_exception:
+            raise
         except Exception as ex:
             raise operation_exception(
-                f"Ошибка при загрузке данных из файла {file_name}: {ex}"
+                f"Ошибка при загрузке и обработке файла: {inner_file_name}. Детали: {ex}"
             ) from ex
 
-    def convert(self) -> bool:
+    def build(self) -> bool:
         """
-        Преобразует сырые данные JSON в объект settings_model.
+        Обработать загруженные сырые данные и заполнить settings_model через интроспекцию полей.
+        Использует common.get_fields для динамического связывания.
         """
-        if not isinstance(self.__data, dict):
+        if not isinstance(self.__data, dict) or len(self.__data) == 0:
             return False
 
         try:
             if self._settings is None:
                 self._settings = settings_model()
 
-            # 1. Заполняем организацию
-            org = self.__data.get("organization")
-            if isinstance(org, dict):
-                name = str(org.get("name", "")).strip()
-                inn = str(org.get("inn", "")).strip()
-                if name and inn:
-                    try:
-                        self._settings.organization = organization_model(**org)
-                    except Exception:
-                        pass
+            # 1. Загрузка данных организации через рефлексию
+            company = self._settings.organization or organization_model()
+            company_fields = common.get_fields(company, is_common=True)
 
-            # 2. Заполняем ФИО руководителя и бухгалтера
-            for key in ("boss_name", "account_name"):
-                value = self.__data.get(key)
-                if value and str(value).strip():
-                    setattr(self._settings, key, str(value).strip())
+            org_data = self.__data.get("organization") or self.__data.get("company")
+            if isinstance(org_data, dict):
+                for field in company_fields:
+                    if field in ("id",):
+                        continue
+                    if field in org_data:
+                        val = org_data[field]
+                        if val is not None and str(val).strip():
+                            try:
+                                setattr(company, field, val)
+                            except Exception:
+                                pass
 
-            # 3. Заполняем флаг первого старта
-            if "is_first_start" in self.__data:
+            for field in company_fields:
+                key = f"company_{field}"
+                if key in self.__data:
+                    val = self.__data[key]
+                    if val is not None and str(val).strip():
+                        try:
+                            setattr(company, field, val)
+                        except Exception:
+                            pass
+
+            if company.name:
+                self._settings.organization = company
+
+            # 2. Загрузка данных настроек через рефлексию
+            settings_fields = common.get_fields(self._settings, is_common=True)
+            for field in settings_fields:
+                if field in ("organization", "company", "id", "name"):
+                    continue
+                if field in self.__data:
+                    val = self.__data[field]
+                    if val is not None and str(val).strip():
+                        try:
+                            setattr(self._settings, field, val)
+                        except Exception:
+                            pass
+
+            # Поддержка альтернативных наименований флага первого старта
+            if "first_start" in self.__data:
+                self._settings.is_first_start = bool(self.__data.get("first_start"))
+            elif "is_first_start" in self.__data:
                 self._settings.is_first_start = bool(self.__data.get("is_first_start"))
 
             return True
@@ -73,10 +126,32 @@ class settings_manager(abstract_manager):
         except Exception:
             return False
 
-    @property
-    def is_loaded(self) -> bool:
-        """Флаг успешности загрузки настроек."""
-        return self.__is_loaded
+    def convert(self) -> bool:
+        """
+        Преобразует сырые данные JSON в объект settings_model.
+        Псевдоним метода build() для обратной совместимости.
+        """
+        return self.build()
+
+    def __create_default_data(self) -> settings_model:
+        """
+        Сформировать настройки по умолчанию при ошибке обработки данных.
+        """
+        result = settings_model()
+
+        company = organization_model(
+            name="ООО Ромашка",
+            inn="7736050003",
+            bik="044525225",
+            account="40812810400000000225",
+            ownership_form="ООО"
+        )
+
+        result.organization = company
+        result.boss_name = "Шеметов Александр Борисович"
+        result.account_name = "Сулейманов Турал Кямалович"
+        result.is_first_start = True
+        return result
 
     @property
     def settings(self) -> settings_model:

@@ -18,7 +18,10 @@ class range_model(name_id):
             base_range: Базовая единица измерения (экземпляр range_model). Для базовой единицы передаётся None
         """
         super().__init__()
-        self.name = name
+        self.__conversion_factor = 1
+        self.__base_range = None
+        if name and str(name).strip() != "":
+            self.name = name
         self.conversion_factor = conversion_factor
         self.base_range = base_range
 
@@ -50,6 +53,20 @@ class range_model(name_id):
         return self.__conversion_factor
 
     @property
+    def value(self):
+        """
+        Значение коэффициента пересчёта (псевдоним для conversion_factor).
+        """
+        return self.__conversion_factor
+
+    @value.setter
+    def value(self, val):
+        """
+        Устанавливает значение коэффициента пересчёта (псевдоним для conversion_factor).
+        """
+        self.conversion_factor = val
+
+    @property
     def base_range(self):
         """
         Возвращает базовую единицу измерения.
@@ -73,3 +90,66 @@ class range_model(name_id):
         Псевдоним для base_range.
         """
         return self.__base_range
+
+    @base.setter
+    def base(self, value):
+        """
+        Устанавливает базовую единицу измерения (псевдоним для base_range).
+        """
+        self.base_range = value
+
+    @staticmethod
+    def create_gram(name: str = "грамм"):
+        """
+        Фабричный метод - создать грамм.
+        """
+        result = range_model()
+        result.name = name
+        result.value = 1
+        return result
+
+    @staticmethod
+    def create_kilogram(name: str = "килограмм", base_name: str = "грамм"):
+        """
+        Фабричный метод - создать килограмм.
+        """
+        gram = range_model.create_gram(name=base_name)
+
+        result = range_model()
+        result.value = 1000
+        result.base = gram
+        result.name = name
+
+        return result
+
+    @staticmethod
+    def create_milliliter(name: str = "миллилитр"):
+        """
+        Фабричный метод - создать миллилитр.
+        """
+        result = range_model()
+        result.name = name
+        result.value = 1
+        return result
+
+    @staticmethod
+    def create_liter(name: str = "литр", base_name: str = "миллилитр"):
+        """
+        Фабричный метод - создать литр с базовой единицей миллилитр.
+        """
+        ml = range_model.create_milliliter(name=base_name)
+        result = range_model()
+        result.value = 1000
+        result.base = ml
+        result.name = name
+        return result
+
+    @staticmethod
+    def create_piece(name: str = "штука"):
+        """
+        Фабричный метод - создать штуку.
+        """
+        result = range_model()
+        result.name = name
+        result.value = 1
+        return result
