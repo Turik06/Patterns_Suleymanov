@@ -28,13 +28,19 @@ class storage_manager(abstract_manager):
         """
         if not hasattr(cls, "instance"):
             cls.instance = super(storage_manager, cls).__new__(cls)
-            cls.instance._storages = {}
-            cls.instance._ranges = {}
-            cls.instance._nomenclatures = {}
-            cls.instance._groups = {}
-            cls.instance._recipes = {}
-            cls.instance.__is_initialized = False
         return cls.instance
+
+    def __init__(self):
+        """
+        Конструктор хранилища. Инициализирует словари данных.
+        """
+        if not hasattr(self, "_storages") or self._storages is None:
+            self._storages = {}
+            self._ranges = {}
+            self._nomenclatures = {}
+            self._groups = {}
+            self._recipes = {}
+            self.__is_initialized = False
 
     def convert(self, settings=None) -> bool:
         """

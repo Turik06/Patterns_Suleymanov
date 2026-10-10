@@ -24,9 +24,15 @@ class settings_manager(abstract_manager):
         """
         if not hasattr(cls, "instance"):
             cls.instance = super(settings_manager, cls).__new__(cls)
-            cls.instance._settings = settings_model()
-            cls.instance.__data = {}
         return cls.instance
+
+    def __init__(self):
+        """
+        Конструктор менеджера настроек. Инициализирует поля модели настроек и данных.
+        """
+        if not hasattr(self, "_settings") or self._settings is None:
+            self._settings = settings_model()
+            self.__data = {}
 
     def load(self, file_name: str = "") -> None:
         """
@@ -142,8 +148,8 @@ class settings_manager(abstract_manager):
         )
 
         result.organization = company
-        result.boss_name = "Воловиков Александр Сергеевич"
-        result.account_name = "Балахчи Анна Георгиевна"
+        result.boss_name = "Шеметов Александр Борисович"
+        result.account_name = "Сулейманов Турал Кямалович"
         result.is_first_start = True
         return result
 
