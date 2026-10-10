@@ -109,17 +109,59 @@ class recipe_model(name_id):
 
     @property
     def brutto(self) -> float:
-        """Суммарный вес брутто (в граммах)."""
-        return round(sum(row.brutto for row in self.__rows), 2)
+        """
+        Суммарный вес брутто (в граммах).
+        Рекурсивный расчет веса сырья с обходом вложенных полуфабрикатов и блюд ("блюдо в блюде").
+        """
+        total = 0.0
+        for row in self.__rows:
+            # Рекурсивный случай: вложенное блюдо / полуфабрикат
+            sub_recipe = getattr(row, "sub_recipe", None)
+            if sub_recipe is not None:
+                total += sub_recipe.brutto
+            elif isinstance(row, recipe_model):
+                total += row.brutto
+            else:
+                total += row.brutto
+        return round(total, 2)
 
     @property
     def netto(self) -> float:
-        """Суммарный вес нетто (в граммах)."""
-        return round(sum(row.netto for row in self.__rows), 2)
+        """
+        Суммарный вес нетто (в граммах).
+        Рекурсивный расчет чистого выхода с обходом вложенных полуфабрикатов и блюд ("блюдо в блюде").
+        """
+        total = 0.0
+        for row in self.__rows:
+            # Рекурсивный случай: вложенное блюдо / полуфабрикат
+            sub_recipe = getattr(row, "sub_recipe", None)
+            if sub_recipe is not None:
+                total += row.netto if row.netto > 0 else sub_recipe.netto
+            elif isinstance(row, recipe_model):
+                total += row.netto
+            else:
+                total += row.netto
+        return round(total, 2)
 
-    def add_row(self, row: recipe_row_model) -> bool:
-        """Добавить строку в рецепт."""
-        validator.validate(row, recipe_row_model)
+    def add_row(self, row) -> bool:
+        """
+        Добавить строку или вложенное блюдо/полуфабрикат в рецепт.
+        Поддерживает вариант "блюдо в блюде": при передаче recipe_model
+        создается строка с вложенным рецептом.
+        """
+        if isinstance(row, recipe_model):
+            # Вариант "блюдо в блюде": оборачиваем переданный рецепт в строку полуфабриката
+            wrapped_row = recipe_row_model.create_sub_recipe(
+                nomenclature=row.dish,
+                sub_recipe=row,
+                netto=row.netto
+            )
+            self.__rows.append(wrapped_row)
+            return True
+
+        if not isinstance(row, recipe_row_model):
+            raise argument_exception("row", "Ожидается объект recipe_row_model или recipe_model")
+
         self.__rows.append(row)
         return True
 

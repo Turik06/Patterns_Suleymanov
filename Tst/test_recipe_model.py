@@ -228,3 +228,34 @@ def test_error_recipe_model_invalid_arguments(sample_data):
 
     with pytest.raises(argument_exception):
         recipe.cooking_time = -10
+
+
+def test_success_recipe_dish_in_dish_recursion(sample_data):
+    """
+    Ожидание: Прямое добавление блюда в блюдо (recipe_model в add_row) и корректный рекурсивный расчёт веса.
+    Метод: recipe_model.add_row / brutto / netto
+    Описание: Проверяет вариант 'блюдо в блюде': добавление объекта recipe_model как полуфабриката
+              и многоуровневый рекурсивный пересчет брутто и нетто.
+    """
+    # Arrange: 1. Базовый рецепт теста (полуфабрикат)
+    dough = recipe_model(name="Тесто", dish=sample_data["dough"])
+    dough.add_row(recipe_row_model.create_ingredient(sample_data["flour"], brutto=50.0, netto=50.0))
+    dough.add_row(recipe_row_model.create_ingredient(sample_data["milk"], brutto=100.0, netto=100.0))
+
+    # Arrange: 2. Блюдо "Блины", куда добавляем тесто напрямую (вариант "блюдо в блюде")
+    pancakes = recipe_model(name="Блины", dish=sample_data["pancakes"])
+    pancakes.add_row(dough)  # Передаем recipe_model напрямую
+    pancakes.add_row(recipe_row_model.create_ingredient(sample_data["butter"], brutto=10.0, netto=10.0))
+
+    # Assert: 2. Проверяем рекурсивный вес "Блинов"
+    assert len(pancakes.rows) == 2
+    assert pancakes.brutto == 160.0  # 150 (из вложенного рецепта) + 10
+    assert pancakes.netto == 160.0   # 150 + 10
+
+    # Arrange: 3. Третий уровень вложенности: "Сет блинный" включает готовые "Блины"
+    combo_set = recipe_model(name="Сет блинный", dish=sample_data["pancakes"])
+    combo_set.add_row(pancakes)  # Блюдо в блюде второго уровня вложенности
+
+    # Assert: 3. Глубокая рекурсия работает через все уровни
+    assert combo_set.brutto == 160.0
+    assert combo_set.netto == 160.0
