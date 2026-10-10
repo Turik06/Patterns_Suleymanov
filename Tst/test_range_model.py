@@ -135,27 +135,11 @@ def test_argument_exception_range_model_invalid_base_type():
         range_model("кг", 1000, "грамм")
 
 
-def test_success_range_model_create_killogramm():
-    """
-    Ожидание: Фабричный метод create_killogramm возвращает единицу 'Килограмм' со значением 1000 и базой 'Грамм'.
-    Метод: range_model.create_killogramm
-    Описание: Проверяет работу фабричного метода создания килограмма.
-    """
-    # Act
-    kg = range_model.create_killogramm()
-
-    # Assert
-    assert kg.name == "Килограмм"
-    assert kg.value == 1000
-    assert kg.base is not None
-    assert kg.base.name == "Грамм"
-
-
-def test_success_range_model_create_kilogram_custom():
+def test_success_range_model_create_kilogram():
     """
     Ожидание: Фабричный метод create_kilogram возвращает единицу 'килограмм' со значением 1000 и базой 'грамм'.
     Метод: range_model.create_kilogram
-    Описание: Проверяет работу фабричного метода создания килограмма со строчными именами.
+    Описание: Проверяет работу фабричного метода создания килограмма с дефолтными параметрами.
     """
     # Act
     kg = range_model.create_kilogram()
@@ -165,6 +149,22 @@ def test_success_range_model_create_kilogram_custom():
     assert kg.value == 1000
     assert kg.base is not None
     assert kg.base.name == "грамм"
+
+
+def test_success_range_model_create_kilogram_custom():
+    """
+    Ожидание: Фабричный метод create_kilogram с кастомными именами возвращает настроенный объект.
+    Метод: range_model.create_kilogram
+    Описание: Проверяет работу фабричного метода создания килограмма с переданными именами.
+    """
+    # Act
+    kg = range_model.create_kilogram(name="Килограмм", base_name="Грамм")
+
+    # Assert
+    assert kg.name == "Килограмм"
+    assert kg.value == 1000
+    assert kg.base is not None
+    assert kg.base.name == "Грамм"
 
 
 def test_success_range_model_create_gram():
