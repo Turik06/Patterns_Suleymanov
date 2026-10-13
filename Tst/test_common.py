@@ -42,16 +42,21 @@ def test_success_common_get_fields_is_common_filter():
     """
     # Arrange
     class dummy_model:
+        """Вспомогательная модель для проверки фильтрации свойств."""
+
         @property
         def text(self):
+            """Простое строковое свойство."""
             return "sample"
 
         @property
         def items(self):
+            """Свойство, возвращающее список."""
             return [1, 2, 3]
 
         @property
         def mapping(self):
+            """Свойство, возвращающее словарь."""
             return {"key": "value"}
 
     obj = dummy_model()

@@ -84,3 +84,67 @@ class nomenclature_model(name_id):
             raise argument_exception("range", "Единица измерения должна быть типа range_model")
 
         self.__range = value
+
+    @staticmethod
+    def create_flour(group, range_unit):
+        """Фабричный метод: Мука пшеничная."""
+        return nomenclature_model("Мука пшеничная", "Мука пшеничная высший сорт", group, range_unit)
+
+    @staticmethod
+    def create_milk(group, range_unit):
+        """Фабричный метод: Молоко 3.2%."""
+        return nomenclature_model("Молоко 3.2%", "Молоко коровье пастеризованное 3.2%", group, range_unit)
+
+    @staticmethod
+    def create_eggs(group, range_unit):
+        """Фабричный метод: Яйца куриные."""
+        return nomenclature_model("Яйца куриные", "Яйца куриные столовые С0", group, range_unit)
+
+    @staticmethod
+    def create_butter(group, range_unit):
+        """Фабричный метод: Масло сливочное."""
+        return nomenclature_model("Масло сливочное", "Масло сливочное крестьянское 72.5%", group, range_unit)
+
+    @staticmethod
+    def create_sugar(group, range_unit):
+        """Фабричный метод: Сахар."""
+        return nomenclature_model("Сахар", "Сахар белый кристаллический", group, range_unit)
+
+    @staticmethod
+    def create_salt(group, range_unit):
+        """Фабричный метод: Соль."""
+        return nomenclature_model("Соль", "Соль поваренная пищевая", group, range_unit)
+
+    @staticmethod
+    def create_pancake_dough(group, range_unit):
+        """Фабричный метод: Полуфабрикат 'Тесто для блинов'."""
+        return nomenclature_model("Тесто для блинов", "Тесто блинное жидкое полуфабрикат", group, range_unit)
+
+    @staticmethod
+    def create_pancakes(group, range_unit):
+        """Фабричный метод: Готовое блюдо 'Блины классические'."""
+        return nomenclature_model("Блины классические", "Блины классические тонкие", group, range_unit)
+
+    @staticmethod
+    def create_primary_list(groups: dict, ranges: dict) -> list:
+        """
+        Фабричный метод: создать первичный список номенклатуры под технологическую карту.
+        """
+        grocery = groups.get("Бакалея")
+        dairy = groups.get("Молочные продукты")
+        dishes = groups.get("Блюда")
+
+        kg = ranges.get("килограмм")
+        liter = ranges.get("литр")
+        piece = ranges.get("штука")
+
+        return [
+            nomenclature_model.create_flour(grocery, kg),
+            nomenclature_model.create_milk(dairy, liter),
+            nomenclature_model.create_eggs(dairy, piece),
+            nomenclature_model.create_butter(dairy, kg),
+            nomenclature_model.create_sugar(grocery, kg),
+            nomenclature_model.create_salt(grocery, kg),
+            nomenclature_model.create_pancake_dough(dishes, piece),
+            nomenclature_model.create_pancakes(dishes, piece),
+        ]

@@ -61,6 +61,9 @@ class range_model(name_id):
 
     @value.setter
     def value(self, val):
+        """
+        Устанавливает значение коэффициента пересчёта (псевдоним для conversion_factor).
+        """
         self.conversion_factor = val
 
     @property
@@ -90,32 +93,13 @@ class range_model(name_id):
 
     @base.setter
     def base(self, value):
+        """
+        Устанавливает базовую единицу измерения (псевдоним для base_range).
+        """
         self.base_range = value
 
     @staticmethod
-    def create_killogramm(name: str = "Килограмм", base_name: str = "Грамм"):
-        """
-        Фабричный метод - создать килограмм.
-        """
-        gramm = range_model()
-        gramm.name = base_name
-
-        result = range_model()
-        result.value = 1000
-        result.base = gramm
-        result.name = name
-
-        return result
-
-    @staticmethod
-    def create_kilogram(name: str = "килограмм", base_name: str = "грамм"):
-        """
-        Фабричный метод - создать килограмм.
-        """
-        return range_model.create_killogramm(name=name, base_name=base_name)
-
-    @staticmethod
-    def create_gramm(name: str = "грамм"):
+    def create_gram(name: str = "грамм"):
         """
         Фабричный метод - создать грамм.
         """
@@ -125,11 +109,18 @@ class range_model(name_id):
         return result
 
     @staticmethod
-    def create_gram(name: str = "грамм"):
+    def create_kilogram(name: str = "килограмм", base_name: str = "грамм"):
         """
-        Фабричный метод - создать грамм (алиас).
+        Фабричный метод - создать килограмм.
         """
-        return range_model.create_gramm(name=name)
+        gram = range_model.create_gram(name=base_name)
+
+        result = range_model()
+        result.value = 1000
+        result.base = gram
+        result.name = name
+
+        return result
 
     @staticmethod
     def create_milliliter(name: str = "миллилитр"):

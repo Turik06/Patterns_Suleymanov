@@ -5,7 +5,6 @@ from Src.Core.validator import validator, operation_exception
 from Src.Core.common import common
 from Src.Models.settings_model import settings_model
 from Src.Models.organization_model import organization_model
-from Src.Models.range_model import range_model
 
 
 class settings_manager(abstract_manager):
@@ -18,29 +17,22 @@ class settings_manager(abstract_manager):
     _settings: settings_model = None
     __data: dict = None
 
-    @staticmethod
-    def create_killogramm() -> range_model:
-        """
-        Фабричный метод - создать килограмм (делегирует создание range_model).
-        """
-        return range_model.create_killogramm()
-
-    @staticmethod
-    def create_kilogram() -> range_model:
-        """
-        Фабричный метод - создать килограмм (делегирует создание range_model).
-        """
-        return range_model.create_kilogram()
-
-
-
     # Singleton
     def __new__(cls):
+        """
+        Реализация шаблона Singleton. Возвращает единственный экземпляр класса.
+        """
         if not hasattr(cls, "instance"):
             cls.instance = super(settings_manager, cls).__new__(cls)
-            cls.instance._settings = settings_model()
-            cls.instance.__data = {}
         return cls.instance
+
+    def __init__(self):
+        """
+        Конструктор менеджера настроек. Инициализирует поля модели настроек и данных.
+        """
+        if not hasattr(self, "_settings") or self._settings is None:
+            self._settings = settings_model()
+            self.__data = {}
 
     def load(self, file_name: str = "") -> None:
         """
@@ -84,7 +76,6 @@ class settings_manager(abstract_manager):
             company = self._settings.organization or organization_model()
             company_fields = common.get_fields(company, is_common=True)
 
-            # Вариант А: вложенный словарь {"organization": {...}} или {"company": {...}}
             org_data = self.__data.get("organization") or self.__data.get("company")
             if isinstance(org_data, dict):
                 for field in company_fields:
@@ -98,7 +89,6 @@ class settings_manager(abstract_manager):
                             except Exception:
                                 pass
 
-            # Вариант Б: плоские ключи вида "company_<field>" (например, "company_name", "company_inn")
             for field in company_fields:
                 key = f"company_{field}"
                 if key in self.__data:
@@ -109,7 +99,6 @@ class settings_manager(abstract_manager):
                         except Exception:
                             pass
 
-            # Если у компании есть обязательные поля (например, name), привязываем к настройкам
             if company.name:
                 self._settings.organization = company
 
@@ -159,8 +148,8 @@ class settings_manager(abstract_manager):
         )
 
         result.organization = company
-        result.boss_name = "Воловиков Александр Сергеевич"
-        result.account_name = "Балахчи Анна Георгиевна"
+        result.boss_name = "Шеметов Александр Борисович"
+        result.account_name = "Сулейманов Турал Кямалович"
         result.is_first_start = True
         return result
 
