@@ -5,10 +5,6 @@ from Src.Models.recipe_model import recipe_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.range_model import range_model
 
-
-"""
-Абстрактный класс для формирования отчета (шаблонный метод)
-"""
 class abstract_report(ABC):
     """
     Базовый класс отчетов (шаблонный метод + нормализация данных).

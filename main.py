@@ -12,9 +12,6 @@ from urllib.parse import quote
 from Src.Core.exception import argument_exception
 
 
-"""
-Точка входа веб-приложения API формирования отчетов.
-"""
 app = Flask(__name__)
 
 # Инициализация настроек и первичных данных хранилища

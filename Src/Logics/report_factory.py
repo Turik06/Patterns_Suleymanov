@@ -12,9 +12,6 @@ from Src.Logics.xml_report import xml_report
 from Src.Logics.html_report import html_report
 
 
-"""
-Реализация фабрики для построения отчетов
-"""
 class report_factory(abstract_report_factory):
     """
     Фабрика для создания отчетов на основе типа отчета или настроек.

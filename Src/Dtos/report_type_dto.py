@@ -2,9 +2,6 @@ from enum import Enum
 from Src.Core.exception import argument_exception
 
 
-"""
-Типы отчетов
-"""
 class report_type_dto(Enum):
     """
     Перечисление поддерживаемых типов отчетов.

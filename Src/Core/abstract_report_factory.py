@@ -3,9 +3,6 @@ from Src.Core.abstract_report import abstract_report
 from Src.Dtos.report_type_dto import report_type_dto
 
 
-"""
-Абстрактная фабрика отчетов
-"""
 class abstract_report_factory(ABC):
     """
     Базовая абстрактная фабрика для создания отчетов по их типу.

@@ -17,8 +17,6 @@ from Src.Models.recipe_model import recipe_model
 from Src.Models.recipe_row_model import recipe_row_model
 
 
-# ----------------- Фикстуры -----------------
-
 @pytest.fixture
 def sample_range():
     """Единица измерения: килограмм с базовой грамм."""
@@ -47,9 +45,17 @@ def sample_recipe(sample_range, sample_nomenclature):
     return recipe
 
 
-# ----------------- 1. Тесты резолвера from_any -----------------
-
 def test_success_report_type_from_any_strings_and_aliases():
+    """
+    <summary>
+    Проверка разрешения типов отчетов по строковым именам и алиасам.
+    </summary>
+    <description>
+    Arrange: Набор строковых названий и алиасов (csv, md, markdown, xml, html, txt, text).
+    Act: Вызов report_type_dto.from_any().
+    Assert: Возвращается соответствующий элемент перечисления report_type_dto.
+    </description>
+    """
     assert report_type_dto.from_any("csv") == report_type_dto.CSV
     assert report_type_dto.from_any("CSV") == report_type_dto.CSV
     assert report_type_dto.from_any("md") == report_type_dto.MARKDOWN
@@ -61,6 +67,16 @@ def test_success_report_type_from_any_strings_and_aliases():
 
 
 def test_success_report_type_from_any_other_enum():
+    """
+    <summary>
+    Проверка разрешения типов отчетов из значений response_format_dto.
+    </summary>
+    <description>
+    Arrange: Значения response_format_dto (CSV, MARKDOWN, XML, HTML, TXT).
+    Act: Вызов report_type_dto.from_any().
+    Assert: Корректно преобразуются в элементы report_type_dto.
+    </description>
+    """
     assert report_type_dto.from_any(response_format_dto.CSV) == report_type_dto.CSV
     assert report_type_dto.from_any(response_format_dto.MARKDOWN) == report_type_dto.MARKDOWN
     assert report_type_dto.from_any(response_format_dto.XML) == report_type_dto.XML
@@ -69,15 +85,33 @@ def test_success_report_type_from_any_other_enum():
 
 
 def test_fail_report_type_from_any_invalid():
+    """
+    <summary>
+    Проверка генерации исключения при некорректном или пустом типе отчета.
+    </summary>
+    <description>
+    Arrange: None и неподдерживаемая строка.
+    Act: Вызов report_type_dto.from_any().
+    Assert: Выбрасывается argument_exception.
+    </description>
+    """
     with pytest.raises(argument_exception):
         report_type_dto.from_any(None)
     with pytest.raises(argument_exception):
         report_type_dto.from_any("unsupported_format")
 
 
-# ----------------- 2. Тесты фабрики и create_default -----------------
-
 def test_success_factory_create_all_types():
+    """
+    <summary>
+    Проверка создания фабрикой экземпляров всех поддерживаемых форматов отчетов.
+    </summary>
+    <description>
+    Arrange: Фабрика отчетов report_factory.
+    Act: Вызовы factory.create() для csv, md, markdown, xml, html, txt.
+    Assert: Созданные объекты соответствуют целевым классам отчетов.
+    </description>
+    """
     factory = report_factory()
     assert isinstance(factory.create("csv"), csv_report)
     assert isinstance(factory.create("md"), markdown_report)
@@ -88,6 +122,16 @@ def test_success_factory_create_all_types():
 
 
 def test_success_factory_create_default():
+    """
+    <summary>
+    Проверка создания отчета по умолчанию на основе настроек settings_model.
+    </summary>
+    <description>
+    Arrange: Фабрика с инкапсулированными настройками settings_model.
+    Act: Смена response_format в настройках и вызовы factory.create_default().
+    Assert: Возвращается экземпляр отчета, соответствующий текущим настройкам.
+    </description>
+    """
     settings = settings_model()
     factory = report_factory(settings=settings)
 
@@ -107,9 +151,17 @@ def test_success_factory_create_default():
     assert isinstance(factory.create_default(), text_report)
 
 
-# ----------------- 3. Тесты формирования данных: Рецепт -----------------
-
 def test_success_recipe_csv_report(sample_recipe):
+    """
+    <summary>
+    Проверка формирования бинарного CSV-отчета по рецепту.
+    </summary>
+    <description>
+    Arrange: Тестовый рецепт sample_recipe.
+    Act: Вызов csv_report.build(sample_recipe).
+    Assert: Результат бинарный (UTF-8), содержит заголовки через ';' и строки ингредиентов.
+    </description>
+    """
     report = csv_report()
     result = report.build(sample_recipe)
 
@@ -126,6 +178,16 @@ def test_success_recipe_csv_report(sample_recipe):
 
 
 def test_success_recipe_markdown_report(sample_recipe):
+    """
+    <summary>
+    Проверка формирования бинарного Markdown-отчета по рецепту.
+    </summary>
+    <description>
+    Arrange: Тестовый рецепт sample_recipe.
+    Act: Вызов markdown_report.build(sample_recipe).
+    Assert: Результат бинарный, содержит таблицу Markdown с заголовками и строками ингредиентов.
+    </description>
+    """
     report = markdown_report()
     result = report.build(sample_recipe)
 
@@ -141,6 +203,16 @@ def test_success_recipe_markdown_report(sample_recipe):
 
 
 def test_success_recipe_xml_report(sample_recipe):
+    """
+    <summary>
+    Проверка формирования структурированного XML-отчета по рецепту.
+    </summary>
+    <description>
+    Arrange: Тестовый рецепт sample_recipe.
+    Act: Вызов xml_report.build(sample_recipe).
+    Assert: Результат текстовый, содержит XML-декларацию, тег <recipe>, элементы <item> и данные ингредиентов.
+    </description>
+    """
     report = xml_report()
     result = report.build(sample_recipe)
 
@@ -159,6 +231,16 @@ def test_success_recipe_xml_report(sample_recipe):
 
 
 def test_success_recipe_html_report(sample_recipe):
+    """
+    <summary>
+    Проверка формирования HTML-отчета по рецепту в виде чистой таблицы.
+    </summary>
+    <description>
+    Arrange: Тестовый рецепт sample_recipe.
+    Act: Вызов html_report.build(sample_recipe).
+    Assert: Результат текстовый, содержит тег таблицы table border='1', thead, tbody и ячейки th/td.
+    </description>
+    """
     report = html_report()
     result = report.build(sample_recipe)
 
@@ -172,6 +254,16 @@ def test_success_recipe_html_report(sample_recipe):
 
 
 def test_success_recipe_text_report(sample_recipe):
+    """
+    <summary>
+    Проверка формирования плоского текстового отчета по рецепту.
+    </summary>
+    <description>
+    Arrange: Тестовый рецепт sample_recipe.
+    Act: Вызов text_report.build(sample_recipe).
+    Assert: Результат текстовый, строки и колонки разделены вертикальной чертой.
+    </description>
+    """
     report = text_report()
     result = report.build(sample_recipe)
 
@@ -180,9 +272,17 @@ def test_success_recipe_text_report(sample_recipe):
     assert "Мука пшеничная | 100.0 | 95.0" in result.text
 
 
-# ----------------- 4. Тесты формирования данных: Номенклатура -----------------
-
 def test_success_nomenclature_reports_content(sample_nomenclature):
+    """
+    <summary>
+    Проверка корректности формирования карточки номенклатуры во всех 5 форматах.
+    </summary>
+    <description>
+    Arrange: Экземпляр номенклатуры sample_nomenclature.
+    Act: Построение отчетов через CSV, Markdown, XML, HTML, TXT.
+    Assert: Данные номенклатуры (наименование, группа, ед. изм.) корректно представлены во всех форматах.
+    </description>
+    """
     # CSV
     csv_res = csv_report().build(sample_nomenclature)
     csv_text = bytes(csv_res.binary).decode("utf-8")
@@ -213,9 +313,17 @@ def test_success_nomenclature_reports_content(sample_nomenclature):
     assert "Группа: Бакалея" in txt_res.text
 
 
-# ----------------- 5. Тесты формирования данных: Единица измерения -----------------
-
 def test_success_range_reports_content(sample_range):
+    """
+    <summary>
+    Проверка корректности формирования карточки единицы измерения во всех 5 форматах.
+    </summary>
+    <description>
+    Arrange: Экземпляр единицы измерения sample_range.
+    Act: Построение отчетов через CSV, Markdown, XML, HTML, TXT.
+    Assert: Данные единицы (коэффициент, базовая единица) корректно представлены во всех форматах.
+    </description>
+    """
     # CSV
     csv_res = csv_report().build(sample_range)
     csv_text = bytes(csv_res.binary).decode("utf-8")
@@ -248,15 +356,33 @@ def test_success_range_reports_content(sample_range):
     assert "Базовая единица: грамм" in txt_res.text
 
 
-# ----------------- 6. Негативные сценарии -----------------
-
 def test_fail_build_none_source_raises_argument_exception():
+    """
+    <summary>
+    Проверка генерации исключения при передаче None в качестве источника отчета.
+    </summary>
+    <description>
+    Arrange: Классы отчетов всех форматов.
+    Act: Вызов build(None).
+    Assert: Для каждого класса выбрасывается argument_exception.
+    </description>
+    """
     for report_cls in (csv_report, markdown_report, xml_report, html_report, text_report):
         with pytest.raises(argument_exception):
             report_cls().build(None)
 
 
 def test_fail_build_unsupported_source_raises_argument_exception():
+    """
+    <summary>
+    Проверка генерации исключения при передаче неподдерживаемого типа объекта.
+    </summary>
+    <description>
+    Arrange: Неподдерживаемый строковый объект.
+    Act: Вызов build(unsupported_string).
+    Assert: Для каждого класса выбрасывается argument_exception.
+    </description>
+    """
     for report_cls in (csv_report, markdown_report, xml_report, html_report, text_report):
         with pytest.raises(argument_exception):
             report_cls().build("unsupported_string_source")
