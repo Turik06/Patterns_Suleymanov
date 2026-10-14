@@ -1,6 +1,8 @@
 from Src.Core.abstract_model import abstract_model
 from Src.Core.validator import validator
+from Src.Core.exception import argument_exception
 from Src.Models.organization_model import organization_model
+from Src.Dtos.response_format_dto import response_format_dto
 
 
 class settings_model(abstract_model):
@@ -14,6 +16,8 @@ class settings_model(abstract_model):
     __account_name: str = ""
     # Флаг первого старта приложения
     __is_first_start: bool = False
+    # Формат ответа по умолчанию
+    __response_format: response_format_dto = response_format_dto.JSON
 
     @property
     def organization(self) -> organization_model:
@@ -79,3 +83,25 @@ class settings_model(abstract_model):
         """Задаёт флаг первого старта (псевдоним для is_first_start)."""
         validator.validate(value, bool)
         self.__is_first_start = value
+
+    @property
+    def response_format(self) -> response_format_dto:
+        """Формат ответа по умолчанию."""
+        return self.__response_format
+
+    @response_format.setter
+    def response_format(self, value) -> None:
+        """Задаёт формат ответа по умолчанию."""
+        if isinstance(value, response_format_dto):
+            self.__response_format = value
+        elif isinstance(value, str):
+            val_clean = value.strip()
+            try:
+                self.__response_format = response_format_dto(val_clean.lower())
+            except ValueError:
+                try:
+                    self.__response_format = response_format_dto[val_clean.upper()]
+                except (KeyError, ValueError):
+                    raise argument_exception("response_format", f"Неизвестный формат: {value}")
+        else:
+            raise argument_exception("response_format", f"Некорректный тип: {type(value)}")

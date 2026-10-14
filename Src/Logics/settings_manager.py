@@ -5,6 +5,7 @@ from Src.Core.validator import validator, operation_exception
 from Src.Core.common import common
 from Src.Models.settings_model import settings_model
 from Src.Models.organization_model import organization_model
+from Src.Dtos.response_format_dto import response_format_dto
 
 
 class settings_manager(abstract_manager):
@@ -105,7 +106,7 @@ class settings_manager(abstract_manager):
             # 2. Загрузка данных настроек через рефлексию
             settings_fields = common.get_fields(self._settings, is_common=True)
             for field in settings_fields:
-                if field in ("organization", "company", "id", "name"):
+                if field in ("organization", "company", "id", "name", "response_format"):
                     continue
                 if field in self.__data:
                     val = self.__data[field]
@@ -120,6 +121,10 @@ class settings_manager(abstract_manager):
                 self._settings.is_first_start = bool(self.__data.get("first_start"))
             elif "is_first_start" in self.__data:
                 self._settings.is_first_start = bool(self.__data.get("is_first_start"))
+
+            # Загрузка формата ответа
+            if "response_format" in self.__data:
+                self._settings.response_format = self.__data["response_format"]
 
             return True
 
@@ -151,6 +156,7 @@ class settings_manager(abstract_manager):
         result.boss_name = "Шеметов Александр Борисович"
         result.account_name = "Сулейманов Турал Кямалович"
         result.is_first_start = True
+        result.response_format = response_format_dto.JSON
         return result
 
     @property
