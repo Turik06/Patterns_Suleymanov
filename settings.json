@@ -1,6 +1,6 @@
 {
   "is_first_start": true,
-  "response_format": "json",
+  "response_format": "csv",
   "organization": {
     "name": "Ромашка",
     "inn": "7736050003",

@@ -1,8 +1,15 @@
-from Src.Core.abstract_report_factory import abstract_report_factory, AbstractReportFactory
-from Src.Core.abstract_report import abstract_report, AbstractReport
-from Src.Dtos.report_type_dto import report_type_dto, ReportTypeEnum
-from Src.Logics.text_report import text_report, TextReport
-from Src.Core.exception import argument_exception, ArgumentsException
+from Src.Core.abstract_report_factory import abstract_report_factory
+from Src.Core.abstract_report import abstract_report
+from Src.Core.validator import validator
+from Src.Core.exception import argument_exception
+from Src.Dtos.report_type_dto import report_type_dto
+from Src.Models.settings_model import settings_model
+from Src.Logics.settings_manager import settings_manager
+from Src.Logics.text_report import text_report
+from Src.Logics.csv_report import csv_report
+from Src.Logics.markdown_report import markdown_report
+from Src.Logics.xml_report import xml_report
+from Src.Logics.html_report import html_report
 
 
 """
@@ -10,34 +17,56 @@ from Src.Core.exception import argument_exception, ArgumentsException
 """
 class report_factory(abstract_report_factory):
     """
-    Фабрика для создания и подбора отчетов на основе перечисления report_type_dto.
+    Фабрика для создания отчетов на основе типа отчета или настроек.
+    Инкапсулирует настройки приложения settings_model.
     """
 
-    # Маппинг: тип отчета -> класс реализации
-    _mapping: dict[report_type_dto, type[abstract_report]]
+    _settings: settings_model = None
+    _mapping: dict
 
-    def __init__(self):
+    def __init__(self, settings: settings_model = None):
+        if settings is None:
+            s_mgr = settings_manager()
+            if not s_mgr.is_loaded:
+                s_mgr.load()
+            settings = s_mgr.settings
+
+        self.settings = settings
+        self._mapping = {
+            report_type_dto.TXT: text_report,
+            report_type_dto.CSV: csv_report,
+            report_type_dto.MARKDOWN: markdown_report,
+            report_type_dto.XML: xml_report,
+            report_type_dto.HTML: html_report,
+        }
+
+    @property
+    def settings(self) -> settings_model:
+        """Инкапсулированные настройки приложения."""
+        return self._settings
+
+    @settings.setter
+    def settings(self, value: settings_model) -> None:
+        validator.validate(value, settings_model)
+        self._settings = value
+
+    def create(self, report_type) -> abstract_report:
         """
-        Инициализация фабрики и регистрация сопоставлений типов отчетов с их реализациями.
+        Создает экземпляр отчета по переданному типу
+        (поддерживает report_type_dto, response_format_dto, int и строки).
         """
-        self._mapping = {}
-        self._mapping[report_type_dto.TXT] = text_report
-        self._mapping[report_type_dto.TEXT] = text_report
+        resolved_type = report_type_dto.from_any(report_type)
+        report_cls = self._mapping.get(resolved_type)
+        if report_cls is None:
+            raise argument_exception("report_type", f"Указанный тип отчета '{report_type}' не реализован!")
+        return report_cls()
 
-    def create(self, report_type: report_type_dto) -> abstract_report:
-        """
-        Создает экземпляр отчета по переданному типу.
-        :param report_type: Тип отчета из report_type_dto
-        :return: Экземпляр соответствующего класса отчета
-        :raises argument_exception: Если тип отчета не реализован или не передан
-        """
-        if report_type not in self._mapping:
-            raise argument_exception("report_type", f"Указанный тип отчета {report_type} не реализован!")
-
-        report_cls = self._mapping[report_type]
-        return report_cls() if isinstance(report_cls, type) else report_cls
+    def create_default(self) -> abstract_report:
+        """Создает отчет по умолчанию согласно настроек."""
+        if self._settings is None or not self._settings.response_format:
+            return self.create(report_type_dto.TXT)
+        return self.create(self._settings.response_format)
 
 
-# Алиасы для соблюдения стандартов и совместимости
 ReportFactory = report_factory
 report_facory = report_factory
