@@ -133,3 +133,6 @@ class operation_exception(Exception):
         if self.__stack_trace:
             parts.append(self.__stack_trace)
         return "\n".join(parts)
+
+
+ArgumentsException = argument_exception

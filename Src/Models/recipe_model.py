@@ -61,6 +61,13 @@ class recipe_model(name_id):
         return self.__rows
 
     @property
+    def items(self) -> list:
+        """
+        Возвращает состав рецепта (алиас для rows / совместимость с лекцией).
+        """
+        return self.__rows
+
+    @property
     def cooking_time(self) -> int:
         """
         Возвращает время приготовления блюда в минутах.
@@ -264,3 +271,6 @@ class recipe_model(name_id):
         )
 
         return [dough_recipe, pancakes_recipe]
+
+
+receipt_model = recipe_model

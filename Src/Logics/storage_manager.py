@@ -8,6 +8,16 @@ from Src.Models.nomenclature_group_model import nomenclature_group_model
 from Src.Models.recipe_model import recipe_model
 
 
+class recipe_dict(dict):
+    """
+    Словарь рецептов с поддержкой индексации по порядковому номеру [0].
+    """
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return list(self.values())[key]
+        return super().__getitem__(key)
+
+
 class storage_manager(abstract_manager):
     """
     Менеджер хранения доменных моделей.
@@ -39,8 +49,14 @@ class storage_manager(abstract_manager):
             self._ranges = {}
             self._nomenclatures = {}
             self._groups = {}
-            self._recipes = {}
+            self._recipes = recipe_dict()
             self.__is_initialized = False
+
+    def load(self, settings=None) -> bool:
+        """
+        Загрузка данных в хранилище (алиас для convert).
+        """
+        return self.convert(settings)
 
     def convert(self, settings=None) -> bool:
         """

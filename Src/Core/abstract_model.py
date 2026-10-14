@@ -23,7 +23,9 @@ class name_id(ABC):
         """
         Возвращает строковый идентификатор объекта.
         """
-        return self.__id
+        if not hasattr(self, "_name_id__id") or not self._name_id__id:
+            self._name_id__id = str(uuid.uuid4())
+        return self._name_id__id
 
     @id.setter
     def id(self, value):
@@ -31,16 +33,32 @@ class name_id(ABC):
         Задаёт строковый идентификатор объекта.
         """
         if value is not None and str(value).strip() != "":
-            self.__id = str(value).strip()
+            self._name_id__id = str(value).strip()
         else:
             raise argument_exception("id", "Идентификатор не должен быть пустым")
+
+    @property
+    def unique_code(self) -> str:
+        """
+        Возвращает уникальный код объекта (алиас для id / совместимость).
+        """
+        return self.id
+
+    @unique_code.setter
+    def unique_code(self, value: str):
+        """
+        Задаёт уникальный код объекта (алиас для id / совместимость).
+        """
+        self.id = value
 
     @property
     def name(self):
         """
         Возвращает наименование объекта.
         """
-        return self.__name
+        if not hasattr(self, "_name_id__name"):
+            self._name_id__name = ""
+        return self._name_id__name
 
     @name.setter
     def name(self, new_name):
@@ -55,7 +73,7 @@ class name_id(ABC):
         if len(value) > self.__max_name_length:
             raise max_length_exception("name", len(value), self.__max_name_length)
 
-        self.__name = value
+        self._name_id__name = value
 
     def __eq__(self, other):
         """
@@ -67,3 +85,4 @@ class name_id(ABC):
 
 
 abstract_model = name_id
+abstact_model = name_id
