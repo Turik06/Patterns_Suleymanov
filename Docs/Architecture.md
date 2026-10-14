@@ -53,11 +53,25 @@ classDiagram
         -str __boss_name
         -str __account_name
         -bool __is_first_start
+        -response_format_dto __response_format
         +organization organization_model
         +company organization_model
         +boss_name str
         +account_name str
         +is_first_start bool
+        +response_format response_format_dto
+    }
+
+    class response_format_dto {
+        <<enumeration>>
+        +CSV : int
+        +MARKDOWN : int
+        +JSON : int
+        +XML : int
+        +TXT : int
+        +HTML : int
+        +RTF : int
+        +YAML : int
     }
 
     class abstract_manager {
@@ -174,6 +188,15 @@ classDiagram
     recipe_row_model o-- nomenclature_model : nomenclature
     recipe_row_model o-- range_model : range
     recipe_row_model o-- recipe_model : sub_recipe
-
     storage_manager ..> settings_manager : uses
+    settings_model o-- response_format_dto : __response_format
 ```
+
+---
+
+## Архитектура подсистем
+* [Архитектура подсистемы отчетов (Abstract Factory & Template Method)](./ReportFactory.md)
+* [Архитектура модели рецептов (RecipeModel)](./RecipeModel.md)
+* [Архитектура менеджера настроек (SettingsManager)](./SettingsManager.md)
+* [Архитектура складского учета (StorageManager)](./StorageManager.md)
+
