@@ -8,6 +8,7 @@ from Src.Logics.markdown_report import markdown_report
 from Src.Logics.xml_report import xml_report
 from Src.Logics.html_report import html_report
 from Src.Logics.text_report import text_report
+from urllib.parse import quote
 from Src.Core.exception import argument_exception
 
 
@@ -27,11 +28,11 @@ factory = report_factory(settings=settings.settings)
 
 # Конфигурация ответов: (mimetype, расширение файла)
 REPORT_CONFIG = {
-    csv_report: ("text/csv; charset=utf-8", "csv"),
-    markdown_report: ("text/markdown; charset=utf-8", "md"),
-    xml_report: ("application/xml; charset=utf-8", "xml"),
-    html_report: ("text/html; charset=utf-8", "html"),
-    text_report: ("text/plain; charset=utf-8", "txt"),
+    csv_report: ("text/csv", "csv"),
+    markdown_report: ("text/markdown", "md"),
+    xml_report: ("application/xml", "xml"),
+    html_report: ("text/html", "html"),
+    text_report: ("text/plain", "txt"),
 }
 
 
@@ -84,15 +85,18 @@ def format_response(report, result, entity_name: str) -> Response:
     Универсальное формирование Flask Response по конфигурации класса отчета.
     Бинарные отчеты возвращаются как вложение для скачивания файла.
     """
-    mimetype, ext = REPORT_CONFIG.get(report.__class__, ("text/plain; charset=utf-8", "txt"))
+    mimetype, ext = REPORT_CONFIG.get(report.__class__, ("text/plain", "txt"))
     safe_name = entity_name.replace(" ", "_")
+    encoded_name = quote(safe_name)
 
     if result.binary:
         return Response(
             bytes(result.binary),
             status=200,
             mimetype=mimetype,
-            headers={"Content-Disposition": f'attachment; filename="{safe_name}.{ext}"'},
+            headers={
+                "Content-Disposition": f"attachment; filename=\"report.{ext}\"; filename*=UTF-8''{encoded_name}.{ext}"
+            },
         )
 
     return Response(result.text, status=200, mimetype=mimetype)

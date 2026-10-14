@@ -7,7 +7,6 @@ class markdown_report(abstract_report):
 
     def _render_recipe(self, source, headers, rows) -> str:
         lines = [
-            f"# Рецепт: {source.name}\n",
             "| " + " | ".join(headers) + " |",
             "| " + " | ".join(["---"] * len(headers)) + " |",
         ]
@@ -16,7 +15,6 @@ class markdown_report(abstract_report):
 
     def _render_card(self, title, xml_root, fields) -> str:
         lines = [
-            f"# {title}\n",
             "| Поле | Значение |",
             "| --- | --- |",
         ]

@@ -64,7 +64,7 @@ class report_factory(abstract_report_factory):
     def create_default(self) -> abstract_report:
         """Создает отчет по умолчанию согласно настроек."""
         if self._settings is None or not self._settings.response_format:
-            return self.create(report_type_dto.TXT)
+            return self.create(report_type_dto.HTML)
         return self.create(self._settings.response_format)
 
 

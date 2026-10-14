@@ -68,7 +68,7 @@ class abstract_report(ABC):
                     ("Код", "id", source.unique_code),
                     ("Наименование", "name", source.name),
                     ("Коэффициент", "conversion_factor", source.conversion_factor),
-                    ("Базовая единица", "base", source.base.name if source.base else ""),
+                    ("Базовая единица", "base_unit", source.base.name if source.base else ""),
                 ],
             )
         raise argument_exception("source", f"Неподдерживаемый тип источника данных: {type(source)}")

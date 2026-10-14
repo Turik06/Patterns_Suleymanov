@@ -17,7 +17,7 @@ class settings_model(abstract_model):
     # Флаг первого старта приложения
     __is_first_start: bool = False
     # Формат ответа по умолчанию
-    __response_format: response_format_dto = response_format_dto.JSON
+    __response_format: response_format_dto = response_format_dto.HTML
 
     @property
     def organization(self) -> organization_model:

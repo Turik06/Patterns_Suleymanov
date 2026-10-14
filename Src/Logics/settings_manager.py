@@ -156,7 +156,7 @@ class settings_manager(abstract_manager):
         result.boss_name = "Шеметов Александр Борисович"
         result.account_name = "Сулейманов Турал Кямалович"
         result.is_first_start = True
-        result.response_format = response_format_dto.JSON
+        result.response_format = response_format_dto.HTML
         return result
 
     @property

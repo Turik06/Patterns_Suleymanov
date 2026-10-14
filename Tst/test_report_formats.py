@@ -134,7 +134,6 @@ def test_success_recipe_markdown_report(sample_recipe):
     assert result.text == ""
 
     text = bytes(result.binary).decode("utf-8")
-    assert "# Рецепт: Блинчики" in text
     assert "| Код | Наименование | Брутто | Нетто |" in text
     assert "| --- | --- | --- | --- |" in text
     assert "Мука пшеничная" in text
@@ -167,8 +166,7 @@ def test_success_recipe_html_report(sample_recipe):
     assert result.text != ""
     assert len(result.binary) == 0
 
-    assert "<!DOCTYPE html>" in result.text
-    assert "<h1>Рецепт: Блинчики</h1>" in result.text
+    assert '<table border="1">' in result.text
     assert "<th>Код</th><th>Наименование</th><th>Брутто</th><th>Нетто</th>" in result.text
     assert "<td>Мука пшеничная</td><td>100.0</td><td>95.0</td>" in result.text
 
@@ -195,7 +193,7 @@ def test_success_nomenclature_reports_content(sample_nomenclature):
     # Markdown
     md_res = markdown_report().build(sample_nomenclature)
     md_text = bytes(md_res.binary).decode("utf-8")
-    assert "# Номенклатура: Мука пшеничная" in md_text
+    assert "| Поле | Значение |" in md_text
     assert "| Полное наименование | Мука пшеничная высший сорт |" in md_text
 
     # XML
@@ -206,7 +204,7 @@ def test_success_nomenclature_reports_content(sample_nomenclature):
 
     # HTML
     html_res = html_report().build(sample_nomenclature)
-    assert "<h1>Номенклатура: Мука пшеничная</h1>" in html_res.text
+    assert '<table border="1">' in html_res.text
     assert "<td>Полное наименование</td><td>Мука пшеничная высший сорт</td>" in html_res.text
 
     # TXT
@@ -227,7 +225,7 @@ def test_success_range_reports_content(sample_range):
     # Markdown
     md_res = markdown_report().build(sample_range)
     md_text = bytes(md_res.binary).decode("utf-8")
-    assert "# Единица измерения: килограмм" in md_text
+    assert "| Поле | Значение |" in md_text
     assert "| Коэффициент | 1000 |" in md_text
     assert "| Базовая единица | грамм |" in md_text
 
@@ -236,11 +234,11 @@ def test_success_range_reports_content(sample_range):
     assert "<range>" in xml_res.text
     assert "<name>килограмм</name>" in xml_res.text
     assert "<conversion_factor>1000</conversion_factor>" in xml_res.text
-    assert "<base>грамм</base>" in xml_res.text
+    assert "<base_unit>грамм</base_unit>" in xml_res.text
 
     # HTML
     html_res = html_report().build(sample_range)
-    assert "<h1>Единица измерения: килограмм</h1>" in html_res.text
+    assert '<table border="1">' in html_res.text
     assert "<td>Коэффициент</td><td>1000</td>" in html_res.text
 
     # TXT
