@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from Src.Core.abstract_report import abstract_report
-from Src.Dtos.report_type_dto import report_type_dto
+from Src.Dtos.report_type_enum import report_type_enum
 
 
 class abstract_report_factory(ABC):
@@ -9,7 +9,7 @@ class abstract_report_factory(ABC):
     """
 
     @abstractmethod
-    def create(self, report_type: report_type_dto) -> abstract_report:
+    def create(self, report_type: report_type_enum) -> abstract_report:
         """
         Создать экземпляр нужного отчета по переданному типу.
         """

@@ -1,35 +1,44 @@
 from abc import ABC, abstractmethod
 from Src.Core.exception import argument_exception
+from Src.Core.validator import validator
 from Src.Dtos.report_result_dto import report_result_dto
 from Src.Models.recipe_model import recipe_model
-from Src.Models.nomenclature_model import nomenclature_model
-from Src.Models.range_model import range_model
+
 
 class abstract_report(ABC):
     """
-    Базовый класс отчетов (шаблонный метод + нормализация данных).
+    Базовый абстрактный класс отчетов.
+    Реализует шаблон проектирования "Шаблонный метод" (Template Method).
+    Алгоритм формирования отчета разбит на шаги:
+      1. Сформировать заголовок (build_header)
+      2. Сформировать табличную часть (build_body)
+      3. Сформировать подвал (build_footer)
     """
-    # Флаг формата результата: True -> binary (CSV, MD), False -> text (XML, HTML, TXT)
-    is_binary: bool = False
 
-    def build(self, source) -> report_result_dto:
+    # Флаг формата результата: True -> binary, False -> text
+    is_binary: bool = False
+    # MIME-тип для HTTP ответа
+    mime_type: str = "text/plain"
+    # Расширение файла отчета
+    extension: str = "txt"
+
+    def build(self, source: recipe_model) -> report_result_dto:
         """
         Шаблонный метод формирования отчета.
-        Проверяет источник, извлекает данные и формирует результат.
+        Проверяет источник данных и последовательно выполняет:
+        - формирование заголовка
+        - формирование табличной части
+        - формирование подвала
         """
         if source is None:
             raise argument_exception("source", "Источник данных не может быть пустым!")
+        validator.validate(source, recipe_model)
 
-        if isinstance(source, recipe_model):
-            headers = ["Код", "Наименование", "Брутто", "Нетто"]
-            rows = [
-                [item.unique_code, item.name, item.brutto, item.netto]
-                for item in source.items
-            ]
-            content = self._render_recipe(source, headers, rows)
-        else:
-            title, xml_root, fields = self._extract_card_fields(source)
-            content = self._render_card(title, xml_root, fields)
+        header = self.build_header(source)
+        body = self.build_body(source)
+        footer = self.build_footer(source)
+
+        content = self._combine(header, body, footer)
 
         result = report_result_dto()
         if self.is_binary:
@@ -38,45 +47,30 @@ class abstract_report(ABC):
             result.text = content
         return result
 
-    @staticmethod
-    def _extract_card_fields(source):
-        """
-        Превращает линейную модель в универсальный набор:
-        (Заголовок, корневой_тег_xml, [(Русское_имя, xml_тег, значение), ...])
-        """
-        if isinstance(source, nomenclature_model):
-            return (
-                f"Номенклатура: {source.name}",
-                "nomenclature",
-                [
-                    ("Код", "id", source.unique_code),
-                    ("Наименование", "name", source.name),
-                    ("Полное наименование", "full_name", source.full_name),
-                    ("Группа", "group", source.group.name if source.group else ""),
-                    ("Единица измерения", "range", source.range.name if source.range else ""),
-                ],
-            )
-        if isinstance(source, range_model):
-            return (
-                f"Единица измерения: {source.name}",
-                "range",
-                [
-                    ("Код", "id", source.unique_code),
-                    ("Наименование", "name", source.name),
-                    ("Коэффициент", "conversion_factor", source.conversion_factor),
-                    ("Базовая единица", "base_unit", source.base.name if source.base else ""),
-                ],
-            )
-        raise argument_exception("source", f"Неподдерживаемый тип источника данных: {type(source)}")
+    def _combine(self, header: str, body: str, footer: str) -> str:
+        """Объединение шагов отчета в итоговый контент."""
+        parts = [p for p in (header, body, footer) if p]
+        return "\n".join(parts)
 
     @abstractmethod
-    def _render_recipe(self, source: recipe_model, headers: list, rows: list) -> str:
-        """Отрисовка отчета по рецепту."""
+    def build_header(self, source: recipe_model) -> str:
+        """
+        Сформировать заголовок отчета.
+        """
         pass
 
     @abstractmethod
-    def _render_card(self, title: str, xml_root: str, fields: list) -> str:
-        """Отрисовка карточки одиночной сущности."""
+    def build_body(self, source: recipe_model) -> str:
+        """
+        Сформировать табличную часть отчета.
+        """
+        pass
+
+    @abstractmethod
+    def build_footer(self, source: recipe_model) -> str:
+        """
+        Сформировать подвал отчета.
+        """
         pass
 
 
