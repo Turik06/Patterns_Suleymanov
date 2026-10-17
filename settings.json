@@ -1,5 +1,6 @@
 {
   "is_first_start": true,
+  "response_format": "html",
   "organization": {
     "name": "Ромашка",
     "inn": "7736050003",

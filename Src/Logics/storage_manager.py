@@ -13,6 +13,7 @@ class recipe_dict(dict):
     Словарь рецептов с поддержкой индексации по порядковому номеру [0].
     """
     def __getitem__(self, key):
+        """Получение рецепта по ключу или целочисленному индексу."""
         if isinstance(key, int):
             return list(self.values())[key]
         return super().__getitem__(key)

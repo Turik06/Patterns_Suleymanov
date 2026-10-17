@@ -1,40 +1,37 @@
-from Src.Core.abstract_report import abstract_report, AbstractReport
-from Src.Models.recipe_model import recipe_model
-from Src.Core.validator import validator
-from Src.Dtos.report_result_dto import report_result_dto
+from Src.Core.abstract_report import abstract_report
+from Src.Core.abstract_model import abstract_model
 
 
-"""
-Реализация текстового представления отчета по рецепту
-"""
 class text_report(abstract_report):
-    """
-    Класс построения отчета по технологической карте (рецепту) в текстовом формате.
-    """
-    __receipt: recipe_model = None
+    """Класс построения отчета в текстовом формате."""
 
-    def build(self, source) -> report_result_dto:
-        """
-        Формирует текстовый отчет по переданной модели рецепта.
-        :param source: Модель рецепта (recipe_model)
-        :return: report_result_dto с текстовым представлением
-        """
-        validator.validate(source, recipe_model)
-        self.__receipt = source
+    @property
+    def is_binary(self) -> bool:
+        """Флаг формата результата: True -> binary, False -> text."""
+        return False
 
-        header = "Код | Наименование | Брутто | Нетто"
-        rows_data = []
+    @property
+    def mime_type(self) -> str:
+        """MIME-тип отчета."""
+        return "text/plain"
 
-        for item in self.__receipt.items:
-            rows_data.append(f"{item.unique_code} | {item.name} | {item.brutto} | {item.netto}")
+    @property
+    def extension(self) -> str:
+        """Расширение файла отчета."""
+        return "txt"
 
-        data = "\n".join(rows_data)
-        text = f"{header}\n{data}" if data else header
+    def build_header(self, source: abstract_model) -> str:
+        """Сформировать заголовок отчета."""
+        return " | ".join(self.get_headers(source))
 
-        result = report_result_dto()
-        result.text = text
+    def build_body(self, source: abstract_model) -> str:
+        """Сформировать табличную часть отчета."""
+        rows = self.get_rows(source)
+        return "\n".join(" | ".join(row) for row in rows)
 
-        return result
+    def build_footer(self, source: abstract_model) -> str:
+        """Сформировать подвал отчета."""
+        return ""
 
 
 TextReport = text_report
