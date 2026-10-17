@@ -159,3 +159,80 @@ def test_integration_report_unsupported_format(client):
     response = client.get("/api/report?format=UNSUPPORTED_XYZ_FORMAT")
     assert response.status_code == 400
     assert "не реализован" in response.data.decode("utf-8")
+
+
+def test_integration_report_nomenclature_endpoints(client):
+    """Интеграционные тесты отчетов по Номенклатуре (пункт 5 ТЗ)."""
+    nom = list(storage.nomenclatures.values())[0]
+
+    # Markdown
+    res_md = client.get(f"/api/report/nomenclature/{nom.unique_code}/markdown")
+    assert res_md.status_code == 200
+    assert "text/markdown" in res_md.content_type
+    assert nom.name in res_md.data.decode("utf-8")
+
+    # XML
+    res_xml = client.get(f"/api/report/nomenclature/{nom.unique_code}/xml")
+    assert res_xml.status_code == 200
+    assert "application/xml" in res_xml.content_type
+    assert "<nomenclature>" in res_xml.data.decode("utf-8")
+    assert f"<name>{nom.name}</name>" in res_xml.data.decode("utf-8")
+
+    # Query params
+    res_qp = client.get(f"/api/report?type=nomenclature&code={nom.unique_code}&format=html")
+    assert res_qp.status_code == 200
+    assert "text/html" in res_qp.content_type
+    assert f"<td>{nom.name}</td>" in res_qp.data.decode("utf-8")
+
+
+def test_integration_report_range_endpoints(client):
+    """Интеграционные тесты отчетов по Единице измерения (пункт 5 ТЗ)."""
+    rng = list(storage.ranges.values())[0]
+
+    # CSV
+    res_csv = client.get(f"/api/report/range/{rng.unique_code}/csv")
+    assert res_csv.status_code == 200
+    assert "text/csv" in res_csv.content_type
+    assert rng.name in res_csv.data.decode("utf-8")
+
+    # XML
+    res_xml = client.get(f"/api/report/range/{rng.unique_code}/xml")
+    assert res_xml.status_code == 200
+    assert "application/xml" in res_xml.content_type
+    assert "<range>" in res_xml.data.decode("utf-8")
+    assert f"<name>{rng.name}</name>" in res_xml.data.decode("utf-8")
+
+
+def test_integration_report_default_for_all_entity_types(client):
+    """Интеграционный тест create_default для Номенклатуры, Единицы измерения, Рецепта (пункт 8 ТЗ)."""
+    settings.settings.response_format = report_type_enum.HTML
+
+    nom = list(storage.nomenclatures.values())[0]
+    rng = list(storage.ranges.values())[0]
+    rec = list(storage.recipes.values())[0]
+
+    # Номенклатура default
+    res_nom = client.get(f"/api/report/default/nomenclature/{nom.unique_code}")
+    assert res_nom.status_code == 200
+    assert "text/html" in res_nom.content_type
+    assert nom.name in res_nom.data.decode("utf-8")
+
+    # Единица измерения default
+    res_rng = client.get(f"/api/report/default/range/{rng.unique_code}")
+    assert res_rng.status_code == 200
+    assert "text/html" in res_rng.content_type
+    assert rng.name in res_rng.data.decode("utf-8")
+
+    # Рецепт default
+    res_rec = client.get(f"/api/report/default/recipe/{rec.unique_code}")
+    assert res_rec.status_code == 200
+    assert "text/html" in res_rec.content_type
+    assert '<table border="1">' in res_rec.data.decode("utf-8")
+    assert rec.items[0].name in res_rec.data.decode("utf-8")
+
+
+def test_integration_report_unknown_entity_type(client):
+    """Интеграционный тест ошибки 400 при запросе неизвестного типа сущности."""
+    response = client.get("/api/report/unknown_entity_type/123/txt")
+    assert response.status_code == 400
+    assert "Неизвестный тип сущности" in response.data.decode("utf-8")

@@ -1,27 +1,35 @@
 from Src.Core.abstract_report import abstract_report
-from Src.Models.recipe_model import recipe_model
+from Src.Core.abstract_model import abstract_model
 
 
 class csv_report(abstract_report):
     """Класс построения отчета в формате CSV (бинарный вывод для скачивания)."""
 
-    is_binary = True
-    mime_type = "text/csv"
-    extension = "csv"
+    @property
+    def is_binary(self) -> bool:
+        """Флаг формата результата: True -> binary, False -> text."""
+        return True
 
-    def build_header(self, source: recipe_model) -> str:
+    @property
+    def mime_type(self) -> str:
+        """MIME-тип отчета."""
+        return "text/csv"
+
+    @property
+    def extension(self) -> str:
+        """Расширение файла отчета."""
+        return "csv"
+
+    def build_header(self, source: abstract_model) -> str:
         """Сформировать заголовок отчета."""
-        return "Код;Наименование;Брутто;Нетто"
+        return ";".join(self.get_headers(source))
 
-    def build_body(self, source: recipe_model) -> str:
+    def build_body(self, source: abstract_model) -> str:
         """Сформировать табличную часть отчета."""
-        lines = [
-            f"{item.unique_code};{item.name};{item.brutto};{item.netto}"
-            for item in source.items
-        ]
-        return "\n".join(lines)
+        rows = self.get_rows(source)
+        return "\n".join(";".join(row) for row in rows)
 
-    def build_footer(self, source: recipe_model) -> str:
+    def build_footer(self, source: abstract_model) -> str:
         """Сформировать подвал отчета."""
         return ""
 

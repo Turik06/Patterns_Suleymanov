@@ -255,3 +255,124 @@ def test_fail_settings_manager_convert_report_type_invalid():
 
     with pytest.raises(argument_exception):
         settings_manager.convert_report_type("UNSUPPORTED_123")
+
+
+def test_reports_properties_are_defined_as_property():
+    """Проверка, что is_binary, mime_type, extension оформлены как @property."""
+    for cls in (text_report, csv_report, markdown_report, html_report, xml_report, rtf_report):
+        assert isinstance(getattr(cls, "is_binary"), property), f"{cls.__name__}.is_binary должен быть @property"
+        assert isinstance(getattr(cls, "mime_type"), property), f"{cls.__name__}.mime_type должен быть @property"
+        assert isinstance(getattr(cls, "extension"), property), f"{cls.__name__}.extension должен быть @property"
+
+        instance = cls()
+        assert isinstance(instance.is_binary, bool)
+        assert isinstance(instance.mime_type, str) and len(instance.mime_type) > 0
+        assert isinstance(instance.extension, str) and len(instance.extension) > 0
+
+
+@pytest.fixture
+def sample_nomenclature():
+    """Тестовая номенклатура."""
+    group = nomenclature_group_model.create_grocery()
+    gram = range_model.create_gram()
+    return nomenclature_model.create_flour(group, gram)
+
+
+@pytest.fixture
+def sample_range():
+    """Тестовая единица измерения."""
+    return range_model.create_kilogram()
+
+
+def test_universal_report_nomenclature_all_formats(sample_nomenclature):
+    """Проверка универсального формирования отчетов для сущности Номенклатура."""
+    factory = report_factory()
+
+    # TXT
+    rep_txt = factory.create("txt")
+    res_txt = rep_txt.build(sample_nomenclature)
+    assert "Код | Наименование | Полное наименование | Группа | Единица измерения" in rep_txt.build_header(sample_nomenclature)
+    assert sample_nomenclature.name in res_txt.text
+    assert sample_nomenclature.group.name in res_txt.text
+
+    # CSV
+    rep_csv = factory.create("csv")
+    res_csv = rep_csv.build(sample_nomenclature)
+    csv_str = bytes(res_csv.binary).decode("utf-8")
+    assert "Код;Наименование;Полное наименование;Группа;Единица измерения" in rep_csv.build_header(sample_nomenclature)
+    assert sample_nomenclature.name in csv_str
+
+    # Markdown
+    rep_md = factory.create("markdown")
+    res_md = rep_md.build(sample_nomenclature)
+    md_str = bytes(res_md.binary).decode("utf-8")
+    assert "| Код | Наименование | Полное наименование | Группа | Единица измерения |" in md_str
+    assert sample_nomenclature.name in md_str
+
+    # HTML
+    rep_html = factory.create("html")
+    res_html = rep_html.build(sample_nomenclature)
+    assert "<th>Полное наименование</th>" in res_html.text
+    assert f"<td>{sample_nomenclature.name}</td>" in res_html.text
+
+    # XML
+    rep_xml = factory.create("xml")
+    res_xml = rep_xml.build(sample_nomenclature)
+    assert "<nomenclature>" in res_xml.text
+    assert f"<name>{sample_nomenclature.name}</name>" in res_xml.text
+    assert f"<group>{sample_nomenclature.group.name}</group>" in res_xml.text
+    assert "</nomenclature>" in res_xml.text
+
+    # RTF
+    rep_rtf = factory.create("rtf")
+    res_rtf = rep_rtf.build(sample_nomenclature)
+    rtf_str = bytes(res_rtf.binary).decode("utf-8")
+    assert "Номенклатура:" in rtf_str
+    assert sample_nomenclature.name in rtf_str
+
+
+def test_universal_report_range_all_formats(sample_range):
+    """Проверка универсального формирования отчетов для сущности Единица измерения."""
+    factory = report_factory()
+
+    # TXT
+    rep_txt = factory.create("txt")
+    res_txt = rep_txt.build(sample_range)
+    assert "Код | Наименование | Коэффициент | Базовая единица" in rep_txt.build_header(sample_range)
+    assert sample_range.name in res_txt.text
+    assert str(sample_range.conversion_factor) in res_txt.text
+
+    # CSV
+    rep_csv = factory.create("csv")
+    res_csv = rep_csv.build(sample_range)
+    csv_str = bytes(res_csv.binary).decode("utf-8")
+    assert "Код;Наименование;Коэффициент;Базовая единица" in csv_str
+    assert sample_range.name in csv_str
+
+    # Markdown
+    rep_md = factory.create("markdown")
+    res_md = rep_md.build(sample_range)
+    md_str = bytes(res_md.binary).decode("utf-8")
+    assert "| Код | Наименование | Коэффициент | Базовая единица |" in md_str
+    assert sample_range.name in md_str
+
+    # HTML
+    rep_html = factory.create("html")
+    res_html = rep_html.build(sample_range)
+    assert "<th>Коэффициент</th>" in res_html.text
+    assert f"<td>{sample_range.name}</td>" in res_html.text
+
+    # XML
+    rep_xml = factory.create("xml")
+    res_xml = rep_xml.build(sample_range)
+    assert "<range>" in res_xml.text
+    assert f"<name>{sample_range.name}</name>" in res_xml.text
+    assert f"<conversion_factor>{sample_range.conversion_factor}</conversion_factor>" in res_xml.text
+    assert "</range>" in res_xml.text
+
+    # RTF
+    rep_rtf = factory.create("rtf")
+    res_rtf = rep_rtf.build(sample_range)
+    rtf_str = bytes(res_rtf.binary).decode("utf-8")
+    assert "Единица измерения:" in rtf_str
+    assert sample_range.name in rtf_str

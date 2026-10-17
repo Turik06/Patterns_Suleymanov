@@ -1,32 +1,43 @@
 from Src.Core.abstract_report import abstract_report
-from Src.Models.recipe_model import recipe_model
+from Src.Core.abstract_model import abstract_model
 
 
 class rtf_report(abstract_report):
     """Класс построения отчета в формате RTF (бинарный вывод для скачивания)."""
 
-    is_binary = True
-    mime_type = "application/rtf"
-    extension = "rtf"
+    @property
+    def is_binary(self) -> bool:
+        """Флаг формата результата: True -> binary, False -> text."""
+        return True
 
-    def build_header(self, source: recipe_model) -> str:
+    @property
+    def mime_type(self) -> str:
+        """MIME-тип отчета."""
+        return "application/rtf"
+
+    @property
+    def extension(self) -> str:
+        """Расширение файла отчета."""
+        return "rtf"
+
+    def build_header(self, source: abstract_model) -> str:
         """Сформировать заголовок отчета."""
+        label = self.get_entity_label(source)
+        headers = " | ".join(self.get_headers(source))
         return (
             r"{\rtf1\ansi\deff0" "\n"
             r"{\fonttbl{\f0 Arial;}}" "\n"
-            r"\viewkind4\uc1\pard\f0\fs20\b Рецепт: " + source.name + r"\b0\par" "\n"
-            r"\b Код | Наименование | Брутто | Нетто\b0\par"
+            rf"\viewkind4\uc1\pard\f0\fs20\b {label}: {source.name}\b0\par" "\n"
+            rf"\b {headers}\b0\par"
         )
 
-    def build_body(self, source: recipe_model) -> str:
+    def build_body(self, source: abstract_model) -> str:
         """Сформировать табличную часть отчета."""
-        lines = [
-            f"{item.unique_code} | {item.name} | {item.brutto} | {item.netto}\\par"
-            for item in source.items
-        ]
+        rows = self.get_rows(source)
+        lines = [f"{' | '.join(row)}\\par" for row in rows]
         return "\n".join(lines)
 
-    def build_footer(self, source: recipe_model) -> str:
+    def build_footer(self, source: abstract_model) -> str:
         """Сформировать подвал отчета."""
         return "}"
 

@@ -231,3 +231,61 @@ def test_fail_build_unsupported_source_raises_argument_exception():
     for report_cls in (csv_report, markdown_report, xml_report, html_report, text_report, rtf_report):
         with pytest.raises(argument_exception):
             report_cls().build("unsupported_string_source")
+
+
+def test_success_nomenclature_report_formats(sample_nomenclature):
+    """Проверка формирования отчетов для номенклатуры во всех форматах."""
+    factory = report_factory()
+
+    # CSV
+    csv_res = factory.create("csv").build(sample_nomenclature)
+    assert sample_nomenclature.name in bytes(csv_res.binary).decode("utf-8")
+
+    # Markdown
+    md_res = factory.create("markdown").build(sample_nomenclature)
+    assert sample_nomenclature.name in bytes(md_res.binary).decode("utf-8")
+
+    # XML
+    xml_res = factory.create("xml").build(sample_nomenclature)
+    assert f"<name>{sample_nomenclature.name}</name>" in xml_res.text
+
+    # HTML
+    html_res = factory.create("html").build(sample_nomenclature)
+    assert f"<td>{sample_nomenclature.name}</td>" in html_res.text
+
+    # TXT
+    txt_res = factory.create("txt").build(sample_nomenclature)
+    assert sample_nomenclature.name in txt_res.text
+
+    # RTF
+    rtf_res = factory.create("rtf").build(sample_nomenclature)
+    assert sample_nomenclature.name in bytes(rtf_res.binary).decode("utf-8")
+
+
+def test_success_range_report_formats(sample_range):
+    """Проверка формирования отчетов для единицы измерения во всех форматах."""
+    factory = report_factory()
+
+    # CSV
+    csv_res = factory.create("csv").build(sample_range)
+    assert sample_range.name in bytes(csv_res.binary).decode("utf-8")
+
+    # Markdown
+    md_res = factory.create("markdown").build(sample_range)
+    assert sample_range.name in bytes(md_res.binary).decode("utf-8")
+
+    # XML
+    xml_res = factory.create("xml").build(sample_range)
+    assert f"<name>{sample_range.name}</name>" in xml_res.text
+
+    # HTML
+    html_res = factory.create("html").build(sample_range)
+    assert f"<td>{sample_range.name}</td>" in html_res.text
+
+    # TXT
+    txt_res = factory.create("txt").build(sample_range)
+    assert sample_range.name in txt_res.text
+
+    # RTF
+    rtf_res = factory.create("rtf").build(sample_range)
+    assert sample_range.name in bytes(rtf_res.binary).decode("utf-8")

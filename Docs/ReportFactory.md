@@ -1,6 +1,6 @@
 # Архитектура подсистемы отчетов (Abstract Factory & Template Method)
 
-Подсистема отчетов предназначена для выгрузки данных рецептов (`recipe_model`) в различных форматах представления данных в соответствии с принципами **SOLID** и шаблонами GoF (**Abstract Factory** и **Template Method**).
+Подсистема отчетов предназначена для универсальной выгрузки данных доменных сущностей (`recipe_model`, `nomenclature_model`, `range_model` и др.) в различных форматах представления данных в соответствии с принципами **SOLID** и шаблонами GoF (**Abstract Factory** и **Template Method**).
 
 ---
 
@@ -38,47 +38,69 @@ classDiagram
 
     class abstract_report {
         <<abstract>>
-        +is_binary: bool
-        +mime_type: str
-        +extension: str
-        +build(source: recipe_model) report_result_dto
-        +build_header(source: recipe_model)* str
-        +build_body(source: recipe_model)* str
-        +build_footer(source: recipe_model)* str
+        +is_binary: bool [property]*
+        +mime_type: str [property]*
+        +extension: str [property]*
+        +build(source: abstract_model) report_result_dto
+        +build_header(source: abstract_model)* str
+        +build_body(source: abstract_model)* str
+        +build_footer(source: abstract_model)* str
+        +get_entity_label(source)$ str
+        +get_entity_tag(source)$ str
+        +get_headers(source)$ list
+        +get_rows(source)$ list
         #_combine(header, body, footer) str
     }
 
     class csv_report {
+        +is_binary: bool [property]
+        +mime_type: str [property]
+        +extension: str [property]
         +build_header(source) str
         +build_body(source) str
         +build_footer(source) str
     }
 
     class markdown_report {
+        +is_binary: bool [property]
+        +mime_type: str [property]
+        +extension: str [property]
         +build_header(source) str
         +build_body(source) str
         +build_footer(source) str
     }
 
     class xml_report {
+        +is_binary: bool [property]
+        +mime_type: str [property]
+        +extension: str [property]
         +build_header(source) str
         +build_body(source) str
         +build_footer(source) str
     }
 
     class html_report {
+        +is_binary: bool [property]
+        +mime_type: str [property]
+        +extension: str [property]
         +build_header(source) str
         +build_body(source) str
         +build_footer(source) str
     }
 
     class text_report {
+        +is_binary: bool [property]
+        +mime_type: str [property]
+        +extension: str [property]
         +build_header(source) str
         +build_body(source) str
         +build_footer(source) str
     }
 
     class rtf_report {
+        +is_binary: bool [property]
+        +mime_type: str [property]
+        +extension: str [property]
         +build_header(source) str
         +build_body(source) str
         +build_footer(source) str
@@ -127,13 +149,13 @@ sequenceDiagram
     participant Report as abstract_report
     participant Result as report_result_dto
 
-    User->>Flask: GET запрос отчета
-    Flask->>Storage: find_recipe
-    Storage-->>Flask: Объект recipe_model
+    User->>Flask: GET запрос отчета (тип сущности, код, формат)
+    Flask->>Storage: find_entity(entity_type, entity_id)
+    Storage-->>Flask: Экземпляр сущности (abstract_model)
 
     alt Формат указан явно в URL / query
         Flask->>Factory: create(format_name)
-    else Запрос по умолчанию
+    else Запрос по умолчанию (/api/report/default/...)
         Flask->>Factory: create_default()
         Factory->>Settings: чтение response_format
         Settings-->>Factory: report_type_enum
@@ -141,12 +163,12 @@ sequenceDiagram
 
     Factory-->>Flask: Экземпляр отчета (abstract_report)
 
-    Flask->>Report: build(recipe)
-    Note over Report: Шаблонный метод build:<br/>1. build_header(recipe)<br/>2. build_body(recipe)<br/>3. build_footer(recipe)<br/>4. Упаковка в report_result_dto
+    Flask->>Report: build(entity)
+    Note over Report: Шаблонный метод build:<br/>1. build_header(entity)<br/>2. build_body(entity)<br/>3. build_footer(entity)<br/>4. Упаковка в report_result_dto
     Report-->>Flask: report_result_dto
 
     Flask->>Flask: format_response(report, result)
-    Note over Flask: Использование свойств отчета:<br/>report.mime_type, report.extension, result.binary
+    Note over Flask: Использование свойств отчета (@property):<br/>report.mime_type, report.extension, result.binary
 
     alt Текстовый формат (HTML, XML, TXT)
         Flask-->>User: 200 OK - Отображение в браузере
