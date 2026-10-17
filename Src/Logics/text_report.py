@@ -1,16 +1,29 @@
 from Src.Core.abstract_report import abstract_report
+from Src.Models.recipe_model import recipe_model
 
 
 class text_report(abstract_report):
     """Класс построения отчета в текстовом формате."""
 
-    def _render_recipe(self, source, headers, rows) -> str:
-        lines = [" | ".join(headers)]
-        lines.extend(" | ".join(map(str, row)) for row in rows)
+    mime_type = "text/plain"
+    extension = "txt"
+    is_binary = False
+
+    def build_header(self, source: recipe_model) -> str:
+        """Сформировать заголовок отчета."""
+        return "Код | Наименование | Брутто | Нетто"
+
+    def build_body(self, source: recipe_model) -> str:
+        """Сформировать табличную часть отчета."""
+        lines = [
+            f"{item.unique_code} | {item.name} | {item.brutto} | {item.netto}"
+            for item in source.items
+        ]
         return "\n".join(lines)
 
-    def _render_card(self, title, xml_root, fields) -> str:
-        return "\n".join(f"{label}: {val}" for label, _, val in fields)
+    def build_footer(self, source: recipe_model) -> str:
+        """Сформировать подвал отчета."""
+        return ""
 
 
 TextReport = text_report

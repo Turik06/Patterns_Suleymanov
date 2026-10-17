@@ -1,25 +1,29 @@
 from Src.Core.abstract_report import abstract_report
+from Src.Models.recipe_model import recipe_model
 
 
 class markdown_report(abstract_report):
     """Класс построения отчета в формате Markdown (бинарный вывод для скачивания)."""
+
     is_binary = True
+    mime_type = "text/markdown"
+    extension = "md"
 
-    def _render_recipe(self, source, headers, rows) -> str:
+    def build_header(self, source: recipe_model) -> str:
+        """Сформировать заголовок отчета."""
+        return "| Код | Наименование | Брутто | Нетто |\n| --- | --- | --- | --- |"
+
+    def build_body(self, source: recipe_model) -> str:
+        """Сформировать табличную часть отчета."""
         lines = [
-            "| " + " | ".join(headers) + " |",
-            "| " + " | ".join(["---"] * len(headers)) + " |",
+            f"| {item.unique_code} | {item.name} | {item.brutto} | {item.netto} |"
+            for item in source.items
         ]
-        lines.extend("| " + " | ".join(map(str, row)) + " |" for row in rows)
         return "\n".join(lines)
 
-    def _render_card(self, title, xml_root, fields) -> str:
-        lines = [
-            "| Поле | Значение |",
-            "| --- | --- |",
-        ]
-        lines.extend(f"| {label} | {val} |" for label, _, val in fields)
-        return "\n".join(lines)
+    def build_footer(self, source: recipe_model) -> str:
+        """Сформировать подвал отчета."""
+        return ""
 
 
 MarkdownReport = markdown_report
