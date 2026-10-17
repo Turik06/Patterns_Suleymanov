@@ -2,7 +2,7 @@ from Src.Core.abstract_report_factory import abstract_report_factory
 from Src.Core.abstract_report import abstract_report
 from Src.Core.validator import validator
 from Src.Core.exception import argument_exception
-from Src.Dtos.report_type_dto import report_type_dto
+from Src.Dtos.report_type_enum import report_type_enum
 from Src.Models.settings_model import settings_model
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.text_report import text_report
@@ -10,6 +10,7 @@ from Src.Logics.csv_report import csv_report
 from Src.Logics.markdown_report import markdown_report
 from Src.Logics.xml_report import xml_report
 from Src.Logics.html_report import html_report
+from Src.Logics.rtf_report import rtf_report
 
 
 class report_factory(abstract_report_factory):
@@ -22,6 +23,7 @@ class report_factory(abstract_report_factory):
     _mapping: dict
 
     def __init__(self, settings: settings_model = None):
+        """Инициализация фабрики отчетов с настройками приложения."""
         if settings is None:
             s_mgr = settings_manager()
             if not s_mgr.is_loaded:
@@ -30,11 +32,12 @@ class report_factory(abstract_report_factory):
 
         self.settings = settings
         self._mapping = {
-            report_type_dto.TXT: text_report,
-            report_type_dto.CSV: csv_report,
-            report_type_dto.MARKDOWN: markdown_report,
-            report_type_dto.XML: xml_report,
-            report_type_dto.HTML: html_report,
+            report_type_enum.TXT: text_report,
+            report_type_enum.CSV: csv_report,
+            report_type_enum.MARKDOWN: markdown_report,
+            report_type_enum.XML: xml_report,
+            report_type_enum.HTML: html_report,
+            report_type_enum.RTF: rtf_report,
         }
 
     @property
@@ -49,10 +52,14 @@ class report_factory(abstract_report_factory):
 
     def create(self, report_type) -> abstract_report:
         """
-        Создает экземпляр отчета по переданному типу
-        (поддерживает report_type_dto, response_format_dto, int и строки).
+        Создает экземпляр отчета по переданному типу.
+        Делегирует разбор строковых форматов классу settings_manager.
         """
-        resolved_type = report_type_dto.from_any(report_type)
+        resolved_type = (
+            report_type
+            if isinstance(report_type, report_type_enum)
+            else settings_manager.convert_report_type(report_type)
+        )
         report_cls = self._mapping.get(resolved_type)
         if report_cls is None:
             raise argument_exception("report_type", f"Указанный тип отчета '{report_type}' не реализован!")
@@ -61,7 +68,7 @@ class report_factory(abstract_report_factory):
     def create_default(self) -> abstract_report:
         """Создает отчет по умолчанию согласно настроек."""
         if self._settings is None or not self._settings.response_format:
-            return self.create(report_type_dto.HTML)
+            return self.create(report_type_enum.HTML)
         return self.create(self._settings.response_format)
 
 
