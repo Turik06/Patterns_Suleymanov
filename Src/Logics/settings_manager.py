@@ -3,8 +3,10 @@ import json
 from Src.Core.abstract_manager import abstract_manager
 from Src.Core.validator import validator, operation_exception
 from Src.Core.common import common
+from Src.Core.exception import argument_exception
 from Src.Models.settings_model import settings_model
 from Src.Models.organization_model import organization_model
+from Src.Dtos.report_type_enum import report_type_enum
 from Src.Dtos.response_format_dto import response_format_dto
 
 
@@ -124,12 +126,49 @@ class settings_manager(abstract_manager):
 
             # Загрузка формата ответа
             if "response_format" in self.__data:
-                self._settings.response_format = self.__data["response_format"]
+                self._settings.response_format = self.convert_report_type(self.__data["response_format"])
 
             return True
 
         except Exception:
             return False
+
+    @staticmethod
+    def convert_report_type(value) -> report_type_enum:
+        """
+        Преобразование произвольного формата (строки, числа, Enum) в report_type_enum.
+        Инкапсулирует логику разбора формата данных настроек.
+        """
+        if value is None:
+            raise argument_exception("report_type", "Тип отчета не может быть пустым!")
+        if isinstance(value, report_type_enum):
+            return value
+
+        candidates = [value]
+        if hasattr(value, "name"):
+            candidates.append(value.name)
+        if hasattr(value, "value"):
+            candidates.append(value.value)
+
+        aliases = {
+            "TEXT": report_type_enum.TXT,
+            "MD": report_type_enum.MARKDOWN,
+        }
+
+        for item in candidates:
+            if isinstance(item, int) or (isinstance(item, str) and str(item).strip().isdigit()):
+                try:
+                    return report_type_enum(int(item))
+                except ValueError:
+                    pass
+
+            key = str(item).strip().upper()
+            if key in report_type_enum.__members__:
+                return report_type_enum[key]
+            if key in aliases:
+                return aliases[key]
+
+        raise argument_exception("report_type", f"Указанный тип отчета '{value}' не реализован!")
 
     def convert(self) -> bool:
         """
@@ -156,7 +195,7 @@ class settings_manager(abstract_manager):
         result.boss_name = "Шеметов Александр Борисович"
         result.account_name = "Сулейманов Турал Кямалович"
         result.is_first_start = True
-        result.response_format = response_format_dto.HTML
+        result.response_format = report_type_enum.HTML
         return result
 
     @property
