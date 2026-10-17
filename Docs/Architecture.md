@@ -53,13 +53,13 @@ classDiagram
         -str __boss_name
         -str __account_name
         -bool __is_first_start
-        -response_format_dto __response_format
+        -report_type_enum __response_format
         +organization organization_model
         +company organization_model
         +boss_name str
         +account_name str
         +is_first_start bool
-        +response_format response_format_dto
+        +response_format report_type_enum
     }
 
     class response_format_dto {
