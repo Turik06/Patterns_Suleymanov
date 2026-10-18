@@ -83,34 +83,6 @@ class name_id(ABC):
             return str(self.id) == str(other.id)
         return False
 
-    def get_report_title(self) -> str:
-        """Человекочитаемое наименование типа сущности."""
-        return getattr(self, "__class__", type(self)).__name__
-
-    def get_report_tag(self) -> str:
-        """XML/HTML тег типа сущности."""
-        return self.__class__.__name__.replace("_model", "").lower()
-
-    def get_report_headers(self) -> list:
-        """Заголовки колонок для отчета."""
-        return ["Код", "Наименование"]
-
-    def get_report_rows(self) -> list:
-        """Строки данных для отчета."""
-        return [[str(self.unique_code), str(self.name)]]
-
-    def get_report_fields(self) -> dict:
-        """Словарь полей (тег -> значение) для XML и структурированных представлений."""
-        return {}
-
-    def has_report_items(self) -> bool:
-        """Флаг наличия вложенных табличных элементов."""
-        return hasattr(self, "items") and bool(getattr(self, "items", None))
-
-    def get_report_items(self) -> list:
-        """Список вложенных элементов для детализированного отчета."""
-        return list(getattr(self, "items", []))
-
 
 abstract_model = name_id
 abstact_model = name_id

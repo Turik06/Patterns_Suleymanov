@@ -85,33 +85,130 @@ class abstract_report(ABC):
         """
         pass
 
+    # Словарь человекочитаемых названий сущностей для слоя отчетов
+    _ENTITY_LABELS: dict[str, str] = {
+        "recipe_model": "Рецепт",
+        "receipt_model": "Рецепт",
+        "nomenclature_model": "Номенклатура",
+        "range_model": "Единица измерения",
+        "storage_model": "Склад",
+        "organization_model": "Организация",
+        "nomenclature_group_model": "Группа номенклатуры",
+        "group_model": "Группа",
+    }
+
+    # Схемы колонок и извлечения данных для простых доменных моделей
+    _SIMPLE_SCHEMAS: dict[str, dict] = {
+        "nomenclature_model": {
+            "headers": ["Код", "Наименование", "Полное наименование", "Группа", "Единица измерения"],
+            "row_extractor": lambda s: [
+                str(getattr(s, "unique_code", getattr(s, "id", ""))),
+                str(getattr(s, "name", "")),
+                str(getattr(s, "full_name", "") or getattr(s, "name", "")),
+                str(s.group.name) if getattr(s, "group", None) else "",
+                str(s.range.name) if getattr(s, "range", None) else "",
+            ],
+            "fields_extractor": lambda s: {
+                "full_name": str(getattr(s, "full_name", "") or getattr(s, "name", "")),
+                "group": str(s.group.name) if getattr(s, "group", None) else "",
+                "range": str(s.range.name) if getattr(s, "range", None) else "",
+            },
+        },
+        "range_model": {
+            "headers": ["Код", "Наименование", "Коэффициент", "Базовая единица"],
+            "row_extractor": lambda s: [
+                str(getattr(s, "unique_code", getattr(s, "id", ""))),
+                str(getattr(s, "name", "")),
+                str(getattr(s, "conversion_factor", 1)),
+                str(s.base_range.name) if getattr(s, "base_range", None) else "базовая",
+            ],
+            "fields_extractor": lambda s: {
+                "conversion_factor": str(getattr(s, "conversion_factor", 1)),
+                "base_range": str(s.base_range.name) if getattr(s, "base_range", None) else "",
+            },
+        },
+    }
+
+    @classmethod
+    def is_aggregate(cls, source: abstract_model) -> bool:
+        """Флаг наличия вложенных табличных элементов (доменная модель-агрегат с состоянием)."""
+        return hasattr(source, "items") and isinstance(getattr(source, "items", None), (list, tuple))
+
+    @classmethod
+    def get_items(cls, source: abstract_model) -> list:
+        """Получить вложенные элементы агрегата."""
+        return list(getattr(source, "items", []))
+
     @classmethod
     def get_entity_label(cls, source: abstract_model) -> str:
-        """Человекочитаемое наименование типа сущности (делегируется модели)."""
-        if hasattr(source, "get_report_title"):
-            return source.get_report_title()
-        return getattr(source, "__class__", type(source)).__name__
+        """Человекочитаемое наименование типа сущности."""
+        class_name = getattr(source, "__class__", type(source)).__name__.lower()
+        if class_name in cls._ENTITY_LABELS:
+            return cls._ENTITY_LABELS[class_name]
+        return class_name.replace("_model", "").capitalize()
 
     @classmethod
     def get_entity_tag(cls, source: abstract_model) -> str:
-        """XML/HTML тег типа сущности (делегируется модели)."""
-        if hasattr(source, "get_report_tag"):
-            return source.get_report_tag()
-        return getattr(source, "__class__", type(source)).__name__.lower()
+        """XML/HTML тег типа сущности."""
+        raw_name = getattr(source, "__class__", type(source)).__name__.lower()
+        tag = raw_name.replace("_model", "")
+        if tag == "receipt":
+            tag = "recipe"
+        return tag
 
     @classmethod
     def get_headers(cls, source: abstract_model) -> list[str]:
-        """Заголовки таблицы отчета для переданной сущности (делегируется модели)."""
-        if hasattr(source, "get_report_headers"):
-            return source.get_report_headers()
+        """Заголовки таблицы отчета для переданной сущности."""
+        if cls.is_aggregate(source):
+            return ["Код", "Наименование", "Брутто", "Нетто"]
+
+        class_name = getattr(source, "__class__", type(source)).__name__.lower()
+        if class_name in cls._SIMPLE_SCHEMAS:
+            return cls._SIMPLE_SCHEMAS[class_name]["headers"]
+
         return ["Код", "Наименование"]
 
     @classmethod
     def get_rows(cls, source: abstract_model) -> list[list[str]]:
-        """Строки таблицы отчета для переданной сущности (делегируется модели)."""
-        if hasattr(source, "get_report_rows"):
-            return source.get_report_rows()
-        return [[str(getattr(source, "unique_code", getattr(source, "id", ""))), str(getattr(source, "name", ""))]]
+        """Строки таблицы отчета для переданной сущности."""
+        if cls.is_aggregate(source):
+            return [
+                [
+                    str(getattr(item, "unique_code", getattr(item, "id", ""))),
+                    str(getattr(item, "name", "")),
+                    str(getattr(item, "brutto", 0)),
+                    str(getattr(item, "netto", 0)),
+                ]
+                for item in getattr(source, "items", [])
+            ]
+
+        class_name = getattr(source, "__class__", type(source)).__name__.lower()
+        if class_name in cls._SIMPLE_SCHEMAS:
+            return [cls._SIMPLE_SCHEMAS[class_name]["row_extractor"](source)]
+
+        return [[
+            str(getattr(source, "unique_code", getattr(source, "id", ""))),
+            str(getattr(source, "name", "")),
+        ]]
+
+    @classmethod
+    def get_fields_dict(cls, source: abstract_model) -> dict[str, str]:
+        """Словарь дополнительных полей сущности для XML и структурированных представлений."""
+        class_name = getattr(source, "__class__", type(source)).__name__.lower()
+        if class_name in cls._SIMPLE_SCHEMAS:
+            return cls._SIMPLE_SCHEMAS[class_name]["fields_extractor"](source)
+
+        # Динамическое извлечение полей для любых новых моделей без изменения отчетов (OCP)
+        from Src.Core.common import common
+        fields = {}
+        for prop in common.get_fields(source, is_common=True):
+            if prop not in ("id", "name", "unique_code"):
+                val = getattr(source, prop, None)
+                if hasattr(val, "name"):
+                    val = val.name
+                if val is not None:
+                    fields[prop] = str(val)
+        return fields
 
 
 AbstractReport = abstract_report

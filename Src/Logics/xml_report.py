@@ -30,15 +30,15 @@ class xml_report(abstract_report):
             f"  <id>{escape(str(source.unique_code))}</id>",
             f"  <name>{escape(str(source.name))}</name>",
         ]
-        if hasattr(source, "has_report_items") and source.has_report_items():
+        if self.is_aggregate(source):
             header_lines.append("  <items>")
         return "\n".join(header_lines)
 
     def build_body(self, source: abstract_model) -> str:
         """Сформировать табличную часть отчета."""
-        if hasattr(source, "has_report_items") and source.has_report_items():
+        if self.is_aggregate(source):
             lines = []
-            for item in source.get_report_items():
+            for item in self.get_items(source):
                 lines.extend([
                     "    <item>",
                     f"      <code>{escape(str(getattr(item, 'unique_code', getattr(item, 'id', ''))))}</code>",
@@ -49,7 +49,7 @@ class xml_report(abstract_report):
                 ])
             return "\n".join(lines)
 
-        fields = source.get_report_fields() if hasattr(source, "get_report_fields") else {}
+        fields = self.get_fields_dict(source)
         return "\n".join(
             f"  <{key}>{escape(str(val))}</{key}>"
             for key, val in fields.items()
@@ -58,9 +58,10 @@ class xml_report(abstract_report):
     def build_footer(self, source: abstract_model) -> str:
         """Сформировать подвал отчета."""
         tag = self.get_entity_tag(source)
-        if hasattr(source, "has_report_items") and source.has_report_items():
+        if self.is_aggregate(source):
             return f"  </items>\n</{tag}>"
         return f"</{tag}>"
+
 
 
 XmlReport = xml_report

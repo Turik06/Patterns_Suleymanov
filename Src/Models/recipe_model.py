@@ -272,37 +272,6 @@ class recipe_model(name_id):
 
         return [dough_recipe, pancakes_recipe]
 
-    def get_report_title(self) -> str:
-        """Человекочитаемое наименование типа сущности."""
-        return "Рецепт"
-
-    def get_report_tag(self) -> str:
-        """XML/HTML тег типа сущности."""
-        return "recipe"
-
-    def get_report_headers(self) -> list:
-        """Заголовки таблицы отчета для рецепта."""
-        return ["Код", "Наименование", "Брутто", "Нетто"]
-
-    def get_report_rows(self) -> list:
-        """Строки таблицы отчета для рецепта."""
-        return [
-            [
-                str(getattr(item, "unique_code", getattr(item, "id", ""))),
-                str(getattr(item, "name", "")),
-                str(getattr(item, "brutto", 0)),
-                str(getattr(item, "netto", 0)),
-            ]
-            for item in self.items
-        ]
-
-    def has_report_items(self) -> bool:
-        """Флаг наличия вложенных строк рецепта."""
-        return True
-
-    def get_report_items(self) -> list:
-        """Вложенные строки ингредиентов рецепта."""
-        return self.items
-
 
 receipt_model = recipe_model
+
