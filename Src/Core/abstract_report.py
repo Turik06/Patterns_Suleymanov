@@ -34,6 +34,44 @@ class abstract_report(ABC):
         """Расширение файла отчета."""
         pass
 
+    @property
+    def mimetype(self) -> str:
+        """MIME-тип представления отчета."""
+        return self.mime_type
+
+    @property
+    def is_attachment(self) -> bool:
+        """Признак передачи отчета в виде скачиваемого вложения."""
+        return self.is_binary
+
+    @property
+    def file_extension(self) -> str:
+        """Расширение файла отчета."""
+        return self.extension
+
+    def create_response(self, result: report_result_dto, filename_prefix: str = "report"):
+        """
+        Полиморфное построение HTTP-ответа без процедурных ветвлений.
+        """
+        from flask import Response
+        from urllib.parse import quote
+
+        data = bytes(result.binary) if self.is_attachment else result.text
+        headers = {}
+        if self.is_attachment:
+            safe_name = filename_prefix.replace(" ", "_")
+            encoded_name = quote(safe_name)
+            headers["Content-Disposition"] = (
+                f'attachment; filename="{safe_name}.{self.file_extension}"; '
+                f"filename*=UTF-8''{encoded_name}.{self.file_extension}"
+            )
+
+        content_type = self.mimetype
+        if not self.is_attachment and "charset" not in content_type:
+            content_type = f"{content_type}; charset=utf-8"
+
+        return Response(data, mimetype=content_type, headers=headers)
+
     def build(self, source: abstract_model) -> report_result_dto:
         """
         Шаблонный метод формирования отчета.

@@ -200,3 +200,100 @@ class storage_manager(abstract_manager):
     def is_loaded(self) -> bool:
         """Флаг готовности данных (переопределение abstract_manager)."""
         return self.__is_initialized
+
+    _CATEGORY_MAP = {
+        "recipe": "recipes",
+        "receipt": "recipes",
+        "рецепт": "recipes",
+        "recipes": "recipes",
+        "receipts": "recipes",
+        "nomenclature": "nomenclatures",
+        "номенклатура": "nomenclatures",
+        "nomenclatures": "nomenclatures",
+        "range": "ranges",
+        "единица": "ranges",
+        "единица_измерения": "ranges",
+        "единицы_измерения": "ranges",
+        "ranges": "ranges",
+        "unit": "ranges",
+        "units": "ranges",
+        "group": "groups",
+        "группа": "groups",
+        "groups": "groups",
+        "storage": "storages",
+        "склад": "storages",
+        "storages": "storages",
+    }
+
+    def clear(self) -> None:
+        """
+        Очистить все словари хранилища и сбросить флаг инициализации.
+        """
+        self._storages = {}
+        self._ranges = {}
+        self._nomenclatures = {}
+        self._groups = {}
+        self._recipes = recipe_dict()
+        self.__is_initialized = False
+
+    def first_start(self) -> None:
+        """
+        Первоначальное наполнение хранилища первичными данными.
+        """
+        self.clear()
+        self._initialize_primary_data()
+        self.__is_initialized = True
+
+    def resolve_category(self, entity_type: str) -> str:
+        """
+        Определение ключа категории хранилища по наименованию типа сущности.
+        """
+        if not isinstance(entity_type, str):
+            return ""
+        clean = entity_type.strip().lower().replace("_model", "")
+        return self._CATEGORY_MAP.get(clean, clean)
+
+    def get_by_type_and_id(self, entity_type: str, identifier: str = ""):
+        """
+        Полиморфный поиск сущности в хранилище по типу и идентификатору, коду или имени.
+        """
+        cat_key = self.resolve_category(entity_type)
+        catalog = self.data.get(cat_key)
+        if not catalog:
+            return None
+
+        clean_id = (identifier or "").strip()
+        if not clean_id:
+            return list(catalog.values())[0] if catalog else None
+
+        if clean_id in catalog:
+            return catalog[clean_id]
+
+        clean_id_lower = clean_id.lower()
+        for item in catalog.values():
+            if (
+                getattr(item, "unique_code", None) == clean_id
+                or getattr(item, "id", None) == clean_id
+                or getattr(item, "name", "").lower() == clean_id_lower
+            ):
+                return item
+
+        if clean_id.isdigit():
+            idx = int(clean_id)
+            items = list(catalog.values())
+            if 0 <= idx < len(items):
+                return items[idx]
+
+        return None
+
+    def get_recipe(self, identifier: str = ""):
+        """Поиск технологической карты по коду или имени."""
+        return self.get_by_type_and_id("recipe", identifier)
+
+    def get_nomenclature(self, identifier: str = ""):
+        """Поиск номенклатуры по коду или имени."""
+        return self.get_by_type_and_id("nomenclature", identifier)
+
+    def get_range(self, identifier: str = ""):
+        """Поиск единицы измерения по коду или имени."""
+        return self.get_by_type_and_id("range", identifier)

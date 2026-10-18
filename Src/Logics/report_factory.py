@@ -50,7 +50,7 @@ class report_factory(abstract_report_factory):
         validator.validate(value, settings_model)
         self._settings = value
 
-    def create(self, report_type) -> abstract_report:
+    def create(self, report_type, entity_type: str = "") -> abstract_report:
         """
         Создает экземпляр отчета по переданному типу.
         Делегирует разбор строковых форматов классу settings_manager.
@@ -65,11 +65,11 @@ class report_factory(abstract_report_factory):
             raise argument_exception("report_type", f"Указанный тип отчета '{report_type}' не реализован!")
         return report_cls()
 
-    def create_default(self) -> abstract_report:
+    def create_default(self, entity_type: str = "") -> abstract_report:
         """Создает отчет по умолчанию согласно настроек."""
         if self._settings is None or not self._settings.response_format:
-            return self.create(report_type_enum.HTML)
-        return self.create(self._settings.response_format)
+            return self.create(report_type_enum.HTML, entity_type)
+        return self.create(self._settings.response_format, entity_type)
 
 
 ReportFactory = report_factory
