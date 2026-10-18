@@ -153,3 +153,32 @@ class range_model(name_id):
         result.name = name
         result.value = 1
         return result
+
+    def get_report_title(self) -> str:
+        """Человекочитаемое наименование типа сущности."""
+        return "Единица измерения"
+
+    def get_report_tag(self) -> str:
+        """XML/HTML тег типа сущности."""
+        return "range"
+
+    def get_report_headers(self) -> list:
+        """Заголовки таблицы отчета для единицы измерения."""
+        return ["Код", "Наименование", "Коэффициент", "Базовая единица"]
+
+    def get_report_rows(self) -> list:
+        """Строки таблицы отчета для единицы измерения."""
+        code = str(getattr(self, "unique_code", getattr(self, "id", "")))
+        name = str(getattr(self, "name", ""))
+        factor = str(getattr(self, "conversion_factor", 1))
+        base_name = str(self.base_range.name) if getattr(self, "base_range", None) else "базовая"
+        return [[code, name, factor, base_name]]
+
+    def get_report_fields(self) -> dict:
+        """Словарь полей для XML/структурированных представлений."""
+        factor = str(getattr(self, "conversion_factor", 1))
+        base_name = self.base_range.name if getattr(self, "base_range", None) else ""
+        return {
+            "conversion_factor": str(factor),
+            "base_range": str(base_name),
+        }

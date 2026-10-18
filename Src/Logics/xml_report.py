@@ -1,9 +1,6 @@
 from xml.sax.saxutils import escape
 from Src.Core.abstract_report import abstract_report
 from Src.Core.abstract_model import abstract_model
-from Src.Models.recipe_model import recipe_model
-from Src.Models.nomenclature_model import nomenclature_model
-from Src.Models.range_model import range_model
 
 
 class xml_report(abstract_report):
@@ -33,47 +30,36 @@ class xml_report(abstract_report):
             f"  <id>{escape(str(source.unique_code))}</id>",
             f"  <name>{escape(str(source.name))}</name>",
         ]
-        if isinstance(source, recipe_model) or hasattr(source, "items"):
+        if hasattr(source, "has_report_items") and source.has_report_items():
             header_lines.append("  <items>")
         return "\n".join(header_lines)
 
     def build_body(self, source: abstract_model) -> str:
         """Сформировать табличную часть отчета."""
-        if isinstance(source, recipe_model) or hasattr(source, "items"):
+        if hasattr(source, "has_report_items") and source.has_report_items():
             lines = []
-            for item in source.items:
+            for item in source.get_report_items():
                 lines.extend([
                     "    <item>",
-                    f"      <code>{escape(str(item.unique_code))}</code>",
-                    f"      <name>{escape(str(item.name))}</name>",
-                    f"      <brutto>{item.brutto}</brutto>",
-                    f"      <netto>{item.netto}</netto>",
+                    f"      <code>{escape(str(getattr(item, 'unique_code', getattr(item, 'id', ''))))}</code>",
+                    f"      <name>{escape(str(getattr(item, 'name', '')))}</name>",
+                    f"      <brutto>{getattr(item, 'brutto', 0)}</brutto>",
+                    f"      <netto>{getattr(item, 'netto', 0)}</netto>",
                     "    </item>",
                 ])
             return "\n".join(lines)
-        if isinstance(source, nomenclature_model) or (hasattr(source, "group") and hasattr(source, "range")):
-            full_name = getattr(source, "full_name", "") or source.name
-            group_name = source.group.name if getattr(source, "group", None) else ""
-            range_name = source.range.name if getattr(source, "range", None) else ""
-            return "\n".join([
-                f"  <full_name>{escape(str(full_name))}</full_name>",
-                f"  <group>{escape(str(group_name))}</group>",
-                f"  <range>{escape(str(range_name))}</range>",
-            ])
-        if isinstance(source, range_model) or hasattr(source, "conversion_factor"):
-            factor = str(getattr(source, "conversion_factor", 1))
-            base_name = source.base_range.name if getattr(source, "base_range", None) else ""
-            return "\n".join([
-                f"  <conversion_factor>{escape(factor)}</conversion_factor>",
-                f"  <base_range>{escape(str(base_name))}</base_range>",
-            ])
-        return ""
+
+        fields = source.get_report_fields() if hasattr(source, "get_report_fields") else {}
+        return "\n".join(
+            f"  <{key}>{escape(str(val))}</{key}>"
+            for key, val in fields.items()
+        )
 
     def build_footer(self, source: abstract_model) -> str:
         """Сформировать подвал отчета."""
         tag = self.get_entity_tag(source)
-        if isinstance(source, recipe_model) or hasattr(source, "items"):
-            return "  </items>\n</recipe>"
+        if hasattr(source, "has_report_items") and source.has_report_items():
+            return f"  </items>\n</{tag}>"
         return f"</{tag}>"
 
 

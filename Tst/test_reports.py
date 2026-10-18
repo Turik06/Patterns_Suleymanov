@@ -376,3 +376,25 @@ def test_universal_report_range_all_formats(sample_range):
     rtf_str = bytes(res_rtf.binary).decode("utf-8")
     assert "Единица измерения:" in rtf_str
     assert sample_range.name in rtf_str
+
+
+def test_universal_report_any_model_ocp_compliance():
+    """
+    Проверка принципа открытости/закрытости (OCP):
+    Любая новая модель (например, storage_model) может формировать отчеты
+    без необходимости модификации abstract_report или классов отчетов.
+    """
+    from Src.Models.storage_model import storage_model
+    store = storage_model(name="Центральный склад", address="ул. Ленина, 1")
+    factory = report_factory()
+
+    rep_txt = factory.create("txt")
+    res_txt = rep_txt.build(store)
+    assert "Код | Наименование" in res_txt.text
+    assert "Центральный склад" in res_txt.text
+
+    rep_xml = factory.create("xml")
+    res_xml = rep_xml.build(store)
+    assert "<storage>" in res_xml.text
+    assert "<name>Центральный склад</name>" in res_xml.text
+    assert "</storage>" in res_xml.text

@@ -148,3 +148,35 @@ class nomenclature_model(name_id):
             nomenclature_model.create_pancake_dough(dishes, piece),
             nomenclature_model.create_pancakes(dishes, piece),
         ]
+
+    def get_report_title(self) -> str:
+        """Человекочитаемое наименование типа сущности."""
+        return "Номенклатура"
+
+    def get_report_tag(self) -> str:
+        """XML/HTML тег типа сущности."""
+        return "nomenclature"
+
+    def get_report_headers(self) -> list:
+        """Заголовки таблицы отчета для номенклатуры."""
+        return ["Код", "Наименование", "Полное наименование", "Группа", "Единица измерения"]
+
+    def get_report_rows(self) -> list:
+        """Строки таблицы отчета для номенклатуры."""
+        code = str(getattr(self, "unique_code", getattr(self, "id", "")))
+        name = str(getattr(self, "name", ""))
+        full_name = str(getattr(self, "full_name", "") or name)
+        group_name = str(self.group.name) if getattr(self, "group", None) else ""
+        range_name = str(self.range.name) if getattr(self, "range", None) else ""
+        return [[code, name, full_name, group_name, range_name]]
+
+    def get_report_fields(self) -> dict:
+        """Словарь полей для XML/структурированных представлений."""
+        full_name = getattr(self, "full_name", "") or self.name
+        group_name = self.group.name if getattr(self, "group", None) else ""
+        range_name = self.range.name if getattr(self, "range", None) else ""
+        return {
+            "full_name": str(full_name),
+            "group": str(group_name),
+            "range": str(range_name),
+        }
