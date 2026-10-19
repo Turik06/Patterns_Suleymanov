@@ -52,7 +52,7 @@ def get_entity_report(param1: str = None, param2: str = None, param3: str = None
         target_id = q_id or param2
         target_format = q_format or param3
     elif param1 and param2:
-        is_p1_type = storage.resolve_category(param1) in storage.data or param1.lower() in storage._CATEGORY_MAP
+        is_p1_type = bool(storage.resolve_category(param1))
         if is_p1_type:
             target_type = q_type or param1
             target_id = q_id or param2
@@ -62,7 +62,7 @@ def get_entity_report(param1: str = None, param2: str = None, param3: str = None
             target_id = q_id or param1
             target_format = q_format or param2
     elif param1:
-        is_p1_type = storage.resolve_category(param1) in storage.data or param1.lower() in storage._CATEGORY_MAP
+        is_p1_type = bool(storage.resolve_category(param1))
         if is_p1_type:
             target_type = q_type or param1
             target_id = q_id or ""
@@ -77,7 +77,7 @@ def get_entity_report(param1: str = None, param2: str = None, param3: str = None
         target_format = q_format or ""
 
     category = storage.resolve_category(target_type)
-    if category not in storage.data:
+    if not category or category not in storage.data:
         return jsonify({"error": f"Неизвестный тип сущности '{target_type}'"}), 400
 
     entity = storage.get_by_type_and_id(target_type, target_id)
@@ -112,7 +112,7 @@ def get_default_entity_report(param1: str = None, param2: str = None):
         target_type = q_type or param1
         target_id = q_id or param2
     elif param1:
-        is_p1_type = storage.resolve_category(param1) in storage.data or param1.lower() in storage._CATEGORY_MAP
+        is_p1_type = bool(storage.resolve_category(param1))
         if is_p1_type:
             target_type = q_type or param1
             target_id = q_id or ""
@@ -124,7 +124,7 @@ def get_default_entity_report(param1: str = None, param2: str = None):
         target_id = q_id or ""
 
     category = storage.resolve_category(target_type)
-    if category not in storage.data:
+    if not category or category not in storage.data:
         return jsonify({"error": f"Неизвестный тип сущности '{target_type}'"}), 400
 
     entity = storage.get_by_type_and_id(target_type, target_id)
