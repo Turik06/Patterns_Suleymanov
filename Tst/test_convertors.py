@@ -189,3 +189,19 @@ class TestReferenceConvertor:
 
         with pytest.raises(argument_exception):
             conv.convert("model", None)
+
+    def test_single_argument_calls(self):
+        """Проверка вызова конвертеров с одним аргументом (непосредственно передача объекта)."""
+        b_conv = basic_convertor()
+        assert b_conv.convert(100) == {"value": 100}
+        assert b_conv.Convert("abc") == {"value": "abc"}
+
+        dt_conv = datetime_convertor()
+        d = date(2026, 10, 21)
+        assert dt_conv.convert(d) == {"value": "2026-10-21"}
+
+        r_conv = reference_convertor()
+        group = nomenclature_group_model("Группа тестовая")
+        res = r_conv.convert(group)
+        assert res["name"] == "Группа тестовая"
+        assert "id" in res

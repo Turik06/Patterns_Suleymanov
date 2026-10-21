@@ -9,6 +9,9 @@ from Src.Logics.datetime_convertor import datetime_convertor
 from Src.Logics.reference_convertor import reference_convertor
 
 
+_UNSET = object()
+
+
 class convert_factory:
     """
     Фабрика конвертеров данных в форматы словарей и JSON.
@@ -94,14 +97,22 @@ class convert_factory:
         """
         return self.get_convertor(obj_or_type)
 
-    def convert(self, field: str, obj: Any) -> dict:
+    def convert(self, field: Any = "", obj: Any = _UNSET) -> Any:
         """
-        Преобразовать объект в словарь вида {field: value}.
+        Преобразовать объект в словарь вида {field: value} или выполнить сериализацию объекта.
 
         Параметры:
-            field: Наименование поля
+            field: Наименование поля или сам объект при одном аргументе
             obj: Объект любого поддерживаемого типа
         """
+        # Случай вызова с одним аргументом: factory.convert(obj)
+        if obj is _UNSET:
+            return self.serialize(field)
+
+        # Поддержка перестановки аргументов factory.convert(obj, "field")
+        if not isinstance(field, str) and isinstance(obj, str):
+            field, obj = obj, field
+
         if isinstance(obj, (list, tuple, set)):
             serialized_list = [self.serialize(item) for item in obj]
             return {field: serialized_list} if field else serialized_list
@@ -112,6 +123,12 @@ class convert_factory:
 
         convertor = self.get_convertor(obj)
         return convertor.convert(field, obj)
+
+    def Convert(self, field: Any = "", obj: Any = _UNSET) -> Any:
+        """
+        Алиас метода convert с заглавной буквы (согласно ТЗ).
+        """
+        return self.convert(field, obj)
 
     def serialize(self, obj: Any, visited: set = None) -> Any:
         """
@@ -170,3 +187,6 @@ class convert_factory:
         """Выгрузка сериализованного объекта в файловый поток."""
         serialized = self.serialize(obj)
         json.dump(serialized, fp, ensure_ascii=False, indent=indent)
+
+
+ConvertFactory = convert_factory

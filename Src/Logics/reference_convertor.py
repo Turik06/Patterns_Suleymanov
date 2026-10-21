@@ -5,6 +5,9 @@ from Src.Core.abstract_model import abstract_model
 from Src.Core.exception import argument_exception
 
 
+_UNSET = object()
+
+
 class reference_convertor(abstract_convertor):
     """
     Конвертер ссылочных типов (доменных моделей abstract_model / name_id) в словарь.
@@ -39,12 +42,12 @@ class reference_convertor(abstract_convertor):
         """Установка ссылки на фабрику."""
         self._factory = value
 
-    def convert(self, field: str, obj: Any) -> dict:
+    def convert(self, field: Any = "", obj: Any = _UNSET) -> dict:
         """
         Преобразует доменную модель в словарь.
 
         Параметры:
-            field: Наименование поля (строка или пустая строка/None)
+            field: Наименование поля (строка или пустая строка/None) или сам объект при одном аргументе
             obj: Экземпляр abstract_model
 
         Исключения:
@@ -54,6 +57,15 @@ class reference_convertor(abstract_convertor):
         Возвращает:
             dict: {field: model_dict} если field задан, иначе model_dict
         """
+        # Случай вызова с одним аргументом: conv.convert(model)
+        if obj is _UNSET:
+            obj = field
+            field = ""
+
+        # Поддержка перестановки аргументов conv.convert(model, "field")
+        if isinstance(field, abstract_model) and isinstance(obj, str):
+            field, obj = obj, field
+
         if field is not None and not isinstance(field, str):
             raise argument_exception("field", "Наименование поля должно быть строкой")
 
@@ -132,3 +144,6 @@ class reference_convertor(abstract_convertor):
             return {k: self._serialize_value(v, visited) for k, v in value.items()}
 
         return str(value)
+
+
+ReferenceConvertor = reference_convertor

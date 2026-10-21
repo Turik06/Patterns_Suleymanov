@@ -172,3 +172,17 @@ class TestConvertFactory:
         stream.seek(0)
         loaded = json.loads(stream.read())
         assert loaded["name"] == "Тест стрима"
+
+    def test_factory_convert_single_argument(self):
+        """Проверка вызова factory.convert и factory.Convert с одним аргументом (непосредственно объект)."""
+        factory = convert_factory()
+        group = nomenclature_group_model("Тест одного аргумента")
+
+        # Вызов с одним аргументом возвращает словарь сущности
+        res1 = factory.convert(group)
+        assert isinstance(res1, dict)
+        assert res1["name"] == "Тест одного аргумента"
+
+        # Проверка алиаса Convert с заглавной буквы
+        res2 = factory.Convert(group)
+        assert res2["name"] == "Тест одного аргумента"
