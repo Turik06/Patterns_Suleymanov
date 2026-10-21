@@ -274,3 +274,4 @@ class recipe_model(name_id):
 
 
 receipt_model = recipe_model
+

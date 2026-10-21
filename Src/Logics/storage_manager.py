@@ -13,6 +13,7 @@ class recipe_dict(dict):
     Словарь рецептов с поддержкой индексации по порядковому номеру [0].
     """
     def __getitem__(self, key):
+        """Получение рецепта по ключу или целочисленному индексу."""
         if isinstance(key, int):
             return list(self.values())[key]
         return super().__getitem__(key)
@@ -179,10 +180,56 @@ class storage_manager(abstract_manager):
         """Словарь технологических карт {id: recipe_model}."""
         return self._recipes
 
+    @staticmethod
+    def storage_key() -> str:
+        """Ключ категории складов"""
+        return "storage_model"
+
+    @staticmethod
+    def range_key() -> str:
+        """Ключ категории единиц измерения"""
+        return "range_model"
+
+    @staticmethod
+    def group_key() -> str:
+        """Ключ категории групп номенклатуры"""
+        return "group_model"
+
+    @staticmethod
+    def nomenclature_key() -> str:
+        """Ключ категории номенклатуры"""
+        return "nomenclature_model"
+
+    @staticmethod
+    def receipt_key() -> str:
+        """Ключ категории технологических карт"""
+        return "receipt_model"
+
+    @staticmethod
+    def recipe_key() -> str:
+        """Ключ категории рецептов (синоним receipt_model)"""
+        return "receipt_model"
+
+    @classmethod
+    def keys(cls) -> list:
+        """
+        Получить список всех зарегистрированных ключей категорий хранилища через рефлексию.
+        """
+        methods = [
+            method for method in dir(cls)
+            if callable(getattr(cls, method, None)) and method.endswith('_key')
+        ]
+        return [getattr(cls, method)() for method in methods]
+
     @property
     def data(self) -> dict:
         """Все данные хранилища по категориям."""
         return {
+            self.storage_key(): self._storages,
+            self.range_key(): self._ranges,
+            self.nomenclature_key(): self._nomenclatures,
+            self.group_key(): self._groups,
+            self.receipt_key(): self._recipes,
             "storages": self._storages,
             "ranges": self._ranges,
             "nomenclatures": self._nomenclatures,
@@ -199,3 +246,102 @@ class storage_manager(abstract_manager):
     def is_loaded(self) -> bool:
         """Флаг готовности данных (переопределение abstract_manager)."""
         return self.__is_initialized
+
+    def clear(self) -> None:
+        """
+        Очистить все словари хранилища и сбросить флаг инициализации.
+        """
+        self._storages = {}
+        self._ranges = {}
+        self._nomenclatures = {}
+        self._groups = {}
+        self._recipes = recipe_dict()
+        self.__is_initialized = False
+
+    def first_start(self) -> None:
+        """
+        Первоначальное наполнение хранилища первичными данными.
+        """
+        self.clear()
+        self._initialize_primary_data()
+        self.__is_initialized = True
+
+    def resolve_category(self, entity_type: str):
+        """
+        Разрешение наименования типа сущности в ключ категории хранилища через рефлексию.
+        """
+        if not isinstance(entity_type, str):
+            return None
+        normalized = entity_type.strip().lower()
+
+        # Поиск по методам *_key через рефлексию
+        for method_name in dir(self.__class__):
+            if method_name.endswith("_key"):
+                method = getattr(self.__class__, method_name, None)
+                if callable(method):
+                    key_val = method()
+                    clean_method = method_name[:-4].lower()
+                    clean_key = key_val.lower().replace("_model", "").replace("_key", "")
+                    if normalized in (clean_method, clean_key, key_val.lower()):
+                        return key_val
+                    if normalized in (f"{clean_method}s", f"{clean_key}s"):
+                        return key_val
+
+        # Поиск по публичным свойствам-словарям хранилища
+        for prop_name in dir(self):
+            if prop_name.startswith("_"):
+                continue
+            prop_val = getattr(self, prop_name, None)
+            if isinstance(prop_val, dict):
+                prop_clean = prop_name.rstrip("s").lower()
+                if normalized in (prop_name.lower(), prop_clean):
+                    return prop_name
+
+        return None
+
+    def get_by_type_and_id(self, entity_type: str, identifier: str = ""):
+        """
+        Полиморфный поиск сущности в хранилище по ее типу и идентификатору или наименованию.
+        """
+        cat_key = self.resolve_category(entity_type)
+        if not cat_key:
+            return None
+        catalog = self.data.get(cat_key)
+        if not catalog:
+            return None
+
+        clean_id = (identifier or "").strip()
+        if not clean_id:
+            return list(catalog.values())[0] if catalog else None
+
+        if clean_id in catalog:
+            return catalog[clean_id]
+
+        clean_id_lower = clean_id.lower()
+        for item in catalog.values():
+            if (
+                getattr(item, "unique_code", None) == clean_id
+                or getattr(item, "id", None) == clean_id
+                or getattr(item, "name", "").lower() == clean_id_lower
+            ):
+                return item
+
+        if clean_id.isdigit():
+            idx = int(clean_id)
+            items = list(catalog.values())
+            if 0 <= idx < len(items):
+                return items[idx]
+
+        return None
+
+    def get_recipe(self, identifier: str = ""):
+        """Поиск технологической карты по коду или имени."""
+        return self.get_by_type_and_id("recipe", identifier)
+
+    def get_nomenclature(self, identifier: str = ""):
+        """Поиск номенклатуры по коду или имени."""
+        return self.get_by_type_and_id("nomenclature", identifier)
+
+    def get_range(self, identifier: str = ""):
+        """Поиск единицы измерения по коду или имени."""
+        return self.get_by_type_and_id("range", identifier)

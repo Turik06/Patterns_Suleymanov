@@ -1,20 +1,7 @@
-from enum import Enum
-
+from Src.Dtos.report_type_enum import report_type_enum
 
 """
-Типы отчетов
+DTO / Перечисление типов отчетов (для обратной совместимости)
 """
-class report_type_dto(Enum):
-    """
-    Перечисление поддерживаемых типов отчетов.
-    """
-
-    """
-    Текстовый формат
-    """
-    TXT = 1
-    TEXT = 1
-
-
-ReportTypeEnum = report_type_dto
-report_type_enum = report_type_dto
+report_type_dto = report_type_enum
+ReportTypeEnum = report_type_enum

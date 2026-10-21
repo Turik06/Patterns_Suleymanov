@@ -32,11 +32,25 @@ classDiagram
         -__boss_name: str
         -__account_name: str
         -__is_first_start: bool
+        -__response_format: response_format_dto
         +organization: organization_model
         +company: organization_model
         +boss_name: str
         +account_name: str
         +is_first_start: bool
+        +response_format: response_format_dto
+    }
+
+    class response_format_dto {
+        <<enumeration>>
+        +CSV : int
+        +MARKDOWN : int
+        +JSON : int
+        +XML : int
+        +TXT : int
+        +HTML : int
+        +RTF : int
+        +YAML : int
     }
 
     class organization_model {
@@ -65,4 +79,5 @@ classDiagram
 
     settings_manager o-- settings_model : _settings
     settings_model o-- organization_model : __organization
+    settings_model o-- response_format_dto : __response_format
 ```

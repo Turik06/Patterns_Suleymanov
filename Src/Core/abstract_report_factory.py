@@ -1,22 +1,24 @@
 from abc import ABC, abstractmethod
-from Src.Core.abstract_report import abstract_report, AbstractReport
-from Src.Dtos.report_type_dto import report_type_dto, ReportTypeEnum
+from Src.Core.abstract_report import abstract_report
+from Src.Dtos.report_type_enum import report_type_enum
 
 
-"""
-Абстрактная фабрика отчетов
-"""
 class abstract_report_factory(ABC):
     """
     Базовая абстрактная фабрика для создания отчетов по их типу.
     """
 
     @abstractmethod
-    def create(self, report_type: report_type_dto) -> abstract_report:
+    def create(self, report_type: report_type_enum, entity_type: str = "") -> abstract_report:
         """
-        Подобрать и создать инстанс нужного отчета по переданному типу.
-        :param report_type: Тип требуемого отчета (из report_type_dto)
-        :return: Экземпляр конкретного отчета (наследника abstract_report)
+        Создать экземпляр нужного отчета по переданному типу.
+        """
+        pass
+
+    @abstractmethod
+    def create_default(self, entity_type: str = "") -> abstract_report:
+        """
+        Создать экземпляр отчета по умолчанию на основе настроек.
         """
         pass
 
