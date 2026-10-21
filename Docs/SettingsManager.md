@@ -32,13 +32,23 @@ classDiagram
         -__boss_name: str
         -__account_name: str
         -__is_first_start: bool
-        -__response_format: response_format_dto
+        -__response_format: report_type_enum
         +organization: organization_model
         +company: organization_model
         +boss_name: str
         +account_name: str
         +is_first_start: bool
-        +response_format: response_format_dto
+        +response_format: report_type_enum
+    }
+
+    class report_type_enum {
+        <<enumeration>>
+        +TXT : 1
+        +CSV : 2
+        +MARKDOWN : 3
+        +XML : 4
+        +HTML : 5
+        +RTF : 6
     }
 
     class response_format_dto {
@@ -79,5 +89,5 @@ classDiagram
 
     settings_manager o-- settings_model : _settings
     settings_model o-- organization_model : __organization
-    settings_model o-- response_format_dto : __response_format
+    settings_model o-- report_type_enum : __response_format
 ```

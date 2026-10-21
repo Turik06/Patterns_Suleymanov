@@ -6,7 +6,7 @@
 
 ## 1. Архитектурная концепция
 
-В соответствии с требованиями задания и рекомендациями преподавателя сериализация реализована без привлечения тяжеловесных сторонних библиотек (таких как Pydantic или Marshmallow). 
+В соответствии с архитектурными требованиями проекта сериализация реализована без привлечения тяжеловесных сторонних библиотек (таких как Pydantic или Marshmallow). 
 
 ### Пайплайн преобразования:
 $$\text{Доменная модель / Хранилище} \xrightarrow{\text{Фабрика и Конвертеры}} \text{Вложенные словари Python (dict/list)} \xrightarrow{\text{json.dumps}} \text{Итоговый JSON}$$
@@ -99,7 +99,57 @@ classDiagram
 
 ---
 
-## 4. Примеры использования
+## 4. Диаграмма последовательности (UML Sequence Diagram)
+
+Диаграмма иллюстрирует рекурсивный вызов конвертеров и защиту от зацикливания при сериализации связанных моделей:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 Разработчик / API
+    participant Factory as convert_factory
+    participant RefConv as reference_convertor
+    participant Model as abstract_model (Сущность)
+    participant InnerModel as Вложенная модель
+
+    User->>Factory: to_json(model)
+    activate Factory
+
+    Factory->>Factory: serialize(model, visited)
+    Factory->>RefConv: convert("", model)
+    activate RefConv
+
+    RefConv->>Model: Получение свойств (@property)
+    activate Model
+    Model-->>RefConv: {prop1: val1, prop2: sub_model}
+    deactivate Model
+
+    RefConv->>Factory: serialize(prop1)
+    Factory-->>RefConv: primitive_value
+
+    Note over RefConv,InnerModel: Рекурсивная сериализация свойства
+    RefConv->>Factory: serialize(sub_model, visited)
+    activate Factory
+    Factory->>RefConv: convert("", sub_model)
+    activate RefConv
+    RefConv-->>Factory: inner_dict
+    deactivate RefConv
+    Factory-->>RefConv: inner_dict
+    deactivate Factory
+
+    RefConv-->>Factory: Итоговый словарь {prop1, prop2}
+    deactivate RefConv
+
+    Factory->>Factory: json.dumps(result, ensure_ascii=False)
+    Factory-->>User: JSON строка
+    deactivate Factory
+```
+
+> Детальные сценарии с кодами ответов HTTP (200, 400, 404) см. в [Диаграммах последовательности (SequenceDiagrams.md)](./SequenceDiagrams.md).
+
+---
+
+## 5. Примеры использования
 
 ### Сериализация отдельной сущности
 ```python

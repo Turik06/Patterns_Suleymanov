@@ -136,12 +136,12 @@ classDiagram
 
 ## 2. Диаграмма последовательности (UML Sequence Diagram: REST API)
 
-Показывает путь выполнения запроса к HTTP эндпоинту отчета:
+Показывает жизненный цикл выполнения запроса к HTTP эндпоинту отчета с полной обработкой успешных путей (**200 OK**) и ошибок (**400 Bad Request**, **404 Not Found**):
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Клиент [Браузер / F12]
+    actor User as 👤 Клиент [Браузер / API]
     participant Flask as Flask Router [main.py]
     participant Storage as storage_manager
     participant Factory as report_factory
@@ -149,33 +149,64 @@ sequenceDiagram
     participant Report as abstract_report
     participant Result as report_result_dto
 
-    User->>Flask: GET запрос отчета (тип сущности, код, формат)
-    Flask->>Storage: find_entity(entity_type, entity_id)
-    Storage-->>Flask: Экземпляр сущности (abstract_model)
+    User->>Flask: GET /api/report/{type}/{id}?format={fmt}
+    activate Flask
 
-    alt Формат указан явно в URL / query
-        Flask->>Factory: create(format_name)
-    else Запрос по умолчанию (/api/report/default/...)
-        Flask->>Factory: create_default()
-        Factory->>Settings: чтение response_format
-        Settings-->>Factory: report_type_enum
+    Flask->>Storage: resolve_category(type)
+    activate Storage
+    Storage-->>Flask: category (или None)
+    deactivate Storage
+
+    alt Неизвестная категория сущности
+        Flask-->>User: 🔴 400 Bad Request (JSON {"error": "Неизвестный тип сущности"})
+    else Категория найдена
+        Flask->>Storage: get_by_type_and_id(type, id)
+        activate Storage
+        Storage-->>Flask: entity (или None)
+        deactivate Storage
+
+        alt Сущность с указанным ID не найдена
+            Flask-->>User: 🔴 404 Not Found (JSON {"error": "Сущность не найдена"})
+        else Сущность найдена
+            alt Формат указан явно в URL / query
+                Flask->>Factory: create(format_name, type)
+            else Запрос по умолчанию (/api/report/default/...)
+                Flask->>Factory: create_default(type)
+                Factory->>Settings: чтение response_format
+                Settings-->>Factory: report_type_enum
+            end
+
+            alt Некорректный формат отчета
+                Factory-->>Flask: argument_exception
+                Flask-->>User: 🔴 400 Bad Request (JSON {"error": "Некорректный формат отчета"})
+            else Фабрика вернула экземпляр отчета
+                activate Factory
+                Factory-->>Flask: Экземпляр отчета (abstract_report)
+                deactivate Factory
+
+                Flask->>Report: build(entity)
+                activate Report
+                Note over Report: Шаблонный метод build:<br/>1. build_header(entity)<br/>2. build_body(entity)<br/>3. build_footer(entity)<br/>4. Упаковка в report_result_dto
+                Report-->>Flask: report_result_dto
+                deactivate Report
+
+                Flask->>Report: create_response(result_dto, file_name)
+                activate Report
+                Report-->>Flask: HTTP Response
+                deactivate Report
+
+                alt Текстовый формат (HTML, XML, TXT)
+                    Flask-->>User: 🟢 200 OK - Отображение в браузере (Inline)
+                else Бинарный / Табличный файл (CSV, Markdown, RTF)
+                    Flask-->>User: 🟢 200 OK - Content-Disposition attachment (Скачивание файла)
+                end
+            end
+        end
     end
-
-    Factory-->>Flask: Экземпляр отчета (abstract_report)
-
-    Flask->>Report: build(entity)
-    Note over Report: Шаблонный метод build:<br/>1. build_header(entity)<br/>2. build_body(entity)<br/>3. build_footer(entity)<br/>4. Упаковка в report_result_dto
-    Report-->>Flask: report_result_dto
-
-    Flask->>Flask: format_response(report, result)
-    Note over Flask: Использование свойств отчета (@property):<br/>report.mime_type, report.extension, result.binary
-
-    alt Текстовый формат (HTML, XML, TXT)
-        Flask-->>User: 200 OK - Отображение в браузере
-    else Бинарный файл (CSV, Markdown, RTF)
-        Flask-->>User: 200 OK - Content-Disposition attachment (Скачивание файла)
-    end
+    deactivate Flask
 ```
+
+> Полная спецификация сценариев взаимодействия и матрицы кодов ответа доступна в отдельном документе: [Диаграммы последовательности (SequenceDiagrams.md)](./SequenceDiagrams.md).
 
 ---
 
