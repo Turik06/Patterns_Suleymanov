@@ -18,11 +18,21 @@ from Src.Models.storage_model import storage_model
 
 
 class TestConvertFactory:
-    """Тесты фабрики конвертации и сериализации convert_factory."""
+    """
+    Набор модульных тестов для фабрики конвертации и сериализации convert_factory
+    """
 
-    def test_factory_resolves_default_convertors(self):
+    def test_success_convert_factory_resolves_default_convertors(self):
+        """
+        Ожидание: Автоматическое определение конвертера по типу переданного объекта.
+        Метод: convert_factory.get_convertor
+        Описание: Проверяет подбор basic_convertor, datetime_convertor и reference_convertor для стандартных типов.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
+        group = nomenclature_group_model("Группа")
 
+        # Act & Assert (Действие и Проверка)
         assert isinstance(factory.get_convertor(10), basic_convertor)
         assert isinstance(factory.get_convertor(10.5), basic_convertor)
         assert isinstance(factory.get_convertor("строка"), basic_convertor)
@@ -31,15 +41,27 @@ class TestConvertFactory:
 
         assert isinstance(factory.get_convertor(datetime.now()), datetime_convertor)
         assert isinstance(factory.get_convertor(date.today()), datetime_convertor)
-
-        group = nomenclature_group_model("Группа")
         assert isinstance(factory.get_convertor(group), reference_convertor)
 
-    def test_factory_create_alias(self):
+    def test_success_convert_factory_create_alias(self):
+        """
+        Ожидание: Метод create работает идентично get_convertor.
+        Метод: convert_factory.create
+        Описание: Проверяет соответствие каноническому интерфейсу шаблона Factory.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
+
+        # Act & Assert (Действие и Проверка)
         assert isinstance(factory.create(123), basic_convertor)
 
-    def test_factory_register_custom_type(self):
+    def test_success_convert_factory_register_custom_type(self):
+        """
+        Ожидание: Успешная регистрация и использование пользовательского конвертера.
+        Метод: convert_factory.register
+        Описание: Проверяет принцип открытости/закрытости (OCP) при добавлении нового типа.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
 
         class custom_class:
@@ -49,58 +71,100 @@ class TestConvertFactory:
             def convert(self, field: str, obj):
                 return {field: "custom_ok"}
 
+        # Act (Действие)
         factory.register(custom_class, custom_convertor)
         conv = factory.get_convertor(custom_class())
-        assert isinstance(conv, custom_convertor)
-        assert factory.convert("result", custom_class()) == {"result": "custom_ok"}
+        result = factory.convert("result", custom_class())
 
-    def test_factory_register_invalid_arguments_raises(self):
+        # Assert (Проверка)
+        assert isinstance(conv, custom_convertor)
+        assert result == {"result": "custom_ok"}
+
+    def test_fail_convert_factory_register_invalid_arguments_raises(self):
+        """
+        Ожидание: Исключение argument_exception при невалидных типах в методе register.
+        Метод: convert_factory.register
+        Описание: Проверяет валидацию параметров target_type и convertor_cls.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
+
+        # Act & Assert (Действие и Проверка)
         with pytest.raises(argument_exception):
             factory.register("not_a_type", basic_convertor)
 
         with pytest.raises(argument_exception):
             factory.register(int, "not_a_convertor_class")
 
-    def test_factory_get_convertor_unregistered_raises(self):
+    def test_fail_convert_factory_get_convertor_unregistered_raises(self):
+        """
+        Ожидание: Исключение argument_exception при запросе конвертера для неизвестного типа.
+        Метод: convert_factory.get_convertor
+        Описание: Проверяет поведение при отсутствии зарегистрированного конвертера.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
 
         class unk:
             pass
 
+        # Act & Assert (Действие и Проверка)
         with pytest.raises(argument_exception):
             factory.get_convertor(unk())
 
-    def test_factory_convert_primitives(self):
+    def test_success_convert_factory_convert_primitives(self):
+        """
+        Ожидание: Корректное делегирование сериализации примитивных типов базовому конвертеру.
+        Метод: convert_factory.convert
+        Описание: Проверяет числа, строки, булевы значения и None через фасад фабрики.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
+
+        # Act & Assert (Действие и Проверка)
         assert factory.convert("val", 42) == {"val": 42}
         assert factory.convert("val", 3.14) == {"val": 3.14}
         assert factory.convert("val", "hello") == {"val": "hello"}
         assert factory.convert("val", False) == {"val": False}
         assert factory.convert("val", None) == {"val": None}
 
-    def test_factory_convert_list(self):
+    def test_success_convert_factory_convert_list(self):
+        """
+        Ожидание: Сериализация списка доменных моделей во вложенный список словарей.
+        Метод: convert_factory.convert
+        Описание: Проверяет обработку списков и итерируемых коллекций.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
         group1 = nomenclature_group_model("Группа 1")
         group2 = nomenclature_group_model("Группа 2")
 
+        # Act (Действие)
         res = factory.convert("groups", [group1, group2])
+
+        # Assert (Проверка)
         assert "groups" in res
         assert len(res["groups"]) == 2
         assert res["groups"][0]["name"] == "Группа 1"
         assert res["groups"][1]["name"] == "Группа 2"
 
-    def test_deep_recursion_range_chain(self):
-        """Проверка рекурсивной цепочки единиц измерения: тонна -> кг -> грамм (схема с доски)."""
+    def test_success_convert_factory_deep_recursion_range_chain(self):
+        """
+        Ожидание: Корректная сериализация многоуровневой цепочки единиц измерения: тонна -> кг -> грамм.
+        Метод: convert_factory.to_json
+        Описание: Проверяет рекурсивный спуск по свойству base_range до базовой единицы.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
-
         gram = range_model("грамм", 1, None)
         kg = range_model("кг", 1000, gram)
         ton = range_model("тонна", 1000, kg)
 
+        # Act (Действие)
         json_text = factory.to_json(ton)
         data = json.loads(json_text)
 
+        # Assert (Проверка)
         assert data["name"] == "тонна"
         assert data["conversion_factor"] == 1000
         assert data["base_range"]["name"] == "кг"
@@ -109,10 +173,14 @@ class TestConvertFactory:
         assert data["base_range"]["base_range"]["conversion_factor"] == 1
         assert data["base_range"]["base_range"]["base_range"] is None
 
-    def test_deep_recursion_recipe_with_subrecipe(self):
-        """Проверка рекурсии рецепта с вложенным полуфабрикатом (sub_recipe)."""
+    def test_success_convert_factory_deep_recursion_recipe_with_subrecipe(self):
+        """
+        Ожидание: Корректная сериализация технологической карты с вложенным полуфабрикатом sub_recipe.
+        Метод: convert_factory.to_json
+        Описание: Проверяет рекурсивное разворачивание составного рецепта и его ингредиентов.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
-
         g = nomenclature_group_model("Ингредиенты")
         unit_g = range_model("грамм", 1, None)
         flour = nomenclature_model("Мука", "Мука в/с", g, unit_g)
@@ -133,28 +201,35 @@ class TestConvertFactory:
         cookie_recipe.add_row(cookie_row1)
         cookie_recipe.add_row(cookie_row2)
 
+        # Act (Действие)
         json_text = factory.to_json(cookie_recipe)
         data = json.loads(json_text)
 
+        # Assert (Проверка)
         assert data["name"] == "Печенье к чаю"
         assert len(data["rows"]) == 2
-        # Строка 1 содержит вложенный рецепт теста
         assert data["rows"][0]["sub_recipe"] is not None
         assert data["rows"][0]["sub_recipe"]["name"] == "Тесто песочное"
         assert len(data["rows"][0]["sub_recipe"]["rows"]) == 1
         assert data["rows"][0]["sub_recipe"]["rows"][0]["name"] == "Мука"
 
-    def test_serialize_storage_manager_data(self):
-        """Проверка сериализации полных данных storage_manager.data."""
+    def test_success_convert_factory_serialize_storage_manager_data(self):
+        """
+        Ожидание: Сериализация полного словаря данных хранилища storage_manager.data.
+        Метод: convert_factory.to_json
+        Описание: Проверяет экспорт всех категорий склада (склады, единицы, группы, номенклатура, рецепты).
+        """
+        # Arrange (Подготовка)
         sm = storage_manager()
         sm.load()
         factory = convert_factory()
 
+        # Act (Действие)
         json_text = factory.to_json(sm.data)
+
+        # Assert (Проверка)
         assert isinstance(json_text, str)
         assert len(json_text) > 0
-
-        # Проверка обратной загрузки
         data = json.loads(json_text)
         assert "storage_model" in data
         assert "range_model" in data
@@ -162,27 +237,40 @@ class TestConvertFactory:
         assert "nomenclature_model" in data
         assert "receipt_model" in data
 
-    def test_factory_dump_to_file_stream(self):
-        """Проверка выгрузки JSON в файловый поток через dump."""
+    def test_success_convert_factory_dump_to_file_stream(self):
+        """
+        Ожидание: Корректная выгрузка сериализованного JSON в файловый поток.
+        Метод: convert_factory.dump
+        Описание: Проверяет метод dump с объектом StringIO.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
         group = nomenclature_group_model("Тест стрима")
-
         stream = io.StringIO()
+
+        # Act (Действие)
         factory.dump(group, stream)
         stream.seek(0)
         loaded = json.loads(stream.read())
+
+        # Assert (Проверка)
         assert loaded["name"] == "Тест стрима"
 
-    def test_factory_convert_single_argument(self):
-        """Проверка вызова factory.convert и factory.Convert с одним аргументом (непосредственно объект)."""
+    def test_success_convert_factory_convert_single_argument(self):
+        """
+        Ожидание: Корректная работа convert и Convert при передаче только одного объекта.
+        Метод: convert_factory.convert
+        Описание: Проверяет вызов методов фабрики без указания внешнего ключа поля.
+        """
+        # Arrange (Подготовка)
         factory = convert_factory()
         group = nomenclature_group_model("Тест одного аргумента")
 
-        # Вызов с одним аргументом возвращает словарь сущности
+        # Act (Действие)
         res1 = factory.convert(group)
+        res2 = factory.Convert(group)
+
+        # Assert (Проверка)
         assert isinstance(res1, dict)
         assert res1["name"] == "Тест одного аргумента"
-
-        # Проверка алиаса Convert с заглавной буквы
-        res2 = factory.Convert(group)
         assert res2["name"] == "Тест одного аргумента"
