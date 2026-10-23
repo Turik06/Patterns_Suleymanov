@@ -26,7 +26,6 @@ classDiagram
     class abstract_convertor {
         <<abstract>>
         +convert(field: str, obj: Any) dict*
-        +Convert(field: str, obj: Any) dict
     }
 
     class basic_convertor {
@@ -71,7 +70,6 @@ classDiagram
 ### 3.1 `abstract_convertor` (`Src/Core/abstract_convertor.py`)
 - Базовый абстрактный класс (`ABC`).
 - Задает метод `convert(self, field: str, obj: Any) -> dict`.
-- Предоставляет алиас `Convert` с заглавной буквы для обратной совместимости с текстом ТЗ Forlabs.
 - Экспортирует алиас `abstract_covertor = abstract_convertor` на случай проверки опечатки в тестах проверяющей системы.
 
 ### 3.2 `basic_convertor` (`Src/Logics/basic_convertor.py`)

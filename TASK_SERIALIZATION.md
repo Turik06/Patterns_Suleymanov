@@ -53,7 +53,6 @@ classDiagram
     class abstract_convertor {
         <<abstract>>
         +convert(field: str, obj: Any) dict*
-        +Convert(field: str, obj: Any) dict
     }
 
     class basic_convertor {
@@ -96,7 +95,6 @@ classDiagram
   - Абстрактный метод.
   - Если `field` не пустой: возвращает `{field: converted_value}`.
   - Если `field` пустой / не передан: возвращает сконвертированное значение или словарь свойств.
-- Метод `Convert`: алиас на `convert` для строгой совместимости с текстом ТЗ.
 - Экспорт алиаса `abstract_covertor = abstract_convertor` (на случай опечатки в автоматических тестах).
 
 #### 2. `basic_convertor` (`Src/Logics/basic_convertor.py`)
@@ -146,7 +144,7 @@ classDiagram
 * [ ] Создать файл `Src/Core/abstract_convertor.py`.
 * [ ] Определить абстрактный класс `abstract_convertor(ABC)`.
 * [ ] Реализовать абстрактный метод `convert(self, field: str, obj: Any) -> dict`.
-* [ ] Добавить алиасы `Convert = convert` и `abstract_covertor = abstract_convertor`.
+* [ ] Добавить алиас `abstract_covertor = abstract_convertor`.
 * [ ] Добавить валидацию входных параметров через `validator` / `argument_exception`.
 
 ### Этап 2: Реализация `basic_convertor`

@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import Any
 from Src.Core.abstract_convertor import abstract_convertor
 from Src.Core.abstract_model import abstract_model
+from Src.Core.common import common
 from Src.Core.exception import argument_exception
 
 
@@ -97,18 +98,21 @@ class reference_convertor(abstract_convertor):
         visited_copy.add(obj_id)
 
         raw_data = {}
-        for prop_name in dir(obj.__class__):
+        try:
+            fields = common.get_fields(obj)
+        except Exception:
+            fields = []
+
+        for prop_name in fields:
             if prop_name.startswith("_") or prop_name in self._IGNORED_PROPERTIES:
                 continue
 
-            attr = getattr(obj.__class__, prop_name, None)
-            if isinstance(attr, property):
-                try:
-                    val = getattr(obj, prop_name)
-                except Exception:
-                    continue
+            try:
+                val = getattr(obj, prop_name)
+            except Exception:
+                continue
 
-                raw_data[prop_name] = self._serialize_value(val, visited_copy)
+            raw_data[prop_name] = self._serialize_value(val, visited_copy)
 
         # Упорядочиваем: id и name первыми, остальные свойства по алфавиту
         result = {}
@@ -144,6 +148,3 @@ class reference_convertor(abstract_convertor):
             return {k: self._serialize_value(v, visited) for k, v in value.items()}
 
         return str(value)
-
-
-ReferenceConvertor = reference_convertor

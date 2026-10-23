@@ -1,0 +1,518 @@
+{
+  "06830f72-0bc4-4f0a-bbed-36a99e404410": {
+    "id": "06830f72-0bc4-4f0a-bbed-36a99e404410",
+    "name": "Тесто для блинов",
+    "brutto": 208.75,
+    "cooking_time": 15,
+    "dish": {
+      "id": "10c769d5-e33e-449a-be23-f04b7cd1ea53",
+      "name": "Тесто для блинов",
+      "full_name": "Тесто блинное жидкое полуфабрикат",
+      "group": {
+        "id": "cba6c1fb-dc9f-4619-a15a-f61e38c7251f",
+        "name": "Блюда"
+      },
+      "range": {
+        "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+        "name": "штука",
+        "base_range": null,
+        "conversion_factor": 1
+      }
+    },
+    "instructions": [
+      "В глубокую емкость разбить яйца, добавить сахар и соль, взбить венчиком.",
+      "Влить теплое молоко (около 30°C), перемешать.",
+      "Постепенно ввести просеянную муку, вымешивая венчиком до однородного жидкого теста."
+    ],
+    "netto": 205.75,
+    "portions": 1,
+    "rows": [
+      {
+        "id": "1ca7dcd4-c433-4ff0-b7e0-10ea28975e31",
+        "name": "Мука пшеничная",
+        "brutto": 50.0,
+        "netto": 50.0,
+        "nomenclature": {
+          "id": "db3aa31d-dd49-4cef-83c8-d6472c7dd8af",
+          "name": "Мука пшеничная",
+          "full_name": "Мука пшеничная высший сорт",
+          "group": {
+            "id": "b5472452-8c34-41e6-be31-1366ac79ae6c",
+            "name": "Бакалея"
+          },
+          "range": {
+            "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+            "name": "килограмм",
+            "base_range": {
+              "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+              "name": "грамм",
+              "base_range": null,
+              "conversion_factor": 1
+            },
+            "conversion_factor": 1000
+          }
+        },
+        "range": {
+          "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+          "name": "килограмм",
+          "base_range": {
+            "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+            "name": "грамм",
+            "base_range": null,
+            "conversion_factor": 1
+          },
+          "conversion_factor": 1000
+        },
+        "sub_recipe": null
+      },
+      {
+        "id": "4a5f64b1-4ac5-4748-b538-6264496941fb",
+        "name": "Молоко 3.2%",
+        "brutto": 125.0,
+        "netto": 125.0,
+        "nomenclature": {
+          "id": "e2648d6d-607c-4ca3-ad8e-d8be285426cc",
+          "name": "Молоко 3.2%",
+          "full_name": "Молоко коровье пастеризованное 3.2%",
+          "group": {
+            "id": "0c986db8-2f62-45c8-b0fc-9bf16a3bbe72",
+            "name": "Молочные продукты"
+          },
+          "range": {
+            "id": "ec0b26e1-f682-40c6-8dd6-8481d0619e38",
+            "name": "литр",
+            "base_range": {
+              "id": "08e6e9a9-c276-443a-95df-2a0d0e58a9a2",
+              "name": "миллилитр",
+              "base_range": null,
+              "conversion_factor": 1
+            },
+            "conversion_factor": 1000
+          }
+        },
+        "range": {
+          "id": "ec0b26e1-f682-40c6-8dd6-8481d0619e38",
+          "name": "литр",
+          "base_range": {
+            "id": "08e6e9a9-c276-443a-95df-2a0d0e58a9a2",
+            "name": "миллилитр",
+            "base_range": null,
+            "conversion_factor": 1
+          },
+          "conversion_factor": 1000
+        },
+        "sub_recipe": null
+      },
+      {
+        "id": "dc128e44-acba-4b61-b398-390e62820b8b",
+        "name": "Яйца куриные",
+        "brutto": 25.0,
+        "netto": 22.0,
+        "nomenclature": {
+          "id": "9429b275-ecdc-4afa-b7de-a86ea0e35689",
+          "name": "Яйца куриные",
+          "full_name": "Яйца куриные столовые С0",
+          "group": {
+            "id": "0c986db8-2f62-45c8-b0fc-9bf16a3bbe72",
+            "name": "Молочные продукты"
+          },
+          "range": {
+            "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+            "name": "штука",
+            "base_range": null,
+            "conversion_factor": 1
+          }
+        },
+        "range": {
+          "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+          "name": "штука",
+          "base_range": null,
+          "conversion_factor": 1
+        },
+        "sub_recipe": null
+      },
+      {
+        "id": "1eda29a2-a9b0-453e-aa17-abed228529c6",
+        "name": "Сахар",
+        "brutto": 7.5,
+        "netto": 7.5,
+        "nomenclature": {
+          "id": "f599b6df-a335-4552-ae14-4ee1477e5d50",
+          "name": "Сахар",
+          "full_name": "Сахар белый кристаллический",
+          "group": {
+            "id": "b5472452-8c34-41e6-be31-1366ac79ae6c",
+            "name": "Бакалея"
+          },
+          "range": {
+            "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+            "name": "килограмм",
+            "base_range": {
+              "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+              "name": "грамм",
+              "base_range": null,
+              "conversion_factor": 1
+            },
+            "conversion_factor": 1000
+          }
+        },
+        "range": {
+          "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+          "name": "килограмм",
+          "base_range": {
+            "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+            "name": "грамм",
+            "base_range": null,
+            "conversion_factor": 1
+          },
+          "conversion_factor": 1000
+        },
+        "sub_recipe": null
+      },
+      {
+        "id": "e7ac67e4-4601-42fd-a140-de4e9d83e4ca",
+        "name": "Соль",
+        "brutto": 1.25,
+        "netto": 1.25,
+        "nomenclature": {
+          "id": "8adf5bea-e077-45fb-98e4-485a888933dc",
+          "name": "Соль",
+          "full_name": "Соль поваренная пищевая",
+          "group": {
+            "id": "b5472452-8c34-41e6-be31-1366ac79ae6c",
+            "name": "Бакалея"
+          },
+          "range": {
+            "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+            "name": "килограмм",
+            "base_range": {
+              "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+              "name": "грамм",
+              "base_range": null,
+              "conversion_factor": 1
+            },
+            "conversion_factor": 1000
+          }
+        },
+        "range": {
+          "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+          "name": "килограмм",
+          "base_range": {
+            "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+            "name": "грамм",
+            "base_range": null,
+            "conversion_factor": 1
+          },
+          "conversion_factor": 1000
+        },
+        "sub_recipe": null
+      }
+    ]
+  },
+  "8ab092a0-880a-46d1-9f0f-23db3c9e0620": {
+    "id": "8ab092a0-880a-46d1-9f0f-23db3c9e0620",
+    "name": "Блины классические",
+    "brutto": 221.25,
+    "cooking_time": 25,
+    "dish": {
+      "id": "99319c4c-6c09-419e-898b-82f59020ea4e",
+      "name": "Блины классические",
+      "full_name": "Блины классические тонкие",
+      "group": {
+        "id": "cba6c1fb-dc9f-4619-a15a-f61e38c7251f",
+        "name": "Блюда"
+      },
+      "range": {
+        "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+        "name": "штука",
+        "base_range": null,
+        "conversion_factor": 1
+      }
+    },
+    "instructions": [
+      "Разогреть блинную сковороду до 180-200°C и смазать тонким слоем масла.",
+      "Половником налить порцию теста и равномерно распределить по сковороде.",
+      "Выпекать 60-80 секунд с одной стороны и 30-40 секунд с обратной.",
+      "Готовый блин переложить на блюдо и смазать сливочным маслом."
+    ],
+    "netto": 187.5,
+    "portions": 1,
+    "rows": [
+      {
+        "id": "4df1f0d5-8f4a-4dc2-a8d9-4590c5eba25b",
+        "name": "Тесто для блинов",
+        "brutto": 208.75,
+        "netto": 175.0,
+        "nomenclature": {
+          "id": "10c769d5-e33e-449a-be23-f04b7cd1ea53",
+          "name": "Тесто для блинов",
+          "full_name": "Тесто блинное жидкое полуфабрикат",
+          "group": {
+            "id": "cba6c1fb-dc9f-4619-a15a-f61e38c7251f",
+            "name": "Блюда"
+          },
+          "range": {
+            "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+            "name": "штука",
+            "base_range": null,
+            "conversion_factor": 1
+          }
+        },
+        "range": {
+          "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+          "name": "штука",
+          "base_range": null,
+          "conversion_factor": 1
+        },
+        "sub_recipe": {
+          "id": "06830f72-0bc4-4f0a-bbed-36a99e404410",
+          "name": "Тесто для блинов",
+          "brutto": 208.75,
+          "cooking_time": 15,
+          "dish": {
+            "id": "10c769d5-e33e-449a-be23-f04b7cd1ea53",
+            "name": "Тесто для блинов",
+            "full_name": "Тесто блинное жидкое полуфабрикат",
+            "group": {
+              "id": "cba6c1fb-dc9f-4619-a15a-f61e38c7251f",
+              "name": "Блюда"
+            },
+            "range": {
+              "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+              "name": "штука",
+              "base_range": null,
+              "conversion_factor": 1
+            }
+          },
+          "instructions": [
+            "В глубокую емкость разбить яйца, добавить сахар и соль, взбить венчиком.",
+            "Влить теплое молоко (около 30°C), перемешать.",
+            "Постепенно ввести просеянную муку, вымешивая венчиком до однородного жидкого теста."
+          ],
+          "netto": 205.75,
+          "portions": 1,
+          "rows": [
+            {
+              "id": "1ca7dcd4-c433-4ff0-b7e0-10ea28975e31",
+              "name": "Мука пшеничная",
+              "brutto": 50.0,
+              "netto": 50.0,
+              "nomenclature": {
+                "id": "db3aa31d-dd49-4cef-83c8-d6472c7dd8af",
+                "name": "Мука пшеничная",
+                "full_name": "Мука пшеничная высший сорт",
+                "group": {
+                  "id": "b5472452-8c34-41e6-be31-1366ac79ae6c",
+                  "name": "Бакалея"
+                },
+                "range": {
+                  "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+                  "name": "килограмм",
+                  "base_range": {
+                    "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+                    "name": "грамм",
+                    "base_range": null,
+                    "conversion_factor": 1
+                  },
+                  "conversion_factor": 1000
+                }
+              },
+              "range": {
+                "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+                "name": "килограмм",
+                "base_range": {
+                  "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+                  "name": "грамм",
+                  "base_range": null,
+                  "conversion_factor": 1
+                },
+                "conversion_factor": 1000
+              },
+              "sub_recipe": null
+            },
+            {
+              "id": "4a5f64b1-4ac5-4748-b538-6264496941fb",
+              "name": "Молоко 3.2%",
+              "brutto": 125.0,
+              "netto": 125.0,
+              "nomenclature": {
+                "id": "e2648d6d-607c-4ca3-ad8e-d8be285426cc",
+                "name": "Молоко 3.2%",
+                "full_name": "Молоко коровье пастеризованное 3.2%",
+                "group": {
+                  "id": "0c986db8-2f62-45c8-b0fc-9bf16a3bbe72",
+                  "name": "Молочные продукты"
+                },
+                "range": {
+                  "id": "ec0b26e1-f682-40c6-8dd6-8481d0619e38",
+                  "name": "литр",
+                  "base_range": {
+                    "id": "08e6e9a9-c276-443a-95df-2a0d0e58a9a2",
+                    "name": "миллилитр",
+                    "base_range": null,
+                    "conversion_factor": 1
+                  },
+                  "conversion_factor": 1000
+                }
+              },
+              "range": {
+                "id": "ec0b26e1-f682-40c6-8dd6-8481d0619e38",
+                "name": "литр",
+                "base_range": {
+                  "id": "08e6e9a9-c276-443a-95df-2a0d0e58a9a2",
+                  "name": "миллилитр",
+                  "base_range": null,
+                  "conversion_factor": 1
+                },
+                "conversion_factor": 1000
+              },
+              "sub_recipe": null
+            },
+            {
+              "id": "dc128e44-acba-4b61-b398-390e62820b8b",
+              "name": "Яйца куриные",
+              "brutto": 25.0,
+              "netto": 22.0,
+              "nomenclature": {
+                "id": "9429b275-ecdc-4afa-b7de-a86ea0e35689",
+                "name": "Яйца куриные",
+                "full_name": "Яйца куриные столовые С0",
+                "group": {
+                  "id": "0c986db8-2f62-45c8-b0fc-9bf16a3bbe72",
+                  "name": "Молочные продукты"
+                },
+                "range": {
+                  "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+                  "name": "штука",
+                  "base_range": null,
+                  "conversion_factor": 1
+                }
+              },
+              "range": {
+                "id": "c5ff860c-6e1c-42ac-b5b3-4ad8e43fbfef",
+                "name": "штука",
+                "base_range": null,
+                "conversion_factor": 1
+              },
+              "sub_recipe": null
+            },
+            {
+              "id": "1eda29a2-a9b0-453e-aa17-abed228529c6",
+              "name": "Сахар",
+              "brutto": 7.5,
+              "netto": 7.5,
+              "nomenclature": {
+                "id": "f599b6df-a335-4552-ae14-4ee1477e5d50",
+                "name": "Сахар",
+                "full_name": "Сахар белый кристаллический",
+                "group": {
+                  "id": "b5472452-8c34-41e6-be31-1366ac79ae6c",
+                  "name": "Бакалея"
+                },
+                "range": {
+                  "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+                  "name": "килограмм",
+                  "base_range": {
+                    "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+                    "name": "грамм",
+                    "base_range": null,
+                    "conversion_factor": 1
+                  },
+                  "conversion_factor": 1000
+                }
+              },
+              "range": {
+                "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+                "name": "килограмм",
+                "base_range": {
+                  "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+                  "name": "грамм",
+                  "base_range": null,
+                  "conversion_factor": 1
+                },
+                "conversion_factor": 1000
+              },
+              "sub_recipe": null
+            },
+            {
+              "id": "e7ac67e4-4601-42fd-a140-de4e9d83e4ca",
+              "name": "Соль",
+              "brutto": 1.25,
+              "netto": 1.25,
+              "nomenclature": {
+                "id": "8adf5bea-e077-45fb-98e4-485a888933dc",
+                "name": "Соль",
+                "full_name": "Соль поваренная пищевая",
+                "group": {
+                  "id": "b5472452-8c34-41e6-be31-1366ac79ae6c",
+                  "name": "Бакалея"
+                },
+                "range": {
+                  "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+                  "name": "килограмм",
+                  "base_range": {
+                    "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+                    "name": "грамм",
+                    "base_range": null,
+                    "conversion_factor": 1
+                  },
+                  "conversion_factor": 1000
+                }
+              },
+              "range": {
+                "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+                "name": "килограмм",
+                "base_range": {
+                  "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+                  "name": "грамм",
+                  "base_range": null,
+                  "conversion_factor": 1
+                },
+                "conversion_factor": 1000
+              },
+              "sub_recipe": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "97ec5742-0ad1-4768-add7-5b0b549c4b22",
+        "name": "Масло сливочное",
+        "brutto": 12.5,
+        "netto": 12.5,
+        "nomenclature": {
+          "id": "1131e97a-f778-468f-bb17-d75eb982583f",
+          "name": "Масло сливочное",
+          "full_name": "Масло сливочное крестьянское 72.5%",
+          "group": {
+            "id": "0c986db8-2f62-45c8-b0fc-9bf16a3bbe72",
+            "name": "Молочные продукты"
+          },
+          "range": {
+            "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+            "name": "килограмм",
+            "base_range": {
+              "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+              "name": "грамм",
+              "base_range": null,
+              "conversion_factor": 1
+            },
+            "conversion_factor": 1000
+          }
+        },
+        "range": {
+          "id": "ee55e19c-8501-402c-9b1b-a60a1a95d0b6",
+          "name": "килограмм",
+          "base_range": {
+            "id": "6ce4a1fa-b301-4431-9b87-2bae3232d30e",
+            "name": "грамм",
+            "base_range": null,
+            "conversion_factor": 1
+          },
+          "conversion_factor": 1000
+        },
+        "sub_recipe": null
+      }
+    ]
+  }
+}

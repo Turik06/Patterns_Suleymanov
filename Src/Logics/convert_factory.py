@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Any, Type
 from Src.Core.abstract_convertor import abstract_convertor
 from Src.Core.abstract_model import abstract_model
+from Src.Core.common import common
 from Src.Core.exception import argument_exception
 from Src.Logics.basic_convertor import basic_convertor
 from Src.Logics.datetime_convertor import datetime_convertor
@@ -124,12 +125,6 @@ class convert_factory:
         convertor = self.get_convertor(obj)
         return convertor.convert(field, obj)
 
-    def Convert(self, field: Any = "", obj: Any = _UNSET) -> Any:
-        """
-        Алиас метода convert с заглавной буквы (согласно ТЗ).
-        """
-        return self.convert(field, obj)
-
     def serialize(self, obj: Any, visited: set = None) -> Any:
         """
         Рекурсивная сериализация любого объекта в структуры dict/list/примитивы.
@@ -162,6 +157,30 @@ class convert_factory:
         if isinstance(obj, dict):
             return {str(k): self.serialize(v, visited) for k, v in obj.items()}
 
+        # Проверка составного объекта со свойствами @property (например, DTO или тестовый стаб)
+        try:
+            fields = common.get_fields(obj)
+        except Exception:
+            fields = []
+
+        if fields:
+            obj_id = str(getattr(obj, "id", id(obj)))
+            if obj_id in visited:
+                return {"id": obj_id}
+            visited_copy = set(visited)
+            visited_copy.add(obj_id)
+
+            res = {}
+            for prop in fields:
+                if prop.startswith("_"):
+                    continue
+                try:
+                    val = getattr(obj, prop)
+                except Exception:
+                    continue
+                res[prop] = self.serialize(val, visited_copy)
+            return res
+
         try:
             conv = self.get_convertor(obj)
             return conv.convert("", obj)
@@ -187,6 +206,3 @@ class convert_factory:
         """Выгрузка сериализованного объекта в файловый поток."""
         serialized = self.serialize(obj)
         json.dump(serialized, fp, ensure_ascii=False, indent=indent)
-
-
-ConvertFactory = convert_factory

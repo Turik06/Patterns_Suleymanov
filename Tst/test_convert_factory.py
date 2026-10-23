@@ -258,7 +258,7 @@ class TestConvertFactory:
 
     def test_success_convert_factory_convert_single_argument(self):
         """
-        Ожидание: Корректная работа convert и Convert при передаче только одного объекта.
+        Ожидание: Корректная работа convert при передаче только одного объекта.
         Метод: convert_factory.convert
         Описание: Проверяет вызов методов фабрики без указания внешнего ключа поля.
         """
@@ -268,9 +268,76 @@ class TestConvertFactory:
 
         # Act (Действие)
         res1 = factory.convert(group)
-        res2 = factory.Convert(group)
 
         # Assert (Проверка)
         assert isinstance(res1, dict)
         assert res1["name"] == "Тест одного аргумента"
-        assert res2["name"] == "Тест одного аргумента"
+
+    def test_success_convert_factory_convert_list_of_models_returns_list_of_dicts(self):
+        """
+        Ожидание: Преобразование списка объектов в список словарей с сохранением исходного порядка.
+        Метод: convert_factory.convert
+        Описание: Проверяет вызов convert с коллекцией моделей.
+        """
+        # Arrange (Подготовка)
+        factory = convert_factory()
+        g1 = nomenclature_group_model("Группа 1")
+        g2 = nomenclature_group_model("Группа 2")
+
+        # Act (Действие)
+        res = factory.convert([g1, g2])
+
+        # Assert (Проверка)
+        assert isinstance(res, list)
+        assert len(res) == 2
+        assert [item["name"] for item in res] == ["Группа 1", "Группа 2"]
+
+    def test_success_convert_factory_convert_composite_with_datetime_merged(self):
+        """
+        Ожидание: Корректная сериализация составного объекта со свойствами datetime и примитивами.
+        Метод: convert_factory.serialize
+        Описание: Проверяет слияние полей даты (ISO) и текстовых свойств в итоговый словарь.
+        """
+        # Arrange (Подготовка)
+        class dated_stub:
+            @property
+            def created(self) -> datetime:
+                return datetime(2026, 10, 21, 12, 30)
+
+            @property
+            def name(self) -> str:
+                return "тестовый стаб"
+
+        factory = convert_factory()
+
+        # Act (Действие)
+        res = factory.convert(dated_stub())
+
+        # Assert (Проверка)
+        assert isinstance(res, dict)
+        assert res["name"] == "тестовый стаб"
+        assert res["created"] == "2026-10-21T12:30:00"
+
+    def test_success_convert_factory_dumped_json_files_are_valid(self):
+        """
+        Ожидание: Файлы дампов JSON (Dumps/) существуют, не пусты и десериализуются без ошибок.
+        Метод: convert_factory.dump
+        Описание: Проверяет требование № 5 технического задания (наличие JSON-файлов в репозитории).
+        """
+        # Arrange (Подготовка)
+        import os
+
+        files_to_check = [
+            "Dumps/storage_data.json",
+            "Dumps/recipes.json",
+            "Dumps/ranges.json",
+        ]
+
+        # Act & Assert (Действие и Проверка)
+        for filepath in files_to_check:
+            assert os.path.exists(filepath), f"Файл дампа {filepath} должен существовать"
+            assert os.path.getsize(filepath) > 0, f"Файл дампа {filepath} не должен быть пустым"
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                assert data is not None
+

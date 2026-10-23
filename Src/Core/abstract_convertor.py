@@ -25,16 +25,7 @@ class abstract_convertor(ABC):
         """
         pass
 
-    def Convert(self, field: Any, obj: Any = _UNSET) -> dict:
-        """
-        Алиас метода convert с заглавной буквы (для строгой совместимости с формулировкой ТЗ).
-        """
-        if obj is _UNSET:
-            return self.convert(field)
-        return self.convert(field, obj)
 
-
-# Алиасы для совместимости с опечаткой в формулировке задания Forlabs и соглашениями об именовании
+# Алиас для совместимости с опечаткой в формулировке задания Forlabs
 abstract_covertor = abstract_convertor
-AbstractConvertor = abstract_convertor
-AbstractCovertor = abstract_convertor
+

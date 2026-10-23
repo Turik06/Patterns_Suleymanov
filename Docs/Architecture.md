@@ -161,7 +161,6 @@ classDiagram
     class abstract_convertor {
         <<abstract>>
         +convert(field: str, obj: Any) dict*
-        +Convert(field: str, obj: Any) dict
     }
 
     class basic_convertor {

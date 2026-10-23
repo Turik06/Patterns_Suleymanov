@@ -35,21 +35,6 @@ class TestAbstractConvertor:
         # Arrange & Act & Assert
         assert abstract_covertor is abstract_convertor
 
-    def test_success_abstract_convertor_convert_capital_letter_alias(self):
-        """
-        Ожидание: Корректный вызов метода Convert с заглавной буквы.
-        Метод: abstract_convertor.Convert
-        Описание: Проверяет работоспособность метода Convert как алиаса к convert.
-        """
-        # Arrange (Подготовка)
-        conv = basic_convertor()
-
-        # Act (Действие)
-        result = conv.Convert("field", 123)
-
-        # Assert (Проверка)
-        assert result == {"field": 123}
-
 
 class TestBasicConvertor:
     """
@@ -167,6 +152,48 @@ class TestBasicConvertor:
         with pytest.raises(argument_exception):
             conv.convert("field", {"k": "v"})
 
+    def test_success_basic_convertor_convert_model_numbers_and_strings(self):
+        """
+        Ожидание: Извлечение словаря числовых и строковых свойств модели при вызове с одним аргументом.
+        Метод: basic_convertor.convert
+        Описание: Проверяет извлечение примитивных свойств (name, conversion_factor, id) из range_model и пропуск ссылок.
+        """
+        # Arrange (Подготовка)
+        conv = basic_convertor()
+        kg = range_model("килограмм", 1000, None)
+
+        # Act (Действие)
+        res = conv.convert(kg)
+
+        # Assert (Проверка)
+        assert isinstance(res, dict)
+        assert res["name"] == "килограмм"
+        assert res["conversion_factor"] == 1000
+        assert res["id"] == str(kg.id)
+        assert "base_range" not in res
+
+    def test_success_basic_convertor_convert_composite_skips_non_primitives(self):
+        """
+        Ожидание: Пропуск ссылок на другие сущности при извлечении примитивных свойств модели.
+        Метод: basic_convertor.convert
+        Описание: Проверяет, что у nomenclature_model извлекаются id, name, full_name, а group и range пропускаются.
+        """
+        # Arrange (Подготовка)
+        conv = basic_convertor()
+        group = nomenclature_group_model("Бакалея")
+        unit = range_model("килограмм", 1000, None)
+        item = nomenclature_model("Мука", "Мука пшеничная", group, unit)
+
+        # Act (Действие)
+        res = conv.convert(item)
+
+        # Assert (Проверка)
+        assert res["name"] == "Мука"
+        assert res["full_name"] == "Мука пшеничная"
+        assert res["id"] == str(item.id)
+        assert "group" not in res
+        assert "range" not in res
+
 
 class TestDatetimeConvertor:
     """
@@ -240,6 +267,46 @@ class TestDatetimeConvertor:
 
         with pytest.raises(argument_exception):
             conv.convert("date", None)
+
+    def test_success_datetime_convertor_convert_composite_object_with_date(self):
+        """
+        Ожидание: Извлечение свойств даты и времени из составного объекта при вызове с одним аргументом.
+        Метод: datetime_convertor.convert
+        Описание: Проверяет извлечение свойства created в формате ISO 8601 из объекта-стаба.
+        """
+        # Arrange (Подготовка)
+        class dated_stub:
+            @property
+            def created(self) -> datetime:
+                return datetime(2026, 10, 21, 12, 30)
+
+            @property
+            def name(self) -> str:
+                return "заглушка"
+
+        conv = datetime_convertor()
+
+        # Act (Действие)
+        res = conv.convert(dated_stub())
+
+        # Assert (Проверка)
+        assert res == {"created": "2026-10-21T12:30:00"}
+
+    def test_success_datetime_convertor_convert_composite_object_without_date_returns_empty(self):
+        """
+        Ожидание: Возврат пустого словаря при отсутствии свойств даты в переданном составном объекте.
+        Метод: datetime_convertor.convert
+        Описание: Проверяет, что у модели без дат (range_model) результат конвертации пустой.
+        """
+        # Arrange (Подготовка)
+        conv = datetime_convertor()
+        kg = range_model("кг", 1000, None)
+
+        # Act (Действие)
+        res = conv.convert(kg)
+
+        # Assert (Проверка)
+        assert res == {}
 
 
 class TestReferenceConvertor:
@@ -402,7 +469,7 @@ class TestReferenceConvertor:
 
         # Act & Assert (Действие и Проверка)
         assert b_conv.convert(100) == {"value": 100}
-        assert b_conv.Convert("abc") == {"value": "abc"}
+        assert b_conv.convert("abc") == {"value": "abc"}
         assert dt_conv.convert(d) == {"value": "2026-10-21"}
 
         res = r_conv.convert(group)
