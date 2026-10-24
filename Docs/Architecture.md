@@ -227,6 +227,7 @@ classDiagram
 ---
 
 ## Архитектура подсистем
+* [Связи доменных моделей и рекурсия (EntityTree)](./EntityTree.md)
 * [Архитектура подсистемы сериализации в JSON (JsonSerialization)](./JsonSerialization.md)
 * [Архитектура подсистемы отчетов (Abstract Factory & Template Method)](./ReportFactory.md)
 * [Архитектура модели рецептов (RecipeModel)](./RecipeModel.md)
