@@ -143,8 +143,6 @@ sequenceDiagram
     deactivate Factory
 ```
 
-> Детальные сценарии с кодами ответов HTTP (200, 400, 404) см. в [Диаграммах последовательности (SequenceDiagrams.md)](./SequenceDiagrams.md).
-
 ---
 
 ## 5. Примеры использования

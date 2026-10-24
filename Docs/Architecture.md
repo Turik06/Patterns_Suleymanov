@@ -227,9 +227,6 @@ classDiagram
 ---
 
 ## Архитектура подсистем
-* [Диаграмма вариантов использования (UseCase)](./UseCase.md)
-* [Граф связей доменных объектов и рекурсии (EntityTree)](./EntityTree.md)
-* [Диаграммы последовательности и жизненного цикла API (SequenceDiagrams)](./SequenceDiagrams.md)
 * [Архитектура подсистемы сериализации в JSON (JsonSerialization)](./JsonSerialization.md)
 * [Архитектура подсистемы отчетов (Abstract Factory & Template Method)](./ReportFactory.md)
 * [Архитектура модели рецептов (RecipeModel)](./RecipeModel.md)
