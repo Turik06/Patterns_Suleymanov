@@ -73,17 +73,17 @@ class basic_convertor(abstract_convertor):
             )
 
         # Вызов с двумя аргументами: conv.convert("count", 10)
+        if not isinstance(obj, (int, float, str, bool)) and obj is not None:
+            raise argument_exception(
+                "obj",
+                f"Неподдерживаемый тип для basic_convertor: {type(obj).__name__}"
+            )
+
         if field is None or not isinstance(field, str):
             raise argument_exception("field", "Наименование поля должно быть строкой")
 
         field = field.strip()
         if not field:
             raise argument_exception("field", "Наименование поля не может быть пустым")
-
-        if not isinstance(obj, (int, float, str, bool)) and obj is not None:
-            raise argument_exception(
-                "obj",
-                f"Неподдерживаемый тип для basic_convertor: {type(obj).__name__}"
-            )
 
         return {field: obj}

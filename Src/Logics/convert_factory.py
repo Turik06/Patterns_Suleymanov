@@ -58,10 +58,10 @@ class convert_factory:
     def _get_instance(self, convertor_cls: Type[abstract_convertor]) -> abstract_convertor:
         """Получить или создать экземпляр конвертера с передачей контекста фабрики."""
         if convertor_cls not in self._instances:
-            try:
-                self._instances[convertor_cls] = convertor_cls(factory=self)
-            except TypeError:
-                self._instances[convertor_cls] = convertor_cls()
+            instance = convertor_cls()
+            if hasattr(instance, "factory"):
+                instance.factory = self
+            self._instances[convertor_cls] = instance
         return self._instances[convertor_cls]
 
     def get_convertor(self, obj_or_type: Any) -> abstract_convertor:

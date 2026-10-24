@@ -73,17 +73,18 @@ class datetime_convertor(abstract_convertor):
                 f"Неподдерживаемый тип для datetime_convertor: {type(val).__name__}"
             )
 
+        # Вызов с двумя аргументами: conv.convert("date", dt)
+        if not isinstance(obj, (datetime, date)):
+            raise argument_exception(
+                "obj",
+                f"Неподдерживаемый тип для datetime_convertor: {type(obj).__name__}"
+            )
+
         if field is None or not isinstance(field, str):
             raise argument_exception("field", "Наименование поля должно быть строкой")
 
         field = field.strip()
         if not field:
             raise argument_exception("field", "Наименование поля не может быть пустым")
-
-        if not isinstance(obj, (datetime, date)):
-            raise argument_exception(
-                "obj",
-                f"Неподдерживаемый тип для datetime_convertor: {type(obj).__name__}"
-            )
 
         return {field: obj.isoformat()}
