@@ -1,10 +1,6 @@
-# Архитектура подсистемы отчетов (Abstract Factory & Template Method)
+# Подсистема отчетов (ReportFactory)
 
-Подсистема отчетов предназначена для универсальной выгрузки данных доменных сущностей (`recipe_model`, `nomenclature_model`, `range_model` и др.) в различных форматах представления данных в соответствии с принципами **SOLID** и шаблонами GoF (**Abstract Factory** и **Template Method**).
-
----
-
-## 1. Диаграмма классов (UML Class Diagram)
+## 1. Диаграмма классов
 
 ```mermaid
 classDiagram
@@ -134,87 +130,54 @@ classDiagram
 
 ---
 
-## 2. Диаграмма последовательности (UML Sequence Diagram: REST API)
-
-Показывает жизненный цикл выполнения запроса к HTTP эндпоинту отчета с полной обработкой успешных путей (**200 OK**) и ошибок (**400 Bad Request**, **404 Not Found**):
+## 2. Диаграмма последовательности (REST API)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 👤 Клиент [Браузер / API]
-    participant Flask as Flask Router [main.py]
+    actor User as Клиент
+    participant Flask as Flask Router
     participant Storage as storage_manager
     participant Factory as report_factory
     participant Settings as settings_model
     participant Report as abstract_report
-    participant Result as report_result_dto
 
-    User->>Flask: GET /api/report/{type}/{id}?format={fmt}
-    activate Flask
+    User->>Flask: GET запрос отчета (тип, код, формат)
+    Flask->>Storage: find_entity(entity_type, entity_id)
+    Storage-->>Flask: Экземпляр сущности
 
-    Flask->>Storage: resolve_category(type)
-    activate Storage
-    Storage-->>Flask: category (или None)
-    deactivate Storage
-
-    alt Неизвестная категория сущности
-        Flask-->>User: 🔴 400 Bad Request (JSON {"error": "Неизвестный тип сущности"})
-    else Категория найдена
-        Flask->>Storage: get_by_type_and_id(type, id)
-        activate Storage
-        Storage-->>Flask: entity (или None)
-        deactivate Storage
-
-        alt Сущность с указанным ID не найдена
-            Flask-->>User: 🔴 404 Not Found (JSON {"error": "Сущность не найдена"})
-        else Сущность найдена
-            alt Формат указан явно в URL / query
-                Flask->>Factory: create(format_name, type)
-            else Запрос по умолчанию (/api/report/default/...)
-                Flask->>Factory: create_default(type)
-                Factory->>Settings: чтение response_format
-                Settings-->>Factory: report_type_enum
-            end
-
-            alt Некорректный формат отчета
-                Factory-->>Flask: argument_exception
-                Flask-->>User: 🔴 400 Bad Request (JSON {"error": "Некорректный формат отчета"})
-            else Фабрика вернула экземпляр отчета
-                activate Factory
-                Factory-->>Flask: Экземпляр отчета (abstract_report)
-                deactivate Factory
-
-                Flask->>Report: build(entity)
-                activate Report
-                Note over Report: Шаблонный метод build:<br/>1. build_header(entity)<br/>2. build_body(entity)<br/>3. build_footer(entity)<br/>4. Упаковка в report_result_dto
-                Report-->>Flask: report_result_dto
-                deactivate Report
-
-                Flask->>Report: create_response(result_dto, file_name)
-                activate Report
-                Report-->>Flask: HTTP Response
-                deactivate Report
-
-                alt Текстовый формат (HTML, XML, TXT)
-                    Flask-->>User: 🟢 200 OK - Отображение в браузере (Inline)
-                else Бинарный / Табличный файл (CSV, Markdown, RTF)
-                    Flask-->>User: 🟢 200 OK - Content-Disposition attachment (Скачивание файла)
-                end
-            end
-        end
+    alt Формат указан явно в URL
+        Flask->>Factory: create(format_name)
+    else Запрос по умолчанию
+        Flask->>Factory: create_default()
+        Factory->>Settings: чтение response_format
+        Settings-->>Factory: report_type_enum
     end
-    deactivate Flask
+
+    Factory-->>Flask: Экземпляр отчета
+
+    Flask->>Report: build(entity)
+    Note over Report: Шаблонный метод сборки отчета
+    Report-->>Flask: report_result_dto
+
+    Flask->>Flask: format_response(report, result)
+
+    alt Текстовый формат
+        Flask-->>User: 200 OK (отображение в браузере)
+    else Бинарный файл
+        Flask-->>User: 200 OK (скачивание файла)
+    end
 ```
 
 ---
 
-## 3. Сводная таблица форматов отчетов
+## 3. Таблица форматов
 
-| Формат | Класс отчета | Тип данных | Content-Type | Поведение в браузере |
+| Формат | Класс отчета | Тип данных | Content-Type | Поведение |
 |---|---|---|---|---|
-| **HTML** | `html_report` | Текст | `text/html; charset=utf-8` | Отображение таблицы прямо на странице |
-| **XML** | `xml_report` | Текст | `application/xml; charset=utf-8` | Отображение интерактивного дерева тегов XML |
-| **TXT** | `text_report` | Текст | `text/plain; charset=utf-8` | Отображение неформатированного текста |
-| **CSV** | `csv_report` | Бинарный | `text/csv` | Скачивание файла с разделителем `;` (Excel) |
-| **Markdown**| `markdown_report` | Бинарный | `text/markdown` | Скачивание файла `.md` с табличной разметкой |
-| **RTF** | `rtf_report` | Бинарный | `application/rtf` | Скачивание файла `.rtf` (WordPad, MS Word) |
+| **HTML** | `html_report` | Текст | `text/html; charset=utf-8` | Отображение таблицы на странице |
+| **XML** | `xml_report` | Текст | `application/xml; charset=utf-8` | Дерево тегов XML |
+| **TXT** | `text_report` | Текст | `text/plain; charset=utf-8` | Простой текст |
+| **CSV** | `csv_report` | Бинарный | `text/csv` | Скачивание файла с разделителем `;` |
+| **Markdown**| `markdown_report` | Бинарный | `text/markdown` | Скачивание файла `.md` |
+| **RTF** | `rtf_report` | Бинарный | `application/rtf` | Скачивание файла `.rtf` |
