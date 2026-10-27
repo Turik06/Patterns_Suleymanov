@@ -17,6 +17,7 @@ classDiagram
         -_ranges: dict
         -_nomenclatures: dict
         -_groups: dict
+        -_recipes: dict
         -__is_initialized: bool
         +__new__(cls) storage_manager
         +convert(settings: settings_model = None) bool
@@ -24,10 +25,12 @@ classDiagram
         +add_range(item) bool
         +add_nomenclature(item) bool
         +add_group(item) bool
+        +add_recipe(item) bool
         +storages: dict
         +ranges: dict
         +nomenclatures: dict
         +groups: dict
+        +recipes: dict
         +data: dict
         +is_initialized: bool
         +is_loaded: bool
@@ -62,6 +65,16 @@ classDiagram
         +range: range_model
     }
 
+    class recipe_model {
+        -__dish: nomenclature_model
+        -__rows: list
+        +dish: nomenclature_model
+        +rows: list
+        +portions: int
+        +brutto: float
+        +netto: float
+    }
+
     class name_id {
         <<abstract>>
         -__name: str
@@ -74,6 +87,7 @@ classDiagram
     name_id <|-- range_model
     name_id <|-- nomenclature_group_model
     name_id <|-- nomenclature_model
+    name_id <|-- recipe_model
 
     abstract_manager <|-- storage_manager
 
@@ -81,6 +95,7 @@ classDiagram
     storage_manager o-- range_model : _ranges
     storage_manager o-- nomenclature_group_model : _groups
     storage_manager o-- nomenclature_model : _nomenclatures
+    storage_manager o-- recipe_model : _recipes
 
     storage_manager ..> settings_manager : uses
 

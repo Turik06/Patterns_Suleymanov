@@ -1,10 +1,6 @@
-# Архитектура подсистемы отчетов (Abstract Factory & Template Method)
+# Подсистема отчетов (ReportFactory)
 
-Подсистема отчетов предназначена для универсальной выгрузки данных доменных сущностей (`recipe_model`, `nomenclature_model`, `range_model` и др.) в различных форматах представления данных в соответствии с принципами **SOLID** и шаблонами GoF (**Abstract Factory** и **Template Method**).
-
----
-
-## 1. Диаграмма классов (UML Class Diagram)
+## 1. Диаграмма классов
 
 ```mermaid
 classDiagram
@@ -134,58 +130,54 @@ classDiagram
 
 ---
 
-## 2. Диаграмма последовательности (UML Sequence Diagram: REST API)
-
-Показывает путь выполнения запроса к HTTP эндпоинту отчета:
+## 2. Диаграмма последовательности (REST API)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Клиент [Браузер / F12]
-    participant Flask as Flask Router [main.py]
+    actor User as Клиент
+    participant Flask as Flask Router
     participant Storage as storage_manager
     participant Factory as report_factory
     participant Settings as settings_model
     participant Report as abstract_report
-    participant Result as report_result_dto
 
-    User->>Flask: GET запрос отчета (тип сущности, код, формат)
+    User->>Flask: GET запрос отчета (тип, код, формат)
     Flask->>Storage: find_entity(entity_type, entity_id)
-    Storage-->>Flask: Экземпляр сущности (abstract_model)
+    Storage-->>Flask: Экземпляр сущности
 
-    alt Формат указан явно в URL / query
+    alt Формат указан явно в URL
         Flask->>Factory: create(format_name)
-    else Запрос по умолчанию (/api/report/default/...)
+    else Запрос по умолчанию
         Flask->>Factory: create_default()
         Factory->>Settings: чтение response_format
         Settings-->>Factory: report_type_enum
     end
 
-    Factory-->>Flask: Экземпляр отчета (abstract_report)
+    Factory-->>Flask: Экземпляр отчета
 
     Flask->>Report: build(entity)
-    Note over Report: Шаблонный метод build:<br/>1. build_header(entity)<br/>2. build_body(entity)<br/>3. build_footer(entity)<br/>4. Упаковка в report_result_dto
+    Note over Report: Шаблонный метод сборки отчета
     Report-->>Flask: report_result_dto
 
     Flask->>Flask: format_response(report, result)
-    Note over Flask: Использование свойств отчета (@property):<br/>report.mime_type, report.extension, result.binary
 
-    alt Текстовый формат (HTML, XML, TXT)
-        Flask-->>User: 200 OK - Отображение в браузере
-    else Бинарный файл (CSV, Markdown, RTF)
-        Flask-->>User: 200 OK - Content-Disposition attachment (Скачивание файла)
+    alt Текстовый формат
+        Flask-->>User: 200 OK (отображение в браузере)
+    else Бинарный файл
+        Flask-->>User: 200 OK (скачивание файла)
     end
 ```
 
 ---
 
-## 3. Сводная таблица форматов отчетов
+## 3. Таблица форматов
 
-| Формат | Класс отчета | Тип данных | Content-Type | Поведение в браузере |
+| Формат | Класс отчета | Тип данных | Content-Type | Поведение |
 |---|---|---|---|---|
-| **HTML** | `html_report` | Текст | `text/html; charset=utf-8` | Отображение таблицы прямо на странице |
-| **XML** | `xml_report` | Текст | `application/xml; charset=utf-8` | Отображение интерактивного дерева тегов XML |
-| **TXT** | `text_report` | Текст | `text/plain; charset=utf-8` | Отображение неформатированного текста |
-| **CSV** | `csv_report` | Бинарный | `text/csv` | Скачивание файла с разделителем `;` (Excel) |
-| **Markdown**| `markdown_report` | Бинарный | `text/markdown` | Скачивание файла `.md` с табличной разметкой |
-| **RTF** | `rtf_report` | Бинарный | `application/rtf` | Скачивание файла `.rtf` (WordPad, MS Word) |
+| **HTML** | `html_report` | Текст | `text/html; charset=utf-8` | Отображение таблицы на странице |
+| **XML** | `xml_report` | Текст | `application/xml; charset=utf-8` | Дерево тегов XML |
+| **TXT** | `text_report` | Текст | `text/plain; charset=utf-8` | Простой текст |
+| **CSV** | `csv_report` | Бинарный | `text/csv` | Скачивание файла с разделителем `;` |
+| **Markdown**| `markdown_report` | Бинарный | `text/markdown` | Скачивание файла `.md` |
+| **RTF** | `rtf_report` | Бинарный | `application/rtf` | Скачивание файла `.rtf` |

@@ -158,6 +158,32 @@ classDiagram
         +create_primary_list(nomenclatures) list
     }
 
+    class abstract_convertor {
+        <<abstract>>
+        +convert(field: str, obj: Any) dict*
+    }
+
+    class basic_convertor {
+        +convert(field: str, obj: Any) dict
+    }
+
+    class datetime_convertor {
+        +convert(field: str, obj: Any) dict
+    }
+
+    class reference_convertor {
+        +convert(field: str, obj: Any) dict
+    }
+
+    class convert_factory {
+        -dict _convertors
+        +register(target_type, convertor_cls)
+        +get_convertor(obj_or_type) abstract_convertor
+        +convert(field: str, obj: Any) dict
+        +serialize(obj: Any) Any
+        +to_json(obj: Any, indent: int) str
+    }
+
     name_id <|-- range_model
     name_id <|-- nomenclature_group_model
     name_id <|-- storage_model
@@ -169,6 +195,12 @@ classDiagram
 
     abstract_manager <|-- settings_manager
     abstract_manager <|-- storage_manager
+
+    abstract_convertor <|-- basic_convertor
+    abstract_convertor <|-- datetime_convertor
+    abstract_convertor <|-- reference_convertor
+    convert_factory ..> abstract_convertor : creates
+    reference_convertor ..> convert_factory : delegates
 
     nomenclature_model o-- nomenclature_group_model : group
     nomenclature_model o-- range_model : range
@@ -195,6 +227,10 @@ classDiagram
 ---
 
 ## Архитектура подсистем
+* [Связи доменных моделей и рекурсия (EntityTree)](./EntityTree.md)
+* [Диаграммы последовательности (SequenceDiagrams)](./SequenceDiagrams.md)
+* [Варианты использования (UseCase)](./UseCase.md)
+* [Архитектура подсистемы сериализации в JSON (JsonSerialization)](./JsonSerialization.md)
 * [Архитектура подсистемы отчетов (Abstract Factory & Template Method)](./ReportFactory.md)
 * [Архитектура модели рецептов (RecipeModel)](./RecipeModel.md)
 * [Архитектура менеджера настроек (SettingsManager)](./SettingsManager.md)
