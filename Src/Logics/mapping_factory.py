@@ -69,7 +69,45 @@ class mapping_factory(abstract_mapping_factory):
         return None
 
     """
-    Сконвертировать DTO в модель
+    Создать модель из DTO
     """
-    def to_model(self, source: object) -> object:
-        pass
+    def to_model(self, source: object, cache: dict = None) -> object:
+        if source is None:
+            return None
+        if isinstance(source, abstract_model):
+            return source
+        if cache is None:
+            cache = {}
+
+        code = getattr(source, "unique_code", "")
+        if code and code in cache:
+            return cache[code]
+
+        if isinstance(source, range_dto):
+            model = range_model(source.name, source.value)
+            if source.base_code and source.base_code in cache:
+                model.base = cache[source.base_code]
+        elif isinstance(source, nomenclature_group_dto):
+            model = nomenclature_group_model(source.name)
+        elif isinstance(source, storage_dto):
+            model = storage_model(source.name, source.address)
+        elif isinstance(source, nomenclature_dto):
+            model = nomenclature_model(source.name, source.name, cache.get(source.group_code), cache.get(source.range_code))
+        elif isinstance(source, recipe_row_dto):
+            model = recipe_row_model(cache.get(source.nomenclature_code), source.brutto, source.netto, cache.get(source.range_code))
+        elif isinstance(source, recipe_dto):
+            model = recipe_model(source.name)
+            model.instructions = list(source.instructions)
+            for item in (source.items or []):
+                if item in cache:
+                    model.add_row(cache[item])
+        elif isinstance(source, company_dto):
+            model = organization_model()
+            model.name, model.inn, model.bic = source.name, source.inn, source.bik
+        else:
+            return None
+
+        if code:
+            model.unique_code = code
+            cache[code] = model
+        return model
