@@ -8,15 +8,17 @@ from Src.Models.nomenclature_group_model import nomenclature_group_model
 from Src.Models.recipe_model import recipe_model
 
 
-class recipe_dict(dict):
+class storage_dict(dict):
     """
-    Словарь рецептов с поддержкой индексации по порядковому номеру [0].
+    Словарь сущностей с поддержкой индексации по номеру
     """
     def __getitem__(self, key):
-        """Получение рецепта по ключу или целочисленному индексу."""
         if isinstance(key, int):
             return list(self.values())[key]
         return super().__getitem__(key)
+
+
+recipe_dict = storage_dict
 
 
 class storage_manager(abstract_manager):
@@ -33,7 +35,7 @@ class storage_manager(abstract_manager):
     __is_initialized: bool = False
 
     # Singleton
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         """
         Реализация шаблона Singleton. Возвращает единственный экземпляр класса.
         """
@@ -41,17 +43,31 @@ class storage_manager(abstract_manager):
             cls.instance = super(storage_manager, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self):
+    def __init__(self, settings=None):
         """
-        Конструктор хранилища. Инициализирует словари данных.
+        Инициализация хранилища
         """
+        if settings is not None:
+            self._settings = settings
+
         if not hasattr(self, "_storages") or self._storages is None:
-            self._storages = {}
-            self._ranges = {}
-            self._nomenclatures = {}
-            self._groups = {}
-            self._recipes = recipe_dict()
+            self._storages = storage_dict()
+            self._ranges = storage_dict()
+            self._nomenclatures = storage_dict()
+            self._groups = storage_dict()
+            self._recipes = storage_dict()
             self.__is_initialized = False
+
+    def build(self, settings=None) -> bool:
+        """
+        Генерация первичных данных
+        """
+        if settings is not None:
+            self._settings = settings
+        self.convert(getattr(self, "_settings", None))
+        if len(self._ranges) == 0:
+            self._initialize_primary_data()
+        return True
 
     def load(self, settings=None) -> bool:
         """
@@ -251,11 +267,11 @@ class storage_manager(abstract_manager):
         """
         Очистить все словари хранилища и сбросить флаг инициализации.
         """
-        self._storages = {}
-        self._ranges = {}
-        self._nomenclatures = {}
-        self._groups = {}
-        self._recipes = recipe_dict()
+        self._storages = storage_dict()
+        self._ranges = storage_dict()
+        self._nomenclatures = storage_dict()
+        self._groups = storage_dict()
+        self._recipes = storage_dict()
         self.__is_initialized = False
 
     def first_start(self) -> None:
