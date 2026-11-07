@@ -227,9 +227,9 @@ class storage_manager(abstract_manager):
         return "receipt_model"
 
     @staticmethod
-    def ingredient_key() -> str:
-        """Ключ для ингредиентов"""
-        return "ingredient_model"
+    def recipe_row_key() -> str:
+        """Ключ для строк рецептов"""
+        return "recipe_row_model"
 
     @classmethod
     def keys(cls) -> list:
@@ -251,7 +251,7 @@ class storage_manager(abstract_manager):
 
         return {
             self.group_key(): list(self._groups.values()),
-            self.ingredient_key(): rows,
+            self.recipe_row_key(): rows,
             self.nomenclature_key(): list(self._nomenclatures.values()),
             self.range_key(): list(self._ranges.values()),
             self.receipt_key(): list(self._recipes.values()),

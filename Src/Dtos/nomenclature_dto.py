@@ -60,3 +60,11 @@ class nomenclature_dto(abstract_dto):
             dto.range_code = source.range.unique_code
 
         return dto
+
+    def to_domain_model(self, cache: dict = None) -> nomenclature_model:
+        group = cache.get(self.group_code) if cache else None
+        range_unit = cache.get(self.range_code) if cache else None
+        model = nomenclature_model(self.name, self.name, group, range_unit)
+        if self.unique_code:
+            model.unique_code = self.unique_code
+        return model

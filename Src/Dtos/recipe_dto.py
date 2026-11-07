@@ -83,3 +83,14 @@ class recipe_dto(abstract_dto):
         dto.instructions = list(source.instructions)
         dto.items = [item.unique_code for item in source.items]
         return dto
+
+    def to_domain_model(self, cache: dict = None) -> recipe_model:
+        model = recipe_model(self.name)
+        model.instructions = list(self.instructions)
+        if cache and self.items:
+            for item_code in self.items:
+                if item_code in cache:
+                    model.add_row(cache[item_code])
+        if self.unique_code:
+            model.unique_code = self.unique_code
+        return model

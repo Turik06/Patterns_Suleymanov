@@ -35,3 +35,9 @@ class nomenclature_group_dto(abstract_dto):
         dto.unique_code = source.unique_code
         dto.name = source.name
         return dto
+
+    def to_domain_model(self, cache: dict = None) -> nomenclature_group_model:
+        model = nomenclature_group_model(self.name)
+        if self.unique_code:
+            model.unique_code = self.unique_code
+        return model

@@ -46,3 +46,9 @@ class storage_dto(abstract_dto):
         dto.name = source.name
         dto.address = source.address
         return dto
+
+    def to_domain_model(self, cache: dict = None) -> storage_model:
+        model = storage_model(self.name, self.address)
+        if self.unique_code:
+            model.unique_code = self.unique_code
+        return model

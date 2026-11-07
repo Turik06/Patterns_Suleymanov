@@ -57,3 +57,12 @@ class company_dto(abstract_dto):
         dto.inn = source.inn
         dto.bik = source.bik
         return dto
+
+    def to_domain_model(self, cache: dict = None) -> organization_model:
+        model = organization_model()
+        model.name = self.name
+        model.inn = self.inn
+        model.bic = self.bik
+        if self.unique_code:
+            model.unique_code = self.unique_code
+        return model

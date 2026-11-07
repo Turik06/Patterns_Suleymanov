@@ -59,3 +59,11 @@ class range_dto(abstract_dto):
             dto.base_code = source.base.unique_code
 
         return dto
+
+    def to_domain_model(self, cache: dict = None) -> range_model:
+        model = range_model(self.name, self.value)
+        if self.base_code and cache and self.base_code in cache:
+            model.base = cache[self.base_code]
+        if self.unique_code:
+            model.unique_code = self.unique_code
+        return model

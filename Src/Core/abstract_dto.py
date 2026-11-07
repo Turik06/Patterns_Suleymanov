@@ -16,6 +16,9 @@ class abstract_dto(ABC):
     def from_domain_model(self, source: abstract_model) -> "abstract_dto":
         pass
 
+    def to_domain_model(self, cache: dict = None) -> abstract_model:
+        pass
+
     """
     Загрузить данные из словаря
     """
