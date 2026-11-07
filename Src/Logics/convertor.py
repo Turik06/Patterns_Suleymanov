@@ -1,20 +1,11 @@
 import json
 from Src.Logics.convert_factory import convert_factory
 from Src.Logics.mapping_factory import mapping_factory
-from Src.Logics.storage_manager import storage_manager
 from Src.Core.validator import validator
-from Src.Dtos.range_dto import range_dto
-from Src.Dtos.nomenclature_group_dto import nomenclature_group_dto
-from Src.Dtos.nomenclature_dto import nomenclature_dto
-from Src.Dtos.storage_dto import storage_dto
-from Src.Dtos.recipe_dto import recipe_dto
-from Src.Dtos.recipe_row_dto import recipe_row_dto
-from Src.Dtos.company_dto import company_dto
+from Src.Core.common import common
+from Src.Core.abstract_dto import abstract_dto
 
 
-"""
-Конвертор данных
-"""
 class convertor:
     __factory: convert_factory = None
     __mapping_factory: mapping_factory = None
@@ -24,73 +15,96 @@ class convertor:
         self.__factory = convert_factory()
         self.__mapping_factory = mapping_factory()
 
-    # Синглтон
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(convertor, cls).__new__(cls)
         return cls.__instance
 
-    """
-    Сериализовать объект в словарь
-    """
     def serialize(self, source: any) -> dict:
+        """Сериализовать объект в словарь"""
         conv = self.__factory.create(source)
-        result = conv.serialize("result", source)
-        return result
+        return conv.serialize("result", source)
 
-    """
-    Десериализовать словарь в объект
-    """
+    def find_dto_type(self, item: dict):
+        """Найти подходящий DTO по полям словаря"""
+        if not isinstance(item, dict):
+            return None
+
+        keys = set(item.keys())
+        best_cls = None
+        min_diff = None
+
+        for dto_cls in self.__mapping_factory.mapping:
+            if isinstance(dto_cls, type) and issubclass(dto_cls, abstract_dto):
+                fields = set(common.get_fields(dto_cls()))
+                if keys.issubset(fields):
+                    diff = len(fields - keys)
+                    if min_diff is None or diff < min_diff:
+                        min_diff = diff
+                        best_cls = dto_cls
+
+        return best_cls
+
     def deserialize(self, source: any) -> object:
+        """Десериализовать словарь в объект или хранилище"""
         if isinstance(source, str):
             source = json.loads(source)
         validator.validate(source, dict)
         data = source.get("result", source)
 
-        categories = {
-            storage_manager.group_key(): nomenclature_group_dto,
-            storage_manager.range_key(): range_dto,
-            storage_manager.storage_key(): storage_dto,
-            storage_manager.nomenclature_key(): nomenclature_dto,
-            storage_manager.receipt_key(): recipe_dto,
-        }
+        # Проверка на словарь хранилища
+        is_storage = ("unique_code" not in data) and ("name" not in data) and any(
+            isinstance(v, (list, dict)) for v in data.values()
+        )
 
-        # Если передан словарь хранилища
-        if any(key in data for key in categories):
+        if is_storage:
             cache = {}
             restored = {}
 
-            for key, dto_cls in categories.items():
-                if key in data:
-                    restored[key] = {}
-                    items = data[key].values() if isinstance(data[key], dict) else data[key]
-                    for item in items:
+            # Порядок загрузки по зависимостям
+            def sort_key(entry):
+                _, v = entry
+                items = list(v.values()) if isinstance(v, dict) else list(v)
+                if not items or not isinstance(items[0], dict):
+                    return 0
+                keys = set(items[0].keys())
+                if "items" in keys:
+                    return 4
+                if "nomenclature_code" in keys:
+                    return 3
+                if "group_code" in keys:
+                    return 2
+                if "base_code" in keys:
+                    return 1
+                return 0
+
+            sorted_entries = sorted(data.items(), key=sort_key)
+            all_dtos = []
+
+            for key, val in sorted_entries:
+                items = list(val.values()) if isinstance(val, dict) else list(val)
+                restored[key] = []
+                for item in items:
+                    dto_cls = self.find_dto_type(item)
+                    if dto_cls:
                         dto = dto_cls().load_dict(item)
+                        all_dtos.append(dto)
                         model = self.__mapping_factory.to_model(dto, cache)
-                        restored[key][model.unique_code] = model
+                        restored[key].append(model)
 
             # Связываем базовые единицы
-            range_key = storage_manager.range_key()
-            if range_key in data:
-                for item in (data[range_key].values() if isinstance(data[range_key], dict) else data[range_key]):
-                    base_code = item.get("base_code")
-                    code = item.get("unique_code")
-                    if base_code and base_code in cache and code in cache:
-                        cache[code].base = cache[base_code]
+            for dto in all_dtos:
+                base_code = getattr(dto, "base_code", None)
+                code = getattr(dto, "unique_code", None)
+                if base_code and base_code in cache and code in cache:
+                    cache[code].base = cache[base_code]
 
             return restored
 
-        # Если передана одна модель
-        single_types = [
-            ("base_code", range_dto),
-            ("group_code", nomenclature_dto),
-            ("instructions", recipe_dto),
-            ("address", storage_dto),
-            ("inn", company_dto),
-            ("nomenclature_code", recipe_row_dto),
-        ]
-        for field, dto_cls in single_types:
-            if field in data:
-                return self.__mapping_factory.to_model(dto_cls().load_dict(data))
+        # Одиночный объект
+        dto_cls = self.find_dto_type(data)
+        if dto_cls:
+            dto = dto_cls().load_dict(data)
+            return self.__mapping_factory.to_model(dto)
 
-        return self.__mapping_factory.to_model(nomenclature_group_dto().load_dict(data))
+        return None

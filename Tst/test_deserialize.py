@@ -5,10 +5,8 @@ from Src.Models.range_model import range_model
 from Src.Models.recipe_model import recipe_model
 
 
-"""
-Проверить десериализацию единицы измерения
-"""
 def test_deserialize_single_range():
+    """Проверить десериализацию единицы измерения"""
     settings = settings_model()
     settings.first_start = True
     manager = storage_manager(settings)
@@ -25,10 +23,8 @@ def test_deserialize_single_range():
     assert restored.value == orig.value
 
 
-"""
-Проверить десериализацию рецепта
-"""
 def test_deserialize_single_recipe():
+    """Проверить десериализацию рецепта"""
     settings = settings_model()
     settings.first_start = True
     manager = storage_manager(settings)
@@ -44,10 +40,8 @@ def test_deserialize_single_recipe():
     assert restored.name == orig.name
 
 
-"""
-Проверить десериализацию хранилища и сравнить со storage_manager
-"""
 def test_deserialize_full_storage_matches_original():
+    """Проверить десериализацию всего хранилища"""
     settings = settings_model()
     settings.first_start = True
     manager = storage_manager(settings)
@@ -57,16 +51,18 @@ def test_deserialize_full_storage_matches_original():
     serialized = c.serialize(manager.data)
     restored = c.deserialize(serialized)
 
-    # Проверка совпадения через метод storage_manager.keys
     for key in storage_manager.keys():
         if key in restored:
-            orig_dict = manager.data[key]
-            assert len(restored[key]) == len(orig_dict)
-            assert set(restored[key].keys()) == set(orig_dict.keys())
+            orig_list = manager.data[key]
+            assert len(restored[key]) == len(orig_list)
+            orig_codes = {item.unique_code for item in orig_list}
+            restored_codes = {item.unique_code for item in restored[key]}
+            assert restored_codes == orig_codes
 
-    # Проверка базовой единицы
-    for code, restored_range in restored[storage_manager.range_key()].items():
-        orig_range = manager.data[storage_manager.range_key()][code]
+    range_key = storage_manager.range_key()
+    restored_ranges = {r.unique_code: r for r in restored[range_key]}
+    for orig_range in manager.data[range_key]:
         if orig_range.base is not None:
+            restored_range = restored_ranges[orig_range.unique_code]
             assert restored_range.base is not None
             assert restored_range.base.unique_code == orig_range.base.unique_code

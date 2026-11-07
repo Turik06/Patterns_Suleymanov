@@ -43,6 +43,10 @@ class mapping_factory(abstract_mapping_factory):
             dict: dict,
         }
 
+    @property
+    def mapping(self) -> Dict[Type, Type]:
+        return self.__mapping
+
     # Синглтон
     def __new__(cls):
         if cls.__instance is None:

@@ -87,6 +87,8 @@ class recipe_row_dto(abstract_dto):
         nom = cache.get(self.nomenclature_code) if cache else None
         range_unit = cache.get(self.range_code) if cache else None
         model = recipe_row_model(nom, self.brutto, self.netto, range_unit)
+        if self.name:
+            model.name = self.name
         if self.unique_code:
             model.unique_code = self.unique_code
         return model
