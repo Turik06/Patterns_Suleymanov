@@ -72,28 +72,44 @@ class mapping_factory(abstract_mapping_factory):
 
         return None
 
-    """
-    Создать модель из DTO
-    """
-    def to_model(self, source: object, cache: dict = None) -> object:
+    def find_dto_by_type(self, type_name: str):
+        """Найти класс DTO по имени типа"""
+        if not type_name or not isinstance(type_name, str):
+            return None
+
+        clean_name = type_name.split(".")[-1].strip().lower()
+
+        def normalize(name: str) -> str:
+            return name.lower().replace("nomenclature_", "").replace("receipt_", "recipe_").replace("_dto", "").replace("_model", "")
+
+        norm_name = normalize(clean_name)
+
+        for dto_type, domain_type in self.__mapping.items():
+            if isinstance(dto_type, type) and issubclass(dto_type, abstract_dto):
+                if clean_name in (dto_type.__name__.lower(), domain_type.__name__.lower()):
+                    return dto_type
+                if norm_name in (normalize(dto_type.__name__), normalize(domain_type.__name__)):
+                    return dto_type
+
+        return None
+
+    def to_model(self, source: object, resolver=None) -> object:
+        """Создать модель из DTO"""
         if source is None:
             return None
         if isinstance(source, abstract_model):
             return source
-        if cache is None:
-            cache = {}
 
         code = getattr(source, "unique_code", "")
-        if code and code in cache:
-            return cache[code]
+        if code and isinstance(resolver, dict) and code in resolver:
+            return resolver[code]
 
         for dto_type, domain_type in self.__mapping.items():
             if isinstance(source, dto_type):
                 if isinstance(source, abstract_dto):
-                    model = source.to_domain_model(cache)
-                    if model is not None and code:
-                        model.unique_code = code
-                        cache[code] = model
+                    model = domain_type.from_dto(source, resolver)
+                    if model is not None and code and isinstance(resolver, dict):
+                        resolver[code] = model
                     return model
                 return source
 
