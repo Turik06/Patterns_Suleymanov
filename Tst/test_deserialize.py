@@ -3,6 +3,7 @@ from Src.Models.settings_model import settings_model
 from Src.Logics.convertor import convertor
 from Src.Models.range_model import range_model
 from Src.Models.recipe_model import recipe_model
+from Src.Dtos.nomenclature_dto import nomenclature_dto
 
 
 def test_deserialize_single_range():
@@ -66,3 +67,26 @@ def test_deserialize_full_storage_matches_original():
             restored_range = restored_ranges[orig_range.unique_code]
             assert restored_range.base is not None
             assert restored_range.base.unique_code == orig_range.base.unique_code
+
+    nom_key = storage_manager.nomenclature_key()
+    restored_noms = {n.unique_code: n for n in restored[nom_key]}
+    for orig_nom in manager.data[nom_key]:
+        assert restored_noms[orig_nom.unique_code].full_name == orig_nom.full_name
+
+
+def test_deserialize_single_nomenclature_preserves_full_name():
+    """Проверить, что при десериализации номенклатуры полное имя не теряется"""
+    settings = settings_model()
+    settings.first_start = True
+    manager = storage_manager(settings)
+    manager.build()
+    orig = manager.data[storage_manager.nomenclature_key()][0]
+
+    dto = nomenclature_dto().from_domain_model(orig)
+    cache = {orig.group.unique_code: orig.group, orig.range.unique_code: orig.range}
+    restored = dto.to_domain_model(cache)
+
+    assert restored.unique_code == orig.unique_code
+    assert restored.name == orig.name
+    assert restored.full_name == orig.full_name
+    assert restored.full_name != restored.name

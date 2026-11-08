@@ -62,7 +62,7 @@ class company_dto(abstract_dto):
         model = organization_model()
         model.name = self.name
         model.inn = self.inn
-        model.bic = self.bik
+        model.bik = self.bik
         if self.unique_code:
             model.unique_code = self.unique_code
         return model
