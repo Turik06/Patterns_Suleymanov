@@ -126,6 +126,17 @@ class organization_model(name_id):
 
         self.__ownership_form = value
 
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        result = organization_model()
+        result.name = dto.name
+        result.inn = getattr(dto, "inn", "")
+        result.bik = getattr(dto, "bik", "")
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        return result
+
 
 # Псевдоним для совместимости
 company_model = organization_model

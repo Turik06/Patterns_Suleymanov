@@ -72,6 +72,7 @@ class recipe_row_dto(abstract_dto):
         validator.validate(source, recipe_row_model)
 
         dto = recipe_row_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.brutto = source.brutto
@@ -83,12 +84,3 @@ class recipe_row_dto(abstract_dto):
 
         return dto
 
-    def to_domain_model(self, cache: dict = None) -> recipe_row_model:
-        nom = cache.get(self.nomenclature_code) if cache else None
-        range_unit = cache.get(self.range_code) if cache else None
-        model = recipe_row_model(nom, self.brutto, self.netto, range_unit)
-        if self.name:
-            model.name = self.name
-        if self.unique_code:
-            model.unique_code = self.unique_code
-        return model

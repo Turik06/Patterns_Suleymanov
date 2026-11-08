@@ -52,6 +52,7 @@ class range_dto(abstract_dto):
         validator.validate(source, range_model)
 
         dto = range_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.value = source.value
@@ -60,10 +61,3 @@ class range_dto(abstract_dto):
 
         return dto
 
-    def to_domain_model(self, cache: dict = None) -> range_model:
-        model = range_model(self.name, self.value)
-        if self.base_code and cache and self.base_code in cache:
-            model.base = cache[self.base_code]
-        if self.unique_code:
-            model.unique_code = self.unique_code
-        return model

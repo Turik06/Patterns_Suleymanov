@@ -42,13 +42,9 @@ class storage_dto(abstract_dto):
         validator.validate(source, storage_model)
 
         dto = storage_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.address = source.address
         return dto
 
-    def to_domain_model(self, cache: dict = None) -> storage_model:
-        model = storage_model(self.name, self.address)
-        if self.unique_code:
-            model.unique_code = self.unique_code
-        return model

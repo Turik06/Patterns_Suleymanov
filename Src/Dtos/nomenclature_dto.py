@@ -62,6 +62,7 @@ class nomenclature_dto(abstract_dto):
         validator.validate(source, nomenclature_model)
 
         dto = nomenclature_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.full_name = source.full_name
@@ -72,11 +73,3 @@ class nomenclature_dto(abstract_dto):
 
         return dto
 
-    def to_domain_model(self, cache: dict = None) -> nomenclature_model:
-        group = cache.get(self.group_code) if cache else None
-        range_unit = cache.get(self.range_code) if cache else None
-        full_name = self.full_name if self.full_name else self.name
-        model = nomenclature_model(self.name, full_name, group, range_unit)
-        if self.unique_code:
-            model.unique_code = self.unique_code
-        return model

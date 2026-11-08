@@ -122,3 +122,17 @@ class recipe_row_model(name_id):
     def create_sub_recipe(nomenclature: nomenclature_model, sub_recipe, netto: float = None):
         """Фабричный метод для создания строки с полуфабрикатом."""
         return recipe_row_model(nomenclature=nomenclature, sub_recipe=sub_recipe, netto=netto)
+
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        resolve = resolver if callable(resolver) else (resolver.get if isinstance(resolver, dict) else lambda _: None)
+        nom = resolve(dto.nomenclature_code)
+        range_unit = resolve(dto.range_code)
+        result = recipe_row_model(nom, dto.brutto, dto.netto, range_unit)
+        if dto.name:
+            result.name = dto.name
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        return result
+

@@ -272,6 +272,21 @@ class recipe_model(name_id):
 
         return [dough_recipe, pancakes_recipe]
 
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        resolve = resolver if callable(resolver) else (resolver.get if isinstance(resolver, dict) else lambda _: None)
+        result = recipe_model(dto.name)
+        result.instructions = list(getattr(dto, "instructions", []))
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        if getattr(dto, "items", None):
+            for item_code in dto.items:
+                row = resolve(item_code)
+                if row is not None:
+                    result.add_row(row)
+        return result
+
 
 receipt_model = recipe_model
 

@@ -153,3 +153,16 @@ class range_model(name_id):
         result.name = name
         result.value = 1
         return result
+
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        resolve = resolver if callable(resolver) else (resolver.get if isinstance(resolver, dict) else lambda _: None)
+        result = range_model(name=dto.name, conversion_factor=dto.value)
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        if getattr(dto, "base_code", None):
+            base = resolve(dto.base_code)
+            if base is not None:
+                result.base = base
+        return result
