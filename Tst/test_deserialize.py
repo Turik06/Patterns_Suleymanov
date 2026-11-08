@@ -90,3 +90,21 @@ def test_deserialize_single_nomenclature_preserves_full_name():
     assert restored.name == orig.name
     assert restored.full_name == orig.full_name
     assert restored.full_name != restored.name
+
+
+def test_domain_model_from_dto_factory():
+    """Проверить создание модели через фабричный метод from_dto"""
+    settings = settings_model()
+    settings.first_start = True
+    manager = storage_manager(settings)
+    manager.build()
+    orig = manager.data[storage_manager.range_key()][0]
+
+    from Src.Dtos.range_dto import range_dto
+    dto = range_dto().from_domain_model(orig)
+    restored = range_model.from_dto(dto)
+
+    assert isinstance(restored, range_model)
+    assert restored.unique_code == orig.unique_code
+    assert restored.name == orig.name
+
