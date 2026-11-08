@@ -83,6 +83,11 @@ class name_id(ABC):
             return str(self.id) == str(other.id)
         return False
 
+    @property
+    def type(self) -> str:
+        """Полное наименование типа"""
+        return f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+
 
 abstract_model = name_id
 abstact_model = name_id

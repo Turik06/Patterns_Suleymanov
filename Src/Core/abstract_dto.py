@@ -4,25 +4,32 @@ from Src.Core.validator import validator
 from Src.Core.common import common
 
 
-"""
-Базовый класс DTO
-"""
 class abstract_dto(ABC):
+    """Базовый класс DTO"""
+    __type: str = ""
 
-    """
-    Создать DTO из модели
-    """
+    @property
+    def type(self) -> str:
+        """Тип сущности"""
+        return self.__type
+
+    @type.setter
+    def type(self, value: str):
+        validator.validate(value, str)
+        self.__type = value.strip()
+
     @abstractmethod
     def from_domain_model(self, source: abstract_model) -> "abstract_dto":
+        """Создать DTO из модели"""
         pass
 
-    def to_domain_model(self, cache: dict = None) -> abstract_model:
-        pass
+    def to_domain_model(self, resolver=None) -> abstract_model:
+        """Создать модель из DTO"""
+        from Src.Logics.mapping_factory import mapping_factory
+        return mapping_factory().to_model(self, resolver)
 
-    """
-    Загрузить данные из словаря
-    """
     def load_dict(self, source: dict) -> "abstract_dto":
+        """Загрузить данные из словаря"""
         validator.validate(source, dict)
         for field in common.get_fields(self):
             val = source.get(field)
