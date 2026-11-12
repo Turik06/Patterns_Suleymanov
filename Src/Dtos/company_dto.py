@@ -52,8 +52,10 @@ class company_dto(abstract_dto):
         validator.validate(source, organization_model)
 
         dto = company_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.inn = source.inn
         dto.bik = source.bik
         return dto
+

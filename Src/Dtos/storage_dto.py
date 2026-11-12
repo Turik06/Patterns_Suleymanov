@@ -42,7 +42,9 @@ class storage_dto(abstract_dto):
         validator.validate(source, storage_model)
 
         dto = storage_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.address = source.address
         return dto
+

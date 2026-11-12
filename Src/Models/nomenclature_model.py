@@ -148,3 +148,16 @@ class nomenclature_model(name_id):
             nomenclature_model.create_pancake_dough(dishes, piece),
             nomenclature_model.create_pancakes(dishes, piece),
         ]
+
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        resolve = resolver if callable(resolver) else (resolver.get if isinstance(resolver, dict) else lambda _: None)
+        group = resolve(dto.group_code)
+        range_unit = resolve(dto.range_code)
+        full_name = dto.full_name if dto.full_name else dto.name
+        result = nomenclature_model(dto.name, full_name, group, range_unit)
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        return result
+

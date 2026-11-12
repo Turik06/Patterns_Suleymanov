@@ -9,6 +9,7 @@ DTO номенклатуры
 class nomenclature_dto(abstract_dto):
     __unique_code: str = ""
     __name: str = ""
+    __full_name: str = ""
     __group_code: str = ""
     __range_code: str = ""
 
@@ -29,6 +30,15 @@ class nomenclature_dto(abstract_dto):
     def name(self, value: str) -> None:
         validator.validate(value, str)
         self.__name = value.strip()
+
+    @property
+    def full_name(self) -> str:
+        return self.__full_name
+
+    @full_name.setter
+    def full_name(self, value: str) -> None:
+        validator.validate(value, str)
+        self.__full_name = value.strip()
 
     @property
     def group_code(self) -> str:
@@ -52,11 +62,14 @@ class nomenclature_dto(abstract_dto):
         validator.validate(source, nomenclature_model)
 
         dto = nomenclature_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
+        dto.full_name = source.full_name
         if source.group is not None:
             dto.group_code = source.group.unique_code
         if source.range is not None:
             dto.range_code = source.range.unique_code
 
         return dto
+

@@ -63,4 +63,11 @@ def test_ingredient_dto_from_storage_manager_build():
 
     # Проверки
     assert dto.name == domain.name
+    assert dto.full_name == domain.full_name
     assert dto.range_code == domain.range.unique_code
+
+    # Проверка восстановления доменной модели
+    restored = dto.to_domain_model({dto.range_code: domain.range, dto.group_code: domain.group})
+    assert restored.name == domain.name
+    assert restored.full_name == domain.full_name
+    assert restored.full_name != restored.name

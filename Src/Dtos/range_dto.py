@@ -52,6 +52,7 @@ class range_dto(abstract_dto):
         validator.validate(source, range_model)
 
         dto = range_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.value = source.value
@@ -59,3 +60,4 @@ class range_dto(abstract_dto):
             dto.base_code = source.base.unique_code
 
         return dto
+

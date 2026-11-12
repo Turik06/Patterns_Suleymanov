@@ -1,4 +1,5 @@
 from typing import Dict, Type
+from Src.Core.exception import argument_exception
 from Src.Core.abstract_mapping_factory import abstract_mapping_factory
 from Src.Core.abstract_model import abstract_model
 from Src.Core.abstract_dto import abstract_dto
@@ -43,6 +44,10 @@ class mapping_factory(abstract_mapping_factory):
             dict: dict,
         }
 
+    @property
+    def mapping(self) -> Dict[Type, Type]:
+        return self.__mapping
+
     # Синглтон
     def __new__(cls):
         if cls.__instance is None:
@@ -68,8 +73,50 @@ class mapping_factory(abstract_mapping_factory):
 
         return None
 
+    def find_dto_by_type(self, type_name: str):
+        """Найти класс DTO по имени типа"""
+        if not type_name or not isinstance(type_name, str):
+            return None
+
+        clean_name = type_name.split(".")[-1].strip().lower()
+
+        def normalize(name: str) -> str:
+            return name.lower().replace("nomenclature_", "").replace("receipt_", "recipe_").replace("_dto", "").replace("_model", "")
+
+        norm_name = normalize(clean_name)
+
+        for dto_type, domain_type in self.__mapping.items():
+            if isinstance(dto_type, type) and issubclass(dto_type, abstract_dto):
+                if clean_name in (dto_type.__name__.lower(), domain_type.__name__.lower()):
+                    return dto_type
+                if norm_name in (normalize(dto_type.__name__), normalize(domain_type.__name__)):
+                    return dto_type
+
+        return None
+
     """
-    Сконвертировать DTO в модель
+    Создать модель из DTO
     """
-    def to_model(self, source: object) -> object:
-        pass
+    def to_model(self, source: object, resolver: object = None) -> object:
+        if source is None:
+            return None
+        if isinstance(source, abstract_model):
+            return source
+
+        if resolver is not None and not callable(resolver) and not isinstance(resolver, dict):
+            raise argument_exception("resolver", "Неверный тип")
+
+        code = getattr(source, "unique_code", "")
+        if code and isinstance(resolver, dict) and code in resolver:
+            return resolver[code]
+
+        for dto_class, domain_class in self.__mapping.items():
+            if isinstance(source, dto_class):
+                if isinstance(source, abstract_dto):
+                    model = domain_class.from_dto(source, resolver)
+                    if model is not None and code and isinstance(resolver, dict):
+                        resolver[code] = model
+                    return model
+                return source
+
+        return None

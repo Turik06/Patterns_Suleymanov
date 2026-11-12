@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
-from flask import Flask, jsonify, request
+from flask import jsonify, request
+import connexion
 
 repo_root = Path(__file__).resolve().parent
 if str(repo_root) not in sys.path:
@@ -10,8 +11,10 @@ from Src.Dtos.report_type_enum import report_type_enum
 from Src.Logics.report_factory import report_factory
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
+from Src.Logics.convertor import convertor
 
-app = Flask(__name__)
+api = connexion.FlaskApp(__name__, specification_dir="./")
+app = api.app
 app.json.ensure_ascii = False
 
 # Инициализация синглтонов хранилища и настроек
@@ -24,6 +27,41 @@ except Exception:
 storage = storage_manager()
 storage.first_start()
 factory = report_factory(settings=settings.settings)
+
+# Конвертор
+worker = convertor()
+
+
+"""
+Получить отчет в формате по умолчанию
+"""
+@api.route("/api/get_default_report", methods=["GET"])
+def get_default_report():
+    try:
+        key = request.args.get('entity') 
+        unique_code = request.args.get('unique_code')
+
+        items = storage.data[ key ]
+        item = next((obj for obj in items if hasattr(obj, 'unique_code') and obj.unique_code == unique_code), None)
+
+        report_type = factory.create_default()
+        report_instance = report_type() if isinstance(report_type, type) else report_type
+        result = report_instance.build( item )
+        
+        output = result.text if result.text else (bytes(result.binary).decode("utf-8") if result.binary else "")
+        return output, 200, {'Content-Type': getattr(result, 'format', 'text/plain')}
+    except Exception as ex:
+        return f"Ошибка: {ex}!", 500
+
+
+"""
+Получить список доменных сущностей
+"""
+@api.route("/api/get_entities", methods=["GET"])
+def get_entities():
+    source = storage.domains()
+    result = worker.serialize( source )
+    return result, 200, {'Content-Type': 'text/json'}
 
 
 @app.route("/", methods=["GET"])
@@ -136,5 +174,7 @@ def get_default_entity_report(param1: str = None, param2: str = None):
     return report.create_response(result_dto, f"{target_type}_{target_id}_default")
 
 
+api.add_api('openapi.yaml')
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    api.run(host="0.0.0.0", port=8080)

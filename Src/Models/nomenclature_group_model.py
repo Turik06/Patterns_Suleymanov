@@ -40,3 +40,12 @@ class nomenclature_group_model(name_id):
             nomenclature_group_model.create_dairy(),
             nomenclature_group_model.create_dishes(),
         ]
+
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        result = nomenclature_group_model(name=dto.name)
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        return result
+

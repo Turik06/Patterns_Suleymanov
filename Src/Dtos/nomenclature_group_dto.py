@@ -32,6 +32,8 @@ class nomenclature_group_dto(abstract_dto):
         validator.validate(source, nomenclature_group_model)
 
         dto = nomenclature_group_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         return dto
+

@@ -72,6 +72,7 @@ class recipe_row_dto(abstract_dto):
         validator.validate(source, recipe_row_model)
 
         dto = recipe_row_dto()
+        dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
         dto.brutto = source.brutto
@@ -82,3 +83,4 @@ class recipe_row_dto(abstract_dto):
             dto.range_code = source.range.unique_code
 
         return dto
+

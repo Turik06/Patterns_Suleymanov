@@ -1,4 +1,5 @@
 from Src.Core.abstract_manager import abstract_manager
+from Src.Core.common import common
 from Src.Core.validator import validator
 from Src.Logics.settings_manager import settings_manager
 from Src.Models.storage_model import storage_model
@@ -226,6 +227,11 @@ class storage_manager(abstract_manager):
         """Ключ категории рецептов (синоним receipt_model)"""
         return "receipt_model"
 
+    @staticmethod
+    def recipe_row_key() -> str:
+        """Ключ для строк рецептов"""
+        return "recipe_row_model"
+
     @classmethod
     def keys(cls) -> list:
         """
@@ -237,20 +243,27 @@ class storage_manager(abstract_manager):
         ]
         return [getattr(cls, method)() for method in methods]
 
+    """
+    Получить список всех ключей и описания к ним
+    """
+    @staticmethod
+    def domains() -> dict:
+        return common.domains(storage_manager)
+
     @property
     def data(self) -> dict:
-        """Все данные хранилища по категориям."""
+        """Все данные хранилища в виде списков"""
+        rows = []
+        for recipe in self._recipes.values():
+            rows.extend(recipe.items)
+
         return {
-            self.storage_key(): self._storages,
-            self.range_key(): self._ranges,
-            self.nomenclature_key(): self._nomenclatures,
-            self.group_key(): self._groups,
-            self.receipt_key(): self._recipes,
-            "storages": self._storages,
-            "ranges": self._ranges,
-            "nomenclatures": self._nomenclatures,
-            "groups": self._groups,
-            "recipes": self._recipes,
+            self.group_key(): list(self._groups.values()),
+            self.recipe_row_key(): rows,
+            self.nomenclature_key(): list(self._nomenclatures.values()),
+            self.range_key(): list(self._ranges.values()),
+            self.receipt_key(): list(self._recipes.values()),
+            self.storage_key(): list(self._storages.values()),
         }
 
     @property
@@ -326,15 +339,16 @@ class storage_manager(abstract_manager):
         if not catalog:
             return None
 
+        items = list(catalog.values()) if isinstance(catalog, dict) else list(catalog)
+        if not items:
+            return None
+
         clean_id = (identifier or "").strip()
         if not clean_id:
-            return list(catalog.values())[0] if catalog else None
-
-        if clean_id in catalog:
-            return catalog[clean_id]
+            return items[0]
 
         clean_id_lower = clean_id.lower()
-        for item in catalog.values():
+        for item in items:
             if (
                 getattr(item, "unique_code", None) == clean_id
                 or getattr(item, "id", None) == clean_id
@@ -344,7 +358,6 @@ class storage_manager(abstract_manager):
 
         if clean_id.isdigit():
             idx = int(clean_id)
-            items = list(catalog.values())
             if 0 <= idx < len(items):
                 return items[idx]
 

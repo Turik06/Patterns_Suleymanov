@@ -365,7 +365,7 @@ def test_success_storage_manager_first_start_recipes():
 
     # Проверки
     assert len(manager.recipes) == 2
-    assert "recipes" in manager.data
+    assert storage_manager.receipt_key() in manager.data
 
     recipe_names = [r.name for r in manager.recipes.values()]
     assert "Тесто для блинов" in recipe_names

@@ -54,3 +54,12 @@ class storage_model(name_id):
             storage_model.create_main(),
             storage_model.create_fridge(),
         ]
+
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        result = storage_model(name=dto.name, address=getattr(dto, "address", ""))
+        if dto.unique_code:
+            result.unique_code = dto.unique_code
+        return result
+

@@ -1,0 +1,204 @@
+{
+  "group_model": [
+    {
+      "name": "Бакалея",
+      "unique_code": "92add7c2-73f8-406c-b270-491cf2d17f91"
+    },
+    {
+      "name": "Молочные продукты",
+      "unique_code": "82acd28f-b66c-47e5-b842-6d336a751f23"
+    },
+    {
+      "name": "Блюда",
+      "unique_code": "9909fe4b-255f-4e08-a55a-9cea49389921"
+    }
+  ],
+  "recipe_row_model": [
+    {
+      "brutto": 50.0,
+      "name": "Мука пшеничная",
+      "netto": 50.0,
+      "nomenclature_code": "209b7c78-959c-445a-ae6c-228583fd1ca4",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "9eb3ddb9-7f0b-4fc6-a562-711ad9924871"
+    },
+    {
+      "brutto": 125.0,
+      "name": "Молоко 3.2%",
+      "netto": 125.0,
+      "nomenclature_code": "128a61f8-2ea2-481f-a45c-4c38fdd8e52f",
+      "range_code": "10f7076c-f75a-495d-b0bb-643b80aed547",
+      "unique_code": "1d103d58-68d5-44d2-ab9d-0f4f48b1d868"
+    },
+    {
+      "brutto": 25.0,
+      "name": "Яйца куриные",
+      "netto": 22.0,
+      "nomenclature_code": "49749923-9298-4b06-822f-f79a68da3714",
+      "range_code": "5c7880b1-7184-449a-9d14-3ea239986420",
+      "unique_code": "b6b1b1ce-20ea-450e-9fca-d52cac9777ca"
+    },
+    {
+      "brutto": 7.5,
+      "name": "Сахар",
+      "netto": 7.5,
+      "nomenclature_code": "b3f6a84b-9054-4c36-8857-a7fc3aec240c",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "909a725d-6f5d-4daa-b884-11a541e4d8b8"
+    },
+    {
+      "brutto": 1.25,
+      "name": "Соль",
+      "netto": 1.25,
+      "nomenclature_code": "47bad9a9-a78c-425d-ab14-921347ffed9a",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "a4963c4d-2bb3-4ffc-b829-de9fb9a0d07b"
+    },
+    {
+      "brutto": 208.75,
+      "name": "Тесто для блинов",
+      "netto": 175.0,
+      "nomenclature_code": "92215714-5707-4c9d-af4b-f7b1499351f8",
+      "range_code": "5c7880b1-7184-449a-9d14-3ea239986420",
+      "unique_code": "805c0123-8794-46a3-828e-570be970a1f1"
+    },
+    {
+      "brutto": 12.5,
+      "name": "Масло сливочное",
+      "netto": 12.5,
+      "nomenclature_code": "bae34c98-c0a5-4d69-9fdc-2d51f7a44912",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "552432dd-3cf1-4a99-b21c-81a10f63d894"
+    }
+  ],
+  "nomenclature_model": [
+    {
+      "group_code": "92add7c2-73f8-406c-b270-491cf2d17f91",
+      "name": "Мука пшеничная",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "209b7c78-959c-445a-ae6c-228583fd1ca4"
+    },
+    {
+      "group_code": "82acd28f-b66c-47e5-b842-6d336a751f23",
+      "name": "Молоко 3.2%",
+      "range_code": "10f7076c-f75a-495d-b0bb-643b80aed547",
+      "unique_code": "128a61f8-2ea2-481f-a45c-4c38fdd8e52f"
+    },
+    {
+      "group_code": "82acd28f-b66c-47e5-b842-6d336a751f23",
+      "name": "Яйца куриные",
+      "range_code": "5c7880b1-7184-449a-9d14-3ea239986420",
+      "unique_code": "49749923-9298-4b06-822f-f79a68da3714"
+    },
+    {
+      "group_code": "82acd28f-b66c-47e5-b842-6d336a751f23",
+      "name": "Масло сливочное",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "bae34c98-c0a5-4d69-9fdc-2d51f7a44912"
+    },
+    {
+      "group_code": "92add7c2-73f8-406c-b270-491cf2d17f91",
+      "name": "Сахар",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "b3f6a84b-9054-4c36-8857-a7fc3aec240c"
+    },
+    {
+      "group_code": "92add7c2-73f8-406c-b270-491cf2d17f91",
+      "name": "Соль",
+      "range_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "unique_code": "47bad9a9-a78c-425d-ab14-921347ffed9a"
+    },
+    {
+      "group_code": "9909fe4b-255f-4e08-a55a-9cea49389921",
+      "name": "Тесто для блинов",
+      "range_code": "5c7880b1-7184-449a-9d14-3ea239986420",
+      "unique_code": "92215714-5707-4c9d-af4b-f7b1499351f8"
+    },
+    {
+      "group_code": "9909fe4b-255f-4e08-a55a-9cea49389921",
+      "name": "Блины классические",
+      "range_code": "5c7880b1-7184-449a-9d14-3ea239986420",
+      "unique_code": "bda9bbd9-ac26-4eb0-97be-81d1ee46570f"
+    }
+  ],
+  "range_model": [
+    {
+      "base_code": "",
+      "name": "грамм",
+      "unique_code": "7db5a828-f974-4c1d-bcfa-75a2c451bb63",
+      "value": 1
+    },
+    {
+      "base_code": "7db5a828-f974-4c1d-bcfa-75a2c451bb63",
+      "name": "килограмм",
+      "unique_code": "92214ea7-f6f3-45cd-950a-e340a3d631fc",
+      "value": 1000
+    },
+    {
+      "base_code": "",
+      "name": "миллилитр",
+      "unique_code": "9068b201-e4cb-4538-9057-0e689ff82aac",
+      "value": 1
+    },
+    {
+      "base_code": "9068b201-e4cb-4538-9057-0e689ff82aac",
+      "name": "литр",
+      "unique_code": "10f7076c-f75a-495d-b0bb-643b80aed547",
+      "value": 1000
+    },
+    {
+      "base_code": "",
+      "name": "штука",
+      "unique_code": "5c7880b1-7184-449a-9d14-3ea239986420",
+      "value": 1
+    }
+  ],
+  "receipt_model": [
+    {
+      "brutto": 208.75,
+      "instructions": [
+        "В глубокую емкость разбить яйца, добавить сахар и соль, взбить венчиком.",
+        "Влить теплое молоко (около 30°C), перемешать.",
+        "Постепенно ввести просеянную муку, вымешивая венчиком до однородного жидкого теста."
+      ],
+      "items": [
+        "9eb3ddb9-7f0b-4fc6-a562-711ad9924871",
+        "1d103d58-68d5-44d2-ab9d-0f4f48b1d868",
+        "b6b1b1ce-20ea-450e-9fca-d52cac9777ca",
+        "909a725d-6f5d-4daa-b884-11a541e4d8b8",
+        "a4963c4d-2bb3-4ffc-b829-de9fb9a0d07b"
+      ],
+      "name": "Тесто для блинов",
+      "netto": 205.75,
+      "unique_code": "f1f1c317-49d5-4bf3-945b-d6b842c8fb83"
+    },
+    {
+      "brutto": 221.25,
+      "instructions": [
+        "Разогреть блинную сковороду до 180-200°C и смазать тонким слоем масла.",
+        "Половником налить порцию теста и равномерно распределить по сковороде.",
+        "Выпекать 60-80 секунд с одной стороны и 30-40 секунд с обратной.",
+        "Готовый блин переложить на блюдо и смазать сливочным маслом."
+      ],
+      "items": [
+        "805c0123-8794-46a3-828e-570be970a1f1",
+        "552432dd-3cf1-4a99-b21c-81a10f63d894"
+      ],
+      "name": "Блины классические",
+      "netto": 187.5,
+      "unique_code": "9ca4e663-d16f-461c-a056-7808f3eaef5e"
+    }
+  ],
+  "storage_model": [
+    {
+      "address": "ул. Промышленная, 5, пом. 101",
+      "name": "Основной склад",
+      "unique_code": "4de62d6f-ba1e-4ada-887f-14f473286433"
+    },
+    {
+      "address": "ул. Промышленная, 5, пом. 102",
+      "name": "Холодильник цеха",
+      "unique_code": "85cebd18-21c6-4d40-853e-5c92baee73bd"
+    }
+  ]
+}
