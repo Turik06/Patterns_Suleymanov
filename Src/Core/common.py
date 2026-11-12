@@ -30,3 +30,33 @@ class common:
                 result.append(item)
 
         return result
+
+    """
+        Возвращает словарь всех доступных ключей и их описаний.
+        Ключ — значение, возвращаемое методом (например, "nomenclature_model").
+        Значение — описание из docstring метода (например, "Номенклатура").
+    """
+    @staticmethod
+    def domains(source: object) -> dict:
+        result = {}
+        
+        # Получаем список имен всех статических методов, заканчивающихся на '_key'
+        method_names = [
+            name for name in dir(source) 
+            if callable(getattr(source, name)) and name.endswith('_key')
+        ]
+
+        for method_name in method_names:
+            # Получаем сам объект метода
+            method = getattr(source, method_name)
+            
+            # Получаем значение ключа (например, "nomenclature_model")
+            key_value = method()
+            
+            # Получаем описание из документации (первая строка docstring)
+            docstring = method.__doc__
+            description = docstring.strip().split('\n')[0] if docstring else method_name
+            
+            result[key_value] = description
+            
+        return result

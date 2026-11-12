@@ -1,4 +1,5 @@
 from Src.Core.abstract_manager import abstract_manager
+from Src.Core.common import common
 from Src.Core.validator import validator
 from Src.Logics.settings_manager import settings_manager
 from Src.Models.storage_model import storage_model
@@ -241,6 +242,13 @@ class storage_manager(abstract_manager):
             if callable(getattr(cls, method, None)) and method.endswith('_key')
         ]
         return [getattr(cls, method)() for method in methods]
+
+    """
+    Получить список всех ключей и описания к ним
+    """
+    @staticmethod
+    def domains() -> dict:
+        return common.domains(storage_manager)
 
     @property
     def data(self) -> dict:
