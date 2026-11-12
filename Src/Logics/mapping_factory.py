@@ -1,4 +1,5 @@
 from typing import Dict, Type
+from Src.Core.exception import argument_exception
 from Src.Core.abstract_mapping_factory import abstract_mapping_factory
 from Src.Core.abstract_model import abstract_model
 from Src.Core.abstract_dto import abstract_dto
@@ -93,21 +94,26 @@ class mapping_factory(abstract_mapping_factory):
 
         return None
 
-    def to_model(self, source: object, resolver=None) -> object:
-        """Создать модель из DTO"""
+    """
+    Создать модель из DTO
+    """
+    def to_model(self, source: object, resolver: object = None) -> object:
         if source is None:
             return None
         if isinstance(source, abstract_model):
             return source
 
+        if resolver is not None and not callable(resolver) and not isinstance(resolver, dict):
+            raise argument_exception("resolver", "Неверный тип")
+
         code = getattr(source, "unique_code", "")
         if code and isinstance(resolver, dict) and code in resolver:
             return resolver[code]
 
-        for dto_type, domain_type in self.__mapping.items():
-            if isinstance(source, dto_type):
+        for dto_class, domain_class in self.__mapping.items():
+            if isinstance(source, dto_class):
                 if isinstance(source, abstract_dto):
-                    model = domain_type.from_dto(source, resolver)
+                    model = domain_class.from_dto(source, resolver)
                     if model is not None and code and isinstance(resolver, dict):
                         resolver[code] = model
                     return model

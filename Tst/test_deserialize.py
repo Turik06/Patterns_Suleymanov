@@ -108,3 +108,17 @@ def test_domain_model_from_dto_factory():
     assert restored.unique_code == orig.unique_code
     assert restored.name == orig.name
 
+
+def test_mapping_factory_to_model_invalid_resolver():
+    """Проверить, что некорректный тип resolver вызывает argument_exception"""
+    import pytest
+    from Src.Logics.mapping_factory import mapping_factory
+    from Src.Dtos.range_dto import range_dto
+    from Src.Core.exception import argument_exception
+
+    mf = mapping_factory()
+    dto = range_dto()
+    with pytest.raises(argument_exception):
+        mf.to_model(dto, resolver="некорректный_тип")
+
+

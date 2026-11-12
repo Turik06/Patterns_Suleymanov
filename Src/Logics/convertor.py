@@ -21,13 +21,17 @@ class convertor:
             cls.__instance = super(convertor, cls).__new__(cls)
         return cls.__instance
 
+    """
+    Сериализовать объект в словарь
+    """
     def serialize(self, source: any) -> dict:
-        """Сериализовать объект в словарь"""
         conv = self.__factory.create(source)
         return conv.serialize("result", source)
 
+    """
+    Подобрать DTO по словарю
+    """
     def resolve_dto(self, item: dict, type_hint: str = None):
-        """Создать экземпляр DTO по данным словаря"""
         if not isinstance(item, dict):
             return None
 
@@ -46,8 +50,10 @@ class convertor:
 
         return None
 
+    """
+    Десериализовать словарь в объект или хранилище
+    """
     def deserialize(self, source: any) -> object:
-        """Десериализовать словарь в объект или хранилище"""
         if isinstance(source, str):
             source = json.loads(source)
         validator.validate(source, dict)
@@ -74,6 +80,9 @@ class convertor:
 
             cache = {}
 
+            """
+            Получить модель по ее коду
+            """
             def resolve(code: str):
                 if not code:
                     return None
