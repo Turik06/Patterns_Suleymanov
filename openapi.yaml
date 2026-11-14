@@ -9,6 +9,147 @@ servers:
     description: Local development server
 
 paths:
+  /api/reports/formats:
+    get:
+      summary: Список форматов отчетов
+      description: Возвращает список всех форматов для построения отчетов
+      operationId: main.get_report_formats
+      responses:
+        '200':
+          description: Список форматов в JSON
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["TXT", "CSV", "MARKDOWN", "XML", "HTML", "RTF"]
+
+  /api/entity/{entity_type}:
+    put:
+      summary: Создать сущность (PUT)
+      description: Создать новую доменную сущность
+      operationId: main.create_domain_entity
+      parameters:
+        - name: entity_type
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Тип сущности (например, range_model, group_model, storage_model, nomenclature_model, recipe_model)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Сущность успешно создана
+        '400':
+          description: Ошибка валидации или нарушение связей
+
+    post:
+      summary: Создать сущность (POST)
+      description: Создать новую доменную сущность через POST
+      operationId: main.create_domain_entity_post
+      parameters:
+        - name: entity_type
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Тип сущности
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Сущность успешно создана
+        '400':
+          description: Ошибка валидации или нарушение связей
+
+  /api/entity/{entity_type}/{unique_code}:
+    get:
+      summary: Получить сущность (GET)
+      description: Получить сущность по ее коду
+      operationId: main.get_domain_entity
+      parameters:
+        - name: entity_type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: unique_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Данные сущности в JSON
+        '404':
+          description: Сущность не найдена
+
+    patch:
+      summary: Обновить сущность (PATCH)
+      description: Обновить поля сущности
+      operationId: main.update_domain_entity
+      parameters:
+        - name: entity_type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: unique_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Сущность обновлена
+        '400':
+          description: Ошибка валидации
+        '404':
+          description: Сущность не найдена
+        '409':
+          description: Запрещено менять код связанной сущности
+
+    delete:
+      summary: Удалить сущность (DELETE)
+      description: Удалить сущность по коду
+      operationId: main.delete_domain_entity
+      parameters:
+        - name: entity_type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: unique_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Сущность удалена
+        '400':
+          description: Ошибка запроса
+        '404':
+          description: Сущность не найдена
+        '409':
+          description: Запрещено удалять связанную сущность
+
   /api/get_default_report:
     get:
       summary: Получить отчет по сущности
