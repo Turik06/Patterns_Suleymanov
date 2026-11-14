@@ -8,7 +8,7 @@ class organization_model(name_id):
     Содержит реквизиты: ИНН, БИК, расчётный счёт, форму собственности.
     """
 
-    def __init__(self, name="", inn="", bik="", account="", ownership_form=""):
+    def __init__(self, name="Без имени", inn="", bik="", account="", ownership_form=""):
         """
         Конструктор организации.
 
@@ -38,6 +38,10 @@ class organization_model(name_id):
         """
         Задаёт ИНН организации. Допустимая длина — 10 или 12 цифр.
         """
+        if not value:
+            self.__inn = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("inn", "ИНН должен быть строкой")
 
@@ -63,6 +67,10 @@ class organization_model(name_id):
         """
         Задаёт БИК организации. Допустимая длина — 9 цифр.
         """
+        if not value:
+            self.__bik = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("bik", "БИК должен быть строкой")
 
@@ -88,6 +96,10 @@ class organization_model(name_id):
         """
         Задаёт расчётный счёт организации. Допустимая длина — 20 цифр.
         """
+        if not value:
+            self.__account = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("account", "Счёт должен быть строкой")
 
@@ -113,6 +125,10 @@ class organization_model(name_id):
         """
         Задаёт форму собственности организации. Максимальная длина — 5 символов.
         """
+        if not value:
+            self.__ownership_form = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("ownership_form", "Форма собственности должна быть строкой")
 
@@ -129,11 +145,14 @@ class organization_model(name_id):
     @staticmethod
     def from_dto(dto, resolver=None):
         """Создать модель из DTO"""
-        result = organization_model()
-        result.name = dto.name
-        result.inn = getattr(dto, "inn", "")
-        result.bik = getattr(dto, "bik", "")
-        if dto.unique_code:
+        result = organization_model(
+            name=getattr(dto, "name", "") or "Без имени",
+            inn=str(getattr(dto, "inn", "") or ""),
+            bik=str(getattr(dto, "bik", "") or ""),
+            account=str(getattr(dto, "account", "") or ""),
+            ownership_form=str(getattr(dto, "ownership_form", "") or ""),
+        )
+        if getattr(dto, "unique_code", ""):
             result.unique_code = dto.unique_code
         return result
 

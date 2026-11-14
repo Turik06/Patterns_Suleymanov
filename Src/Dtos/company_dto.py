@@ -11,6 +11,8 @@ class company_dto(abstract_dto):
     __name: str = ""
     __inn: str = ""
     __bik: str = ""
+    __account: str = ""
+    __ownership_form: str = ""
 
     @property
     def unique_code(self) -> str:
@@ -48,6 +50,24 @@ class company_dto(abstract_dto):
         validator.validate(value, str)
         self.__bik = value.strip()
 
+    @property
+    def account(self) -> str:
+        return self.__account
+
+    @account.setter
+    def account(self, value: str) -> None:
+        validator.validate(value, str)
+        self.__account = value.strip()
+
+    @property
+    def ownership_form(self) -> str:
+        return self.__ownership_form
+
+    @ownership_form.setter
+    def ownership_form(self, value: str) -> None:
+        validator.validate(value, str)
+        self.__ownership_form = value.strip()
+
     def from_domain_model(self, source: organization_model) -> "company_dto":
         validator.validate(source, organization_model)
 
@@ -57,5 +77,7 @@ class company_dto(abstract_dto):
         dto.name = source.name
         dto.inn = source.inn
         dto.bik = source.bik
+        dto.account = getattr(source, "account", "")
+        dto.ownership_form = getattr(source, "ownership_form", "")
         return dto
 

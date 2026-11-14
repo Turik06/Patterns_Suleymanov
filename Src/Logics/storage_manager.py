@@ -374,3 +374,177 @@ class storage_manager(abstract_manager):
     def get_range(self, identifier: str = ""):
         """Поиск единицы измерения по коду или имени."""
         return self.get_by_type_and_id("range", identifier)
+
+    def get_catalog(self, entity_type: str) -> dict:
+        """Получить словарь сущностей по типу"""
+        category = self.resolve_category(entity_type)
+        if category == self.range_key():
+            return self._ranges
+        elif category == self.group_key():
+            return self._groups
+        elif category == self.nomenclature_key():
+            return self._nomenclatures
+        elif category == self.receipt_key() or category == self.recipe_key():
+            return self._recipes
+        elif category == self.storage_key():
+            return self._storages
+        return None
+
+    def save_entity(self, entity) -> bool:
+        """Сохранить сущность в хранилище"""
+        if isinstance(entity, range_model):
+            return self.add_range(entity)
+        elif isinstance(entity, nomenclature_group_model):
+            return self.add_group(entity)
+        elif isinstance(entity, nomenclature_model):
+            return self.add_nomenclature(entity)
+        elif isinstance(entity, recipe_model):
+            return self.add_recipe(entity)
+        elif isinstance(entity, storage_model):
+            return self.add_storage(entity)
+        return False
+
+    def delete_entity(self, entity_type: str, unique_code: str) -> bool:
+        """Удалить сущность из хранилища"""
+        catalog = self.get_catalog(entity_type)
+        if catalog is not None and unique_code in catalog:
+            del catalog[unique_code]
+            return True
+        return False
+
+    def find_referrers(self, unique_code: str) -> list:
+        """Ищет объекты, которые ссылаются на этот код."""
+        if not unique_code:
+            return []
+
+        referrers = []
+        all_items = []
+        for catalog in (self._ranges, self._groups, self._nomenclatures, self._recipes, self._storages):
+            all_items.extend(catalog.values())
+
+        for item in all_items:
+            if getattr(item, "unique_code", None) == unique_code:
+                continue
+
+            for ref in item.references():
+                if getattr(ref, "unique_code", None) == unique_code:
+                    referrers.append(item)
+                    break
+
+        return referrers
+
+    def is_linked(self, entity_type: str, unique_code: str) -> bool:
+        """Есть ли ссылки на эту сущность."""
+        return len(self.find_referrers(unique_code)) > 0
+
+    def validate_dependencies_exist(self, entity) -> tuple[bool, str]:
+        """Проверка существования зависимостей."""
+        if isinstance(entity, range_model) and entity.base:
+            base_code = entity.base.unique_code
+            if base_code not in self._ranges:
+                return False, f"Базовая единица измерения '{base_code}' не найдена"
+
+        if isinstance(entity, nomenclature_model):
+            if entity.group and entity.group.unique_code not in self._groups:
+                return False, f"Группа '{entity.group.unique_code}' не найдена"
+            if entity.range and entity.range.unique_code not in self._ranges:
+                return False, f"Единица измерения '{entity.range.unique_code}' не найдена"
+
+        if isinstance(entity, recipe_model):
+            for row in getattr(entity, "rows", []):
+                if row.nomenclature and row.nomenclature.unique_code not in self._nomenclatures:
+                    return False, f"Номенклатура '{row.nomenclature.name}' не найдена"
+                if row.range and row.range.unique_code not in self._ranges:
+                    return False, f"Единица измерения '{row.range.name}' не найдена"
+
+        return True, ""
+
+    def create_entity_from_dict(self, entity_type: str, payload: dict, worker=None):
+        """Создает и сохраняет сущность из словаря."""
+        category = self.resolve_category(entity_type)
+        if not category or category not in self.data:
+            raise ValueError(f"Неизвестный тип сущности '{entity_type}'")
+
+        if worker is None:
+            from Src.Logics.convertor import convertor
+            worker = convertor()
+
+        dto = worker.resolve_dto(payload, type_hint=entity_type) or worker.resolve_dto(payload, type_hint=category)
+        if not dto:
+            raise ValueError("Не удалось создать объект из данных")
+
+        base_code = getattr(dto, "base_code", "") or payload.get("base_code")
+        if base_code and base_code not in self.ranges:
+            raise ValueError(f"Базовая единица измерения '{base_code}' не найдена")
+
+        group_code = getattr(dto, "group_code", "") or payload.get("group_code")
+        if group_code and group_code not in self.groups:
+            raise ValueError(f"Группа номенклатуры '{group_code}' не найдена")
+
+        range_code = getattr(dto, "range_code", "") or payload.get("range_code")
+        if range_code and range_code not in self.ranges:
+            raise ValueError(f"Единица измерения '{range_code}' не найдена")
+
+        from Src.Logics.mapping_factory import mapping_factory
+        resolver = {}
+        for cat in (self.ranges, self.groups, self.nomenclatures, self.recipes, self.storages):
+            resolver.update(cat)
+
+        model = mapping_factory().to_model(dto, resolver)
+        if not model:
+            raise ValueError("Не удалось создать объект из данных")
+
+        is_valid, msg = self.validate_dependencies_exist(model)
+        if not is_valid:
+            raise ValueError(msg)
+
+        catalog = self.get_catalog(entity_type)
+        if catalog is not None and model.unique_code in catalog:
+            raise ValueError(f"Сущность '{model.unique_code}' уже существует")
+
+        self.save_entity(model)
+        return model
+
+    def update_entity_from_dict(self, entity_type: str, unique_code: str, payload: dict):
+        """Обновляет поля сущности из словаря."""
+        category = self.resolve_category(entity_type)
+        if not category or category not in self.data:
+            raise ValueError(f"Неизвестный тип сущности '{entity_type}'")
+
+        catalog = self.get_catalog(entity_type)
+        entity = catalog.get(unique_code) if catalog is not None else None
+        if not entity:
+            raise LookupError(f"Сущность '{unique_code}' не найдена")
+
+        new_code = payload.get("unique_code") or payload.get("id")
+        changing_code = bool(new_code and new_code != unique_code)
+
+        if changing_code:
+            if self.is_linked(category, unique_code):
+                raise PermissionError(f"Нельзя менять код связанной сущности '{unique_code}'")
+            if new_code in catalog:
+                raise ValueError(f"Сущность с кодом '{new_code}' уже существует")
+
+        fields_to_update = {}
+        for key, val in payload.items():
+            if key in ("unique_code", "id", "type"):
+                continue
+            if hasattr(entity, key) and val is not None:
+                fields_to_update[key] = val
+
+        old_values = {key: getattr(entity, key) for key in fields_to_update}
+
+        try:
+            for key, val in fields_to_update.items():
+                setattr(entity, key, val)
+        except Exception as ex:
+            for key, old_val in old_values.items():
+                setattr(entity, key, old_val)
+            raise ValueError(f"Ошибка валидации поля: {ex}") from ex
+
+        if changing_code:
+            del catalog[unique_code]
+            entity.unique_code = new_code
+            catalog[new_code] = entity
+
+        return entity
