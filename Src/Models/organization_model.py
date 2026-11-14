@@ -8,7 +8,7 @@ class organization_model(name_id):
     Содержит реквизиты: ИНН, БИК, расчётный счёт, форму собственности.
     """
 
-    def __init__(self, name="", inn="", bik="", account="", ownership_form=""):
+    def __init__(self, name="Без имени", inn="", bik="", account="", ownership_form=""):
         """
         Конструктор организации.
 
@@ -20,16 +20,11 @@ class organization_model(name_id):
             ownership_form: Форма собственности (например, "ООО", "ИП", "ПАО", до 5 символов)
         """
         super().__init__()
-        if name:
-            self.name = name
-        if inn:
-            self.inn = inn
-        if bik:
-            self.bik = bik
-        if account:
-            self.account = account
-        if ownership_form:
-            self.ownership_form = ownership_form
+        self.name = name
+        self.inn = inn
+        self.bik = bik
+        self.account = account
+        self.ownership_form = ownership_form
 
     @property
     def inn(self):
@@ -43,6 +38,10 @@ class organization_model(name_id):
         """
         Задаёт ИНН организации. Допустимая длина — 10 или 12 цифр.
         """
+        if not value:
+            self.__inn = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("inn", "ИНН должен быть строкой")
 
@@ -68,6 +67,10 @@ class organization_model(name_id):
         """
         Задаёт БИК организации. Допустимая длина — 9 цифр.
         """
+        if not value:
+            self.__bik = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("bik", "БИК должен быть строкой")
 
@@ -93,6 +96,10 @@ class organization_model(name_id):
         """
         Задаёт расчётный счёт организации. Допустимая длина — 20 цифр.
         """
+        if not value:
+            self.__account = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("account", "Счёт должен быть строкой")
 
@@ -118,6 +125,10 @@ class organization_model(name_id):
         """
         Задаёт форму собственности организации. Максимальная длина — 5 символов.
         """
+        if not value:
+            self.__ownership_form = ""
+            return
+
         if not isinstance(value, str):
             raise argument_exception("ownership_form", "Форма собственности должна быть строкой")
 
@@ -134,17 +145,13 @@ class organization_model(name_id):
     @staticmethod
     def from_dto(dto, resolver=None):
         """Создать модель из DTO"""
-        result = organization_model()
-        if hasattr(dto, "name") and dto.name:
-            result.name = dto.name
-        if hasattr(dto, "inn") and dto.inn:
-            result.inn = str(dto.inn)
-        if hasattr(dto, "bik") and dto.bik:
-            result.bik = str(dto.bik)
-        if hasattr(dto, "account") and dto.account:
-            result.account = str(dto.account)
-        if hasattr(dto, "ownership_form") and dto.ownership_form:
-            result.ownership_form = str(dto.ownership_form)
+        result = organization_model(
+            name=getattr(dto, "name", "") or "Без имени",
+            inn=str(getattr(dto, "inn", "") or ""),
+            bik=str(getattr(dto, "bik", "") or ""),
+            account=str(getattr(dto, "account", "") or ""),
+            ownership_form=str(getattr(dto, "ownership_form", "") or ""),
+        )
         if getattr(dto, "unique_code", ""):
             result.unique_code = dto.unique_code
         return result
