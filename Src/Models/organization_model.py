@@ -20,11 +20,16 @@ class organization_model(name_id):
             ownership_form: Форма собственности (например, "ООО", "ИП", "ПАО", до 5 символов)
         """
         super().__init__()
-        self.name = name
-        self.inn = inn
-        self.bik = bik
-        self.account = account
-        self.ownership_form = ownership_form
+        if name:
+            self.name = name
+        if inn:
+            self.inn = inn
+        if bik:
+            self.bik = bik
+        if account:
+            self.account = account
+        if ownership_form:
+            self.ownership_form = ownership_form
 
     @property
     def inn(self):
@@ -130,10 +135,17 @@ class organization_model(name_id):
     def from_dto(dto, resolver=None):
         """Создать модель из DTO"""
         result = organization_model()
-        result.name = dto.name
-        result.inn = getattr(dto, "inn", "")
-        result.bik = getattr(dto, "bik", "")
-        if dto.unique_code:
+        if hasattr(dto, "name") and dto.name:
+            result.name = dto.name
+        if hasattr(dto, "inn") and dto.inn:
+            result.inn = str(dto.inn)
+        if hasattr(dto, "bik") and dto.bik:
+            result.bik = str(dto.bik)
+        if hasattr(dto, "account") and dto.account:
+            result.account = str(dto.account)
+        if hasattr(dto, "ownership_form") and dto.ownership_form:
+            result.ownership_form = str(dto.ownership_form)
+        if getattr(dto, "unique_code", ""):
             result.unique_code = dto.unique_code
         return result
 
