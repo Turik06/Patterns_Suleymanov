@@ -112,6 +112,12 @@ class recipe_row_model(name_id):
             raise argument_exception("netto", "Масса нетто должна быть неотрицательным числом")
         self.__netto = float(value)
 
+    def references(self) -> list:
+        """Ссылка на номенклатуру строки."""
+        if self.nomenclature is not None:
+            return [self.nomenclature]
+        return []
+
     # Фабричные методы
     @staticmethod
     def create_ingredient(nomenclature: nomenclature_model, brutto: float, netto: float = None):
