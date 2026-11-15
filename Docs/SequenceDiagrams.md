@@ -109,3 +109,115 @@ sequenceDiagram
     Factory-->>User: JSON-строка
     deactivate Factory
 ```
+
+---
+
+## 3. Управление сущностями через REST API и entity_service
+
+### 3.1. Создание сущности (`POST /api/entity/{type}`)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Клиент
+    participant Flask as Flask Router
+    participant Service as entity_service
+    participant Worker as convertor
+    participant Mapping as mapping_factory
+    participant Storage as storage_manager
+
+    User->>Flask: POST /api/entity/{type} (JSON)
+    activate Flask
+
+    Flask->>Service: create_entity(type, payload, worker)
+    activate Service
+
+    Service->>Storage: resolve_category(type)
+    activate Storage
+    Storage-->>Service: category
+    deactivate Storage
+
+    Service->>Worker: resolve_dto(payload, type_hint=type)
+    activate Worker
+    Worker-->>Service: dto
+    deactivate Worker
+
+    Service->>Mapping: to_model(dto, resolver)
+    activate Mapping
+    Mapping-->>Service: model
+    deactivate Mapping
+
+    Service->>Service: validate_dependencies_exist(dto, model)
+    alt Зависимости отсутствуют / не найдены
+        Service-->>Flask: raise ValueError(ошибка валидации)
+        Flask-->>User: 400 Bad Request
+    else Зависимости корректны
+        Service->>Service: Проверка уникальности model.unique_code
+        alt Код уже существует
+            Service-->>Flask: raise ValueError(дубликат)
+            Flask-->>User: 400 Bad Request
+        else Уникальный код
+            Service->>Storage: save_entity(model)
+            activate Storage
+            Storage-->>Service: True
+            deactivate Storage
+
+            Service-->>Flask: model
+            deactivate Service
+
+            Flask->>Worker: serialize(model)
+            activate Worker
+            Worker-->>Flask: serialized_data
+            deactivate Worker
+
+            Flask-->>User: 201 Created (JSON сущности)
+        end
+    end
+    deactivate Flask
+```
+
+### 3.2. Удаление сущности с защитой ссылочной целостности (`DELETE /api/entity/{type}/{code}`)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Клиент
+    participant Flask as Flask Router
+    participant Service as entity_service
+    participant Storage as storage_manager
+
+    User->>Flask: DELETE /api/entity/{type}/{code}
+    activate Flask
+
+    Flask->>Service: delete_entity(type, code)
+    activate Service
+
+    Service->>Storage: get_catalog(type)
+    activate Storage
+    Storage-->>Service: catalog
+    deactivate Storage
+
+    Service->>Service: catalog.get(code)
+    alt Сущность не найдена
+        Service-->>Flask: raise LookupError
+        Flask-->>User: 404 Not Found
+    else Сущность найдена
+        Service->>Service: is_linked(code) / find_referrers(code)
+        alt Есть ссылающиеся объекты
+            Service-->>Flask: raise PermissionError(сообщение, referrers)
+            Flask-->>User: 409 Conflict (список referrers)
+        else Нет внешних ссылок
+            Service->>Storage: delete_entity(type, code)
+            activate Storage
+            Storage->>Storage: del catalog[code]
+            Storage-->>Service: True
+            deactivate Storage
+
+            Service-->>Flask: True
+            deactivate Service
+
+            Flask-->>User: 200 OK {"result": "success", "deleted": code}
+        end
+    end
+    deactivate Flask
+```
