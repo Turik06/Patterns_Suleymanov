@@ -3,10 +3,8 @@ from Src.Core.validator import validator
 from Src.Core.abstract_dto import abstract_dto
 
 
-"""
-DTO организации
-"""
 class company_dto(abstract_dto):
+    """DTO организации"""
     __unique_code: str = ""
     __name: str = ""
     __inn: str = ""
@@ -16,59 +14,72 @@ class company_dto(abstract_dto):
 
     @property
     def unique_code(self) -> str:
+        """Уникальный код"""
         return self.__unique_code
 
     @unique_code.setter
     def unique_code(self, value: str) -> None:
+        """Задать уникальный код"""
         validator.validate(value, str)
         self.__unique_code = value.strip()
 
     @property
     def name(self) -> str:
+        """Название организации"""
         return self.__name
 
     @name.setter
     def name(self, value: str) -> None:
+        """Задать название организации"""
         validator.validate(value, str)
         self.__name = value.strip()
 
     @property
     def inn(self) -> str:
+        """ИНН"""
         return self.__inn
 
     @inn.setter
     def inn(self, value: str) -> None:
+        """Задать ИНН"""
         validator.validate(value, str)
         self.__inn = value.strip()
 
     @property
     def bik(self) -> str:
+        """БИК банка"""
         return self.__bik
 
     @bik.setter
     def bik(self, value: str) -> None:
+        """Задать БИК"""
         validator.validate(value, str)
         self.__bik = value.strip()
 
     @property
     def account(self) -> str:
+        """Счет"""
         return self.__account
 
     @account.setter
     def account(self, value: str) -> None:
+        """Задать счет"""
         validator.validate(value, str)
         self.__account = value.strip()
 
     @property
     def ownership_form(self) -> str:
+        """Форма собственности"""
         return self.__ownership_form
 
     @ownership_form.setter
     def ownership_form(self, value: str) -> None:
+        """Задать форму собственности"""
         validator.validate(value, str)
         self.__ownership_form = value.strip()
 
     def from_domain_model(self, source: organization_model) -> "company_dto":
+        """Заполнить DTO из модели организации"""
         validator.validate(source, organization_model)
 
         dto = company_dto()
@@ -80,4 +91,3 @@ class company_dto(abstract_dto):
         dto.account = getattr(source, "account", "")
         dto.ownership_form = getattr(source, "ownership_form", "")
         return dto
-
