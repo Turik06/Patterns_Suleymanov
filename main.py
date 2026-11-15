@@ -1,17 +1,12 @@
-import sys
-from pathlib import Path
 from flask import jsonify, request
 import connexion
-
-repo_root = Path(__file__).resolve().parent
-if str(repo_root) not in sys.path:
-    sys.path.insert(0, str(repo_root))
 
 from Src.Dtos.report_type_enum import report_type_enum
 from Src.Logics.report_factory import report_factory
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.convertor import convertor
+from Src.Logics.entity_service import entity_service
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 app = api.app
@@ -26,6 +21,7 @@ except Exception:
 
 storage = storage_manager()
 storage.first_start()
+service = entity_service(storage)
 factory = report_factory(settings=settings.settings)
 
 # Конвертор
@@ -65,7 +61,6 @@ def get_entities():
 
 
 @app.route("/api/reports/formats", methods=["GET"])
-@api.route("/api/reports/formats", methods=["GET"])
 def get_report_formats():
     """Список поддерживаемых форматов отчетов"""
     formats = [item.name for item in report_type_enum]
@@ -73,24 +68,19 @@ def get_report_formats():
 
 
 @app.route("/api/entity/<entity_type>/<unique_code>", methods=["GET"])
-@api.route("/api/entity/<entity_type>/<unique_code>", methods=["GET"])
 def get_domain_entity(entity_type: str, unique_code: str):
     """Получить сущность по коду"""
-    category = storage.resolve_category(entity_type)
-    if not category or category not in storage.data:
-        return jsonify({"error": f"Неизвестный тип сущности '{entity_type}'"}), 400
-
-    catalog = storage.get_catalog(entity_type)
-    entity = catalog.get(unique_code) if catalog is not None else None
-    if not entity:
-        return jsonify({"error": f"Сущность '{unique_code}' не найдена"}), 404
-
-    serialized = worker.serialize(entity)
-    data = serialized.get("result", serialized) if isinstance(serialized, dict) else serialized
-    return jsonify(data), 200
+    try:
+        entity = service.get_entity(entity_type, unique_code)
+        serialized = worker.serialize(entity)
+        data = serialized.get("result", serialized) if isinstance(serialized, dict) else serialized
+        return jsonify(data), 200
+    except ValueError as ex:
+        return jsonify({"error": str(ex)}), 400
+    except LookupError as ex:
+        return jsonify({"error": str(ex)}), 404
 
 
-@app.route("/api/entity/<entity_type>", methods=["PUT", "POST"])
 @app.route("/api/entity/<entity_type>", methods=["PUT", "POST"])
 def create_domain_entity(entity_type: str):
     """Создать сущность"""
@@ -99,7 +89,7 @@ def create_domain_entity(entity_type: str):
         return jsonify({"error": "Ожидается JSON"}), 400
 
     try:
-        model = storage.create_entity_from_dict(entity_type, payload, worker=worker)
+        model = service.create_entity(entity_type, payload, worker=worker)
         serialized = worker.serialize(model)
         data = serialized.get("result", serialized) if isinstance(serialized, dict) else serialized
         return jsonify(data), 201
@@ -108,7 +98,6 @@ def create_domain_entity(entity_type: str):
 
 
 @app.route("/api/entity/<entity_type>/<unique_code>", methods=["PATCH", "POST"])
-@app.route("/api/entity/<entity_type>/<unique_code>", methods=["PATCH", "POST"])
 def update_domain_entity(entity_type: str, unique_code: str):
     """Обновить сущность"""
     payload = request.get_json(silent=True)
@@ -116,43 +105,32 @@ def update_domain_entity(entity_type: str, unique_code: str):
         return jsonify({"error": "Ожидается JSON"}), 400
 
     try:
-        entity = storage.update_entity_from_dict(entity_type, unique_code, payload)
+        entity = service.update_entity(entity_type, unique_code, payload)
         serialized = worker.serialize(entity)
         data = serialized.get("result", serialized) if isinstance(serialized, dict) else serialized
         return jsonify(data), 200
     except LookupError as ex:
         return jsonify({"error": str(ex)}), 404
     except PermissionError as ex:
-        referrers = storage.find_referrers(unique_code)
-        ref_names = [getattr(r, "name", str(r)) for r in referrers]
-        return jsonify({"error": str(ex), "referrers": ref_names}), 409
+        ref_names = ex.args[1] if len(ex.args) > 1 else []
+        return jsonify({"error": str(ex.args[0]), "referrers": ref_names}), 409
     except ValueError as ex:
         return jsonify({"error": str(ex)}), 400
 
 
 @app.route("/api/entity/<entity_type>/<unique_code>", methods=["DELETE"])
-@app.route("/api/entity/<entity_type>/<unique_code>", methods=["DELETE"])
 def delete_domain_entity(entity_type: str, unique_code: str):
     """Удалить сущность"""
-    category = storage.resolve_category(entity_type)
-    if not category or category not in storage.data:
-        return jsonify({"error": f"Неизвестный тип сущности '{entity_type}'"}), 400
-
-    catalog = storage.get_catalog(entity_type)
-    entity = catalog.get(unique_code) if catalog is not None else None
-    if not entity:
-        return jsonify({"error": f"Сущность '{unique_code}' не найдена"}), 404
-
-    if storage.is_linked(category, unique_code):
-        referrers = storage.find_referrers(unique_code)
-        ref_names = [getattr(r, "name", str(r)) for r in referrers]
-        return jsonify({
-            "error": f"Нельзя удалить сущность '{unique_code}', так как она связана с другими",
-            "referrers": ref_names
-        }), 409
-
-    storage.delete_entity(category, unique_code)
-    return jsonify({"result": "success", "deleted": unique_code}), 200
+    try:
+        service.delete_entity(entity_type, unique_code)
+        return jsonify({"result": "success", "deleted": unique_code}), 200
+    except ValueError as ex:
+        return jsonify({"error": str(ex)}), 400
+    except LookupError as ex:
+        return jsonify({"error": str(ex)}), 404
+    except PermissionError as ex:
+        ref_names = ex.args[1] if len(ex.args) > 1 else []
+        return jsonify({"error": str(ex.args[0]), "referrers": ref_names}), 409
 
 
 create_domain_entity_post = create_domain_entity
