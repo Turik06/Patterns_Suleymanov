@@ -8,6 +8,8 @@ from Src.Models.settings_model import settings_model
 from Src.Models.organization_model import organization_model
 from Src.Dtos.report_type_enum import report_type_enum
 from Src.Dtos.response_format_dto import response_format_dto
+from Src.Logics.convertor import convertor
+from Src.Logics.mapping_factory import mapping_factory
 
 
 class settings_manager(abstract_manager):
@@ -64,47 +66,30 @@ class settings_manager(abstract_manager):
             ) from ex
 
     def build(self) -> bool:
-        """Загрузка настроек через десериализацию"""
+        """Загрузка настроек через десериализатор"""
         if not isinstance(self.__data, dict) or len(self.__data) == 0:
             return False
 
         try:
-            if self._settings is None:
-                self._settings = settings_model()
-
-            org_data = self.__data.get("organization") or self.__data.get("company")
-            if not isinstance(org_data, dict):
-                org_data = {}
-                for k, v in self.__data.items():
-                    if k.startswith("company_"):
-                        org_data[k[len("company_"):]] = v
-
-            if isinstance(org_data, dict) and len(org_data) > 0:
-                from Src.Logics.convertor import convertor
-                worker = convertor()
-                org_dto = worker.resolve_dto(org_data, type_hint="organization")
-                if org_dto:
-                    from Src.Logics.mapping_factory import mapping_factory
-                    org_model = mapping_factory().to_model(org_dto)
-                    if org_model:
-                        self._settings.organization = org_model
-
-            if "first_start" in self.__data:
-                self._settings.is_first_start = bool(self.__data.get("first_start"))
-            elif "is_first_start" in self.__data:
-                self._settings.is_first_start = bool(self.__data.get("is_first_start"))
-
-            if "boss_name" in self.__data and self.__data["boss_name"]:
-                self._settings.boss_name = str(self.__data["boss_name"])
-
-            if "account_name" in self.__data and self.__data["account_name"]:
-                self._settings.account_name = str(self.__data["account_name"])
-
-            if "response_format" in self.__data:
-                self._settings.response_format = self.convert_report_type(self.__data["response_format"])
-
-            return True
-
+            candidate = convertor().deserialize(self.__data)
+            if isinstance(candidate, settings_model):
+                if self._settings is None:
+                    self._settings = candidate
+                else:
+                    if candidate.boss_name:
+                        self._settings.boss_name = candidate.boss_name
+                    if candidate.account_name:
+                        self._settings.account_name = candidate.account_name
+                    if candidate.organization:
+                        self._settings.organization = candidate.organization
+                    if "is_first_start" in self.__data:
+                        self._settings.is_first_start = bool(self.__data["is_first_start"])
+                    elif "first_start" in self.__data:
+                        self._settings.is_first_start = bool(self.__data["first_start"])
+                    if candidate.response_format:
+                        self._settings.response_format = candidate.response_format
+                return True
+            return False
         except Exception:
             return False
 

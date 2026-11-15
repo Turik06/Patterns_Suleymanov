@@ -145,8 +145,9 @@ class organization_model(name_id):
     @staticmethod
     def from_dto(dto, resolver=None):
         """Создать модель из DTO"""
+        name = str(getattr(dto, "name", "") or "").strip() or "Без имени"
         result = organization_model(
-            name=getattr(dto, "name", "") or "Без имени",
+            name=name,
             inn=str(getattr(dto, "inn", "") or ""),
             bik=str(getattr(dto, "bik", "") or ""),
             account=str(getattr(dto, "account", "") or ""),
