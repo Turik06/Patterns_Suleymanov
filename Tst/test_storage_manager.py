@@ -380,3 +380,13 @@ def test_success_storage_manager_first_start_recipes():
     assert pancakes_recipe.portions == 1
     assert pancakes_recipe.brutto == 221.25
     assert pancakes_recipe.netto == 187.5
+
+
+def test_contains_data_storage_manager_repository():
+    """Проверка наполнения репозитория данными"""
+    manager = storage_manager()
+    manager.first_start()
+    assert manager.repository is not None
+    assert len(manager.repository.data) > 0
+    assert len(manager.repository.counts) > 0
+
