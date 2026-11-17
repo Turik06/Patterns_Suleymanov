@@ -183,6 +183,15 @@ class recipe_model(name_id):
         """Очистить все строки рецепта."""
         self.__rows.clear()
 
+    def references(self) -> list:
+        """Ссылки на блюдо и номенклатуру строк состава."""
+        refs = []
+        if self.dish is not None:
+            refs.append(self.dish)
+        for row in self.rows:
+            refs.extend(row.references())
+        return refs
+
     @staticmethod
     def create_pancake_dough_recipe(
         dough_dish: nomenclature_model,

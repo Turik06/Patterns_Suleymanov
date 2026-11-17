@@ -98,6 +98,12 @@ class range_model(name_id):
         """
         self.base_range = value
 
+    def references(self) -> list:
+        """Если есть базовая единица, ссылаемся на нее."""
+        if self.base_range is not None:
+            return [self.base_range]
+        return []
+
     @staticmethod
     def create_gram(name: str = "грамм"):
         """

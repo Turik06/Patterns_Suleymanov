@@ -1,7 +1,9 @@
 {
+  "type": "settings",
   "is_first_start": true,
   "response_format": "html",
   "organization": {
+    "type": "organization",
     "name": "Ромашка",
     "inn": "7736050003",
     "bik": "044525225",

@@ -85,6 +85,15 @@ class nomenclature_model(name_id):
 
         self.__range = value
 
+    def references(self) -> list:
+        """Ссылки на группу и единицу измерения."""
+        refs = []
+        if self.group is not None:
+            refs.append(self.group)
+        if self.range is not None:
+            refs.append(self.range)
+        return refs
+
     @staticmethod
     def create_flour(group, range_unit):
         """Фабричный метод: Мука пшеничная."""

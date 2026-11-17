@@ -59,8 +59,12 @@ class convertor:
         validator.validate(source, dict)
         data = source.get("result", source)
 
-        is_storage = ("unique_code" not in data) and ("name" not in data) and any(
-            isinstance(v, (list, dict)) for v in data.values()
+        is_storage = (
+            ("type" not in data)
+            and ("unique_code" not in data)
+            and ("name" not in data)
+            and len(data) > 0
+            and all(isinstance(v, (list, dict)) for v in data.values())
         )
 
         if is_storage:

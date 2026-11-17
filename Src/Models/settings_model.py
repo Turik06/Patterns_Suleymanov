@@ -95,3 +95,23 @@ class settings_model(abstract_model):
         """Задаёт формат ответа по умолчанию."""
         from Src.Logics.settings_manager import settings_manager
         self.__response_format = settings_manager.convert_report_type(value)
+
+    @staticmethod
+    def from_dto(dto, resolver=None):
+        """Создать модель из DTO"""
+        result = settings_model()
+        if hasattr(dto, "boss_name") and dto.boss_name:
+            result.boss_name = dto.boss_name
+        if hasattr(dto, "account_name") and dto.account_name:
+            result.account_name = dto.account_name
+        if hasattr(dto, "is_first_start"):
+            result.is_first_start = dto.is_first_start
+        if hasattr(dto, "response_format") and dto.response_format:
+            result.response_format = dto.response_format
+        if hasattr(dto, "organization") and dto.organization:
+            if isinstance(dto.organization, organization_model):
+                result.organization = dto.organization
+            else:
+                from Src.Logics.mapping_factory import mapping_factory
+                result.organization = mapping_factory().to_model(dto.organization, resolver)
+        return result

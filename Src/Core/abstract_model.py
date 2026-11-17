@@ -83,6 +83,10 @@ class name_id(ABC):
             return str(self.id) == str(other.id)
         return False
 
+    def references(self) -> list:
+        """Список сущностей, на которые ссылается объект. По умолчанию пустой."""
+        return []
+
     @property
     def type(self) -> str:
         """Полное наименование типа"""

@@ -1,4 +1,6 @@
-# UML-диаграмма: settings_manager
+# Менеджер настроек (settings_manager)
+
+## 1. UML-диаграмма классов
 
 ```mermaid
 classDiagram
@@ -22,7 +24,9 @@ classDiagram
         -__data: dict
         +__new__(cls) settings_manager
         +load(file_name: str) None
+        +build() bool
         +convert() bool
+        +convert_report_type(value) report_type_enum
         +is_loaded: bool
         +settings: settings_model
     }
@@ -39,6 +43,37 @@ classDiagram
         +account_name: str
         +is_first_start: bool
         +response_format: report_type_enum
+        +from_dto(dto, resolver) settings_model$
+    }
+
+    class abstract_dto {
+        <<abstract>>
+        +load_dict(data: dict) abstract_dto
+    }
+
+    class settings_dto {
+        -str __boss_name
+        -str __account_name
+        -bool __is_first_start
+        -str __response_format
+        -company_dto __organization
+        +boss_name: str
+        +account_name: str
+        +is_first_start: bool
+        +response_format: str
+        +organization: company_dto
+        +company_name: str
+        +load_dict(data: dict) settings_dto
+        +from_domain_model(source: settings_model) settings_dto
+    }
+
+    class company_dto {
+        +name: str
+        +inn: str
+        +bik: str
+        +account: str
+        +ownership_form: str
+        +from_domain_model(source: organization_model) company_dto
     }
 
     class report_type_enum {
@@ -49,18 +84,6 @@ classDiagram
         +XML : 4
         +HTML : 5
         +RTF : 6
-    }
-
-    class response_format_dto {
-        <<enumeration>>
-        +CSV : int
-        +MARKDOWN : int
-        +JSON : int
-        +XML : int
-        +TXT : int
-        +HTML : int
-        +RTF : int
-        +YAML : int
     }
 
     class organization_model {
@@ -87,7 +110,25 @@ classDiagram
     name_id <|-- organization_model
     abstract_manager <|-- settings_manager
 
+    abstract_dto <|-- settings_dto
+    abstract_dto <|-- company_dto
+
     settings_manager o-- settings_model : _settings
     settings_model o-- organization_model : __organization
     settings_model o-- report_type_enum : __response_format
+
+    settings_dto o-- company_dto : __organization
+    settings_manager ..> settings_dto : uses for deserialization
+    settings_model ..> settings_dto : from_dto()
 ```
+
+---
+
+## 2. Механизм десериализации настроек
+
+Загрузка файла `settings.json` выполняется через универсальный конвейер DTO и конвертера:
+
+1. **Чтение JSON:** `settings_manager.load()` считывает файл конфигурации в словарь `__data`.
+2. **Преобразование в DTO:** `convertor().deserialize(data)` идентифицирует поля настроек и заполняет `settings_dto` (а также вложенный `company_dto` для карточки организации).
+3. **Отображение в модель:** `mapping_factory` вызывает фабричный метод `settings_model.from_dto(dto)`, создавая валидированный экземпляр доменной модели `settings_model`.
+4. Поддерживается как структурированный формат (с объектом `organization`), так и плоский формат (с полем `company_name`).

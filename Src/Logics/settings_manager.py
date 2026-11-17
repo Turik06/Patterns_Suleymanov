@@ -8,6 +8,8 @@ from Src.Models.settings_model import settings_model
 from Src.Models.organization_model import organization_model
 from Src.Dtos.report_type_enum import report_type_enum
 from Src.Dtos.response_format_dto import response_format_dto
+from Src.Logics.convertor import convertor
+from Src.Logics.mapping_factory import mapping_factory
 
 
 class settings_manager(abstract_manager):
@@ -64,72 +66,30 @@ class settings_manager(abstract_manager):
             ) from ex
 
     def build(self) -> bool:
-        """
-        Обработать загруженные сырые данные и заполнить settings_model через интроспекцию полей.
-        Использует common.get_fields для динамического связывания.
-        """
+        """Загрузка настроек через десериализатор"""
         if not isinstance(self.__data, dict) or len(self.__data) == 0:
             return False
 
         try:
-            if self._settings is None:
-                self._settings = settings_model()
-
-            # 1. Загрузка данных организации через рефлексию
-            company = self._settings.organization or organization_model()
-            company_fields = common.get_fields(company, is_common=True)
-
-            org_data = self.__data.get("organization") or self.__data.get("company")
-            if isinstance(org_data, dict):
-                for field in company_fields:
-                    if field in ("id",):
-                        continue
-                    if field in org_data:
-                        val = org_data[field]
-                        if val is not None and str(val).strip():
-                            try:
-                                setattr(company, field, val)
-                            except Exception:
-                                pass
-
-            for field in company_fields:
-                key = f"company_{field}"
-                if key in self.__data:
-                    val = self.__data[key]
-                    if val is not None and str(val).strip():
-                        try:
-                            setattr(company, field, val)
-                        except Exception:
-                            pass
-
-            if company.name:
-                self._settings.organization = company
-
-            # 2. Загрузка данных настроек через рефлексию
-            settings_fields = common.get_fields(self._settings, is_common=True)
-            for field in settings_fields:
-                if field in ("organization", "company", "id", "name", "response_format"):
-                    continue
-                if field in self.__data:
-                    val = self.__data[field]
-                    if val is not None and str(val).strip():
-                        try:
-                            setattr(self._settings, field, val)
-                        except Exception:
-                            pass
-
-            # Поддержка альтернативных наименований флага первого старта
-            if "first_start" in self.__data:
-                self._settings.is_first_start = bool(self.__data.get("first_start"))
-            elif "is_first_start" in self.__data:
-                self._settings.is_first_start = bool(self.__data.get("is_first_start"))
-
-            # Загрузка формата ответа
-            if "response_format" in self.__data:
-                self._settings.response_format = self.convert_report_type(self.__data["response_format"])
-
-            return True
-
+            candidate = convertor().deserialize(self.__data)
+            if isinstance(candidate, settings_model):
+                if self._settings is None:
+                    self._settings = candidate
+                else:
+                    if candidate.boss_name:
+                        self._settings.boss_name = candidate.boss_name
+                    if candidate.account_name:
+                        self._settings.account_name = candidate.account_name
+                    if candidate.organization:
+                        self._settings.organization = candidate.organization
+                    if "is_first_start" in self.__data:
+                        self._settings.is_first_start = bool(self.__data["is_first_start"])
+                    elif "first_start" in self.__data:
+                        self._settings.is_first_start = bool(self.__data["first_start"])
+                    if candidate.response_format:
+                        self._settings.response_format = candidate.response_format
+                return True
+            return False
         except Exception:
             return False
 

@@ -35,8 +35,11 @@ class storage_dto(abstract_dto):
 
     @address.setter
     def address(self, value: str) -> None:
-        validator.validate(value, str)
-        self.__address = value.strip()
+        if value:
+            validator.validate(value, str)
+            self.__address = value.strip()
+        else:
+            self.__address = ""
 
     def from_domain_model(self, source: storage_model) -> "storage_dto":
         validator.validate(source, storage_model)
@@ -45,6 +48,7 @@ class storage_dto(abstract_dto):
         dto.type = getattr(source, "type", source.__class__.__name__)
         dto.unique_code = source.unique_code
         dto.name = source.name
-        dto.address = source.address
+        if source.address:
+            dto.address = source.address
         return dto
 

@@ -60,6 +60,33 @@ classDiagram
         +account_name str
         +is_first_start bool
         +response_format report_type_enum
+        +from_dto(dto, resolver) settings_model$
+    }
+
+    class abstract_dto {
+        <<abstract>>
+        +load_dict(data: dict) abstract_dto
+    }
+
+    class settings_dto {
+        -str __boss_name
+        -str __account_name
+        -bool __is_first_start
+        -str __response_format
+        -company_dto __organization
+        +boss_name str
+        +account_name str
+        +is_first_start bool
+        +response_format str
+        +organization company_dto
+    }
+
+    class company_dto {
+        +name str
+        +inn str
+        +bik str
+        +account str
+        +ownership_form str
     }
 
     class response_format_dto {
@@ -92,6 +119,7 @@ classDiagram
         -dict __data
         +__new__(cls) settings_manager
         +load(file_name: str) None
+        +build() bool
         +convert() bool
         +is_loaded: bool
         +settings: settings_model
@@ -106,7 +134,14 @@ classDiagram
         -dict _recipes
         -bool __is_initialized
         +__new__(cls) storage_manager
+        +first_start() void
+        +clear() void
         +convert(settings: settings_model = None) bool
+        +resolve_category(entity_type: str) str
+        +get_catalog(entity_type: str) dict
+        +get_by_type_and_id(entity_type: str, identifier: str) object
+        +save_entity(entity) bool
+        +delete_entity(entity_type: str, unique_code: str) bool
         +add_storage(item) bool
         +add_range(item) bool
         +add_nomenclature(item) bool
@@ -120,6 +155,19 @@ classDiagram
         +data: dict
         +is_initialized: bool
         +is_loaded: bool
+    }
+
+    class entity_service {
+        -storage_manager __storage
+        +storage: storage_manager
+        +get_catalog(entity_type: str) dict
+        +find_referrers(unique_code: str) list
+        +is_linked(unique_code: str) bool
+        +validate_dependencies_exist(dto, entity) tuple
+        +get_entity(entity_type: str, unique_code: str) object
+        +create_entity(entity_type: str, payload: dict, worker) object
+        +update_entity(entity_type: str, unique_code: str, payload: dict) object
+        +delete_entity(entity_type: str, unique_code: str) bool
     }
 
     class recipe_row_model {
@@ -196,6 +244,11 @@ classDiagram
     abstract_manager <|-- settings_manager
     abstract_manager <|-- storage_manager
 
+    abstract_dto <|-- settings_dto
+    abstract_dto <|-- company_dto
+
+    entity_service o-- storage_manager : __storage
+
     abstract_convertor <|-- basic_convertor
     abstract_convertor <|-- datetime_convertor
     abstract_convertor <|-- reference_convertor
@@ -208,6 +261,9 @@ classDiagram
 
     settings_manager o-- settings_model : _settings
     settings_model o-- organization_model : __organization
+    settings_dto o-- company_dto : __organization
+    settings_manager ..> settings_dto : uses for deserialization
+    settings_model ..> settings_dto : from_dto()
 
     storage_manager o-- storage_model : _storages
     storage_manager o-- range_model : _ranges
@@ -234,5 +290,4 @@ classDiagram
 * [Архитектура подсистемы отчетов (Abstract Factory & Template Method)](./ReportFactory.md)
 * [Архитектура модели рецептов (RecipeModel)](./RecipeModel.md)
 * [Архитектура менеджера настроек (SettingsManager)](./SettingsManager.md)
-* [Архитектура складского учета (StorageManager)](./StorageManager.md)
-
+* [Архитектура складского учета и сервиса сущностей (StorageManager)](./StorageManager.md)

@@ -17,6 +17,8 @@ from Src.Dtos.recipe_dto import recipe_dto
 from Src.Models.recipe_model import recipe_model
 from Src.Dtos.company_dto import company_dto
 from Src.Models.organization_model import organization_model
+from Src.Dtos.settings_dto import settings_dto
+from Src.Models.settings_model import settings_model
 
 
 """
@@ -36,6 +38,7 @@ class mapping_factory(abstract_mapping_factory):
             recipe_row_dto: recipe_row_model,
             recipe_dto: recipe_model,
             company_dto: organization_model,
+            settings_dto: settings_model,
             int: int,
             float: float,
             bool: bool,

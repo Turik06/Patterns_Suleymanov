@@ -374,3 +374,50 @@ class storage_manager(abstract_manager):
     def get_range(self, identifier: str = ""):
         """Поиск единицы измерения по коду или имени."""
         return self.get_by_type_and_id("range", identifier)
+
+    def get_catalog(self, entity_type: str) -> dict:
+        """Получить словарь сущностей по типу"""
+        category = self.resolve_category(entity_type)
+        if category == self.range_key():
+            return self._ranges
+        elif category == self.group_key():
+            return self._groups
+        elif category == self.nomenclature_key():
+            return self._nomenclatures
+        elif category == self.receipt_key() or category == self.recipe_key():
+            return self._recipes
+        elif category == self.storage_key():
+            return self._storages
+        return None
+
+    def save_entity(self, entity) -> bool:
+        """Сохранить сущность в хранилище"""
+        if isinstance(entity, range_model):
+            return self.add_range(entity)
+        elif isinstance(entity, nomenclature_group_model):
+            return self.add_group(entity)
+        elif isinstance(entity, nomenclature_model):
+            return self.add_nomenclature(entity)
+        elif isinstance(entity, recipe_model):
+            return self.add_recipe(entity)
+        elif isinstance(entity, storage_model):
+            return self.add_storage(entity)
+        return False
+
+    def delete_entity(self, entity_type: str, unique_code: str) -> bool:
+        """Удалить сущность из хранилища"""
+        catalog = self.get_catalog(entity_type)
+        if catalog is not None and unique_code in catalog:
+            del catalog[unique_code]
+            return True
+        return False
+
+    def find_referrers(self, unique_code: str) -> list:
+        """Поиск ссылающихся объектов"""
+        from Src.Logics.entity_service import entity_service
+        return entity_service(self).find_referrers(unique_code)
+
+    def is_linked(self, entity_type: str, unique_code: str) -> bool:
+        """Проверка связей"""
+        from Src.Logics.entity_service import entity_service
+        return entity_service(self).is_linked(unique_code)
