@@ -7,6 +7,7 @@ from Src.Models.range_model import range_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.nomenclature_group_model import nomenclature_group_model
 from Src.Models.recipe_model import recipe_model
+from Src.Logics.storage_reposity import storage_repository
 
 
 class storage_dict(dict):
@@ -33,6 +34,7 @@ class storage_manager(abstract_manager):
     _nomenclatures: dict = None
     _groups: dict = None
     _recipes: dict = None
+    __repository: storage_repository = None
     __is_initialized: bool = False
 
     # Singleton
@@ -57,6 +59,7 @@ class storage_manager(abstract_manager):
             self._nomenclatures = storage_dict()
             self._groups = storage_dict()
             self._recipes = storage_dict()
+            self.__repository = storage_repository()
             self.__is_initialized = False
 
     def build(self, settings=None) -> bool:
@@ -138,38 +141,50 @@ class storage_manager(abstract_manager):
             self.add_range(r)
 
     def add_storage(self, item: storage_model) -> bool:
-        """Добавить склад. Возвращает True, если добавлен; False, если дубликат или неверный тип."""
+        """Добавить склад"""
         if not isinstance(item, storage_model) or item.id in self._storages:
             return False
         self._storages[item.id] = item
+        if self.__repository is not None:
+            self.__repository.registry(item)
         return True
 
     def add_range(self, item: range_model) -> bool:
-        """Добавить единицу измерения."""
+        """Добавить единицу измерения"""
         if not isinstance(item, range_model) or item.id in self._ranges:
             return False
         self._ranges[item.id] = item
+        if self.__repository is not None:
+            self.__repository.registry(item)
         return True
 
     def add_nomenclature(self, item: nomenclature_model) -> bool:
-        """Добавить позицию номенклатуры."""
+        """Добавить номенклатуру"""
         if not isinstance(item, nomenclature_model) or item.id in self._nomenclatures:
             return False
         self._nomenclatures[item.id] = item
+        if self.__repository is not None:
+            self.__repository.registry(item)
         return True
 
     def add_group(self, item: nomenclature_group_model) -> bool:
-        """Добавить группу номенклатуры."""
+        """Добавить группу номенклатуры"""
         if not isinstance(item, nomenclature_group_model) or item.id in self._groups:
             return False
         self._groups[item.id] = item
+        if self.__repository is not None:
+            self.__repository.registry(item)
         return True
 
     def add_recipe(self, item: recipe_model) -> bool:
-        """Добавить технологическую карту (рецепт)."""
+        """Добавить рецепт"""
         if not isinstance(item, recipe_model) or item.id in self._recipes:
             return False
         self._recipes[item.id] = item
+        if self.__repository is not None:
+            if hasattr(item, "rows") and item.rows:
+                self.__repository.registry_range(item.rows)
+            self.__repository.registry(item)
         return True
 
     @property
@@ -285,6 +300,7 @@ class storage_manager(abstract_manager):
         self._nomenclatures = storage_dict()
         self._groups = storage_dict()
         self._recipes = storage_dict()
+        self.__repository = storage_repository()
         self.__is_initialized = False
 
     def first_start(self) -> None:
@@ -405,12 +421,24 @@ class storage_manager(abstract_manager):
         return False
 
     def delete_entity(self, entity_type: str, unique_code: str) -> bool:
-        """Удалить сущность из хранилища"""
+        """Удалить сущность"""
         catalog = self.get_catalog(entity_type)
         if catalog is not None and unique_code in catalog:
+            item = catalog[unique_code]
+            if self.__repository is not None and unique_code in self.__repository.data:
+                try:
+                    self.__repository.delete(item)
+                except Exception:
+                    self.__repository.data.pop(unique_code, None)
+                    self.__repository.counts.pop(unique_code, None)
             del catalog[unique_code]
             return True
         return False
+
+    @property
+    def repository(self) -> storage_repository:
+        """Репозиторий данных"""
+        return self.__repository
 
     def find_referrers(self, unique_code: str) -> list:
         """Поиск ссылающихся объектов"""

@@ -35,7 +35,7 @@ class entity_service:
         ]
 
     def find_referrers(self, unique_code: str) -> list:
-        """Найти объекты, которые ссылаются на указанный код"""
+        """Найти объекты, ссылающиеся на код"""
         if not unique_code:
             return []
 
@@ -53,7 +53,10 @@ class entity_service:
         return referrers
 
     def is_linked(self, unique_code: str) -> bool:
-        """Проверить, есть ли ссылки на сущность"""
+        """Проверить наличие ссылок на сущность"""
+        repo = getattr(self.__storage, "repository", None)
+        if repo is not None and hasattr(repo, "counts") and unique_code in repo.counts:
+            return repo.counts[unique_code] > 0
         return len(self.find_referrers(unique_code)) > 0
 
     def validate_dependencies_exist(self, dto, entity) -> tuple[bool, str]:
@@ -152,8 +155,14 @@ class entity_service:
 
         if changing_code:
             del catalog[unique_code]
+            repo = getattr(self.__storage, "repository", None)
+            if repo is not None:
+                repo.data.pop(unique_code, None)
+                repo.counts.pop(unique_code, None)
             entity.unique_code = new_code
             catalog[new_code] = entity
+            if repo is not None:
+                repo.registry(entity)
 
         return entity
 
@@ -167,7 +176,13 @@ class entity_service:
         if not entity:
             raise LookupError(f"Сущность '{unique_code}' не найдена")
 
-        if self.is_linked(unique_code):
+        repo = getattr(self.__storage, "repository", None)
+        if repo is not None and hasattr(repo, "can_delete"):
+            if not repo.can_delete(entity):
+                referrers = self.find_referrers(unique_code)
+                ref_names = [getattr(r, "name", str(r)) for r in referrers]
+                raise PermissionError(f"Нельзя удалить сущность '{unique_code}', так как она связана с другими", ref_names)
+        elif self.is_linked(unique_code):
             referrers = self.find_referrers(unique_code)
             ref_names = [getattr(r, "name", str(r)) for r in referrers]
             raise PermissionError(f"Нельзя удалить сущность '{unique_code}', так как она связана с другими", ref_names)
