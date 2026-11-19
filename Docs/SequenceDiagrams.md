@@ -221,3 +221,80 @@ sequenceDiagram
     end
     deactivate Flask
 ```
+
+---
+
+## 4. Фильтрация данных (POST /api/filter/{domain_type})
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Клиент
+    participant Flask as Flask Router
+    participant Storage as storage_manager
+    participant Dto as filter_dto
+    participant Proto as prototype
+    participant Cloned as prototype clone
+    participant Worker as convert_factory
+
+    User->>Flask: POST /api/filter/{domain_type}
+    activate Flask
+
+    Flask->>Storage: resolve_category(domain_type)
+    activate Storage
+    Storage-->>Flask: category
+    deactivate Storage
+
+    alt Неизвестный тип
+        Flask-->>User: 400 Bad Request
+    else Тип найден
+        Flask->>Dto: from_dict(payload)
+        Flask->>Storage: data[category]
+        Storage-->>Flask: items
+        Flask->>Proto: prototype(items)
+        Flask->>Proto: clone(filter_dto)
+        activate Cloned
+        Proto-->>Flask: cloned
+        Flask->>Worker: serialize(cloned.data)
+        Worker-->>Flask: json
+        Flask-->>User: 200 OK
+        deactivate Cloned
+    end
+    deactivate Flask
+```
+
+---
+
+## 5. Формирование ОСВ (POST /api/osv)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Клиент
+    participant Flask as Flask Router
+    participant Storage as storage_manager
+    participant Dto as filter_dto
+    participant ProtoTx as prototype transactions
+    participant ProtoFiltered as prototype filtered
+    participant ProtoOsv as prototype osv
+
+    User->>Flask: POST /api/osv
+    activate Flask
+
+    Flask->>Dto: from_dict(payload)
+    Flask->>Storage: data[transaction_key]
+    Storage-->>Flask: transactions
+    Flask->>ProtoTx: prototype(transactions)
+    Flask->>ProtoTx: clone(filter_dto)
+    activate ProtoFiltered
+    ProtoTx-->>Flask: filtered
+    Flask->>ProtoFiltered: create_osv()
+    activate ProtoOsv
+    ProtoFiltered-->>Flask: osv
+    deactivate ProtoFiltered
+
+    Flask->>Flask: to_dict
+    Flask-->>User: 200 OK
+    deactivate ProtoOsv
+    deactivate Flask
+```
