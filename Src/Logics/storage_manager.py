@@ -7,6 +7,7 @@ from Src.Models.range_model import range_model
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.nomenclature_group_model import nomenclature_group_model
 from Src.Models.recipe_model import recipe_model
+from Src.Models.transaction_model import transaction_model
 from Src.Logics.storage_reposity import storage_repository
 
 
@@ -34,6 +35,7 @@ class storage_manager(abstract_manager):
     _nomenclatures: dict = None
     _groups: dict = None
     _recipes: dict = None
+    _transactions: dict = None
     __repository: storage_repository = None
     __is_initialized: bool = False
 
@@ -59,6 +61,7 @@ class storage_manager(abstract_manager):
             self._nomenclatures = storage_dict()
             self._groups = storage_dict()
             self._recipes = storage_dict()
+            self._transactions = storage_dict()
             self.__repository = storage_repository()
             self.__is_initialized = False
 
@@ -187,6 +190,15 @@ class storage_manager(abstract_manager):
             self.__repository.registry(item)
         return True
 
+    def add_transaction(self, item: transaction_model) -> bool:
+        """Добавить складскую транзакцию"""
+        if not isinstance(item, transaction_model) or item.id in self._transactions:
+            return False
+        self._transactions[item.id] = item
+        if self.__repository is not None:
+            self.__repository.registry(item)
+        return True
+
     @property
     def storages(self) -> dict:
         """Словарь складов {id: storage_model}."""
@@ -212,10 +224,20 @@ class storage_manager(abstract_manager):
         """Словарь технологических карт {id: recipe_model}."""
         return self._recipes
 
+    @property
+    def transactions(self) -> dict:
+        """Словарь складских транзакций {id: transaction_model}"""
+        return self._transactions
+
     @staticmethod
     def storage_key() -> str:
         """Ключ категории складов"""
         return "storage_model"
+
+    @staticmethod
+    def transaction_key() -> str:
+        """Ключ категории складских транзакций"""
+        return "transaction_model"
 
     @staticmethod
     def range_key() -> str:
@@ -279,6 +301,7 @@ class storage_manager(abstract_manager):
             self.range_key(): list(self._ranges.values()),
             self.receipt_key(): list(self._recipes.values()),
             self.storage_key(): list(self._storages.values()),
+            self.transaction_key(): list(self._transactions.values()),
         }
 
     @property
@@ -300,6 +323,7 @@ class storage_manager(abstract_manager):
         self._nomenclatures = storage_dict()
         self._groups = storage_dict()
         self._recipes = storage_dict()
+        self._transactions = storage_dict()
         self.__repository = storage_repository()
         self.__is_initialized = False
 
@@ -404,6 +428,8 @@ class storage_manager(abstract_manager):
             return self._recipes
         elif category == self.storage_key():
             return self._storages
+        elif category == self.transaction_key():
+            return self._transactions
         return None
 
     def save_entity(self, entity) -> bool:
@@ -418,6 +444,8 @@ class storage_manager(abstract_manager):
             return self.add_recipe(entity)
         elif isinstance(entity, storage_model):
             return self.add_storage(entity)
+        elif isinstance(entity, transaction_model):
+            return self.add_transaction(entity)
         return False
 
     def delete_entity(self, entity_type: str, unique_code: str) -> bool:
