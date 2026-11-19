@@ -214,3 +214,77 @@ paths:
                 type: object
               example:
                 detail: "Ошибка: Невозможно получить список доменных сущностей!"
+
+  /api/filter/{domain_type}:
+    post:
+      summary: Фильтрация сущностей
+      description: Фильтрует список доменных сущностей по DTO фильтрации
+      operationId: main.filter_domain_entities
+      parameters:
+        - name: domain_type
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Список отфильтрованных сущностей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '400':
+          description: Некорректный тип сущности или неверные параметры фильтра
+
+  /api/osv:
+    post:
+      summary: Оборотно-сальдовая ведомость
+      description: Формирует ОСВ с учетом фильтрации через Прототип
+      operationId: main.get_osv_report
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Строки оборотно-сальдовой ведомости
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/turnarounds:
+    post:
+      summary: Оборотно-сальдовая ведомость (синоним)
+      description: Формирует ОСВ с учетом фильтрации через Прототип
+      operationId: main.get_osv_report
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Строки оборотно-сальдовой ведомости
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+
+

@@ -2,11 +2,13 @@ from flask import jsonify, request
 import connexion
 
 from Src.Dtos.report_type_enum import report_type_enum
+from Src.Dtos.filter_dto import filter_dto
 from Src.Logics.report_factory import report_factory
 from Src.Logics.settings_manager import settings_manager
 from Src.Logics.storage_manager import storage_manager
 from Src.Logics.convertor import convertor
 from Src.Logics.entity_service import entity_service
+from Src.Logics.prototype import prototype
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 app = api.app
@@ -247,7 +249,43 @@ def get_default_entity_report(param1: str = None, param2: str = None):
     return report.create_response(result_dto, f"{target_type}_{target_id}_default")
 
 
+@app.route("/api/filter/<domain_type>", methods=["POST"])
+def filter_domain_entities(domain_type: str):
+    category = storage.resolve_category(domain_type)
+    if not category or category not in storage.data:
+        return jsonify({"error": f"Неизвестный тип сущности '{domain_type}'"}), 400
+
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Ожидается JSON объект параметров фильтрации"}), 400
+
+    f_dto = filter_dto.from_dict(payload)
+    items = storage.data[category]
+    filtered_pr = prototype(items).clone(f_dto)
+
+    serialized = worker.serialize(filtered_pr.data)
+    data = serialized.get("result", serialized) if isinstance(serialized, dict) else serialized
+    return jsonify(data), 200
+
+
+@app.route("/api/osv", methods=["POST"])
+@app.route("/api/turnarounds", methods=["POST"])
+def get_osv_report():
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    f_dto = filter_dto.from_dict(payload)
+    transactions = storage.data.get(storage.transaction_key(), [])
+    filtered_pr = prototype(transactions).clone(f_dto)
+    osv_pr = filtered_pr.create_osv()
+
+    rows = [row.to_dict() for row in osv_pr.data]
+    return jsonify(rows), 200
+
+
 api.add_api('openapi.yaml')
 
 if __name__ == "__main__":
     api.run(host="0.0.0.0", port=8080)
+
