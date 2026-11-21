@@ -1,6 +1,8 @@
 from Src.Core.abstract_prototype import abstract_prototype
 from Src.Core.common import common
 from Src.Dtos.filter_dto import filter_dto
+from Src.Core.abstract_model import name_id
+from Src.Models.osv_row_model import osv_row_model
 
 
 class prototype(abstract_prototype):
@@ -85,9 +87,6 @@ class prototype(abstract_prototype):
     @staticmethod
     def get_filterable_fields(source, max_depth: int = 2) -> list[str]:
         """Собираем список всех полей модели, по которым можно фильтровать."""
-        from Src.Core.common import common
-        from Src.Core.abstract_model import name_id
-
         if not source:
             return []
 
@@ -156,8 +155,6 @@ class prototype(abstract_prototype):
 
     def create_osv(self, start_date=None, end_date=None) -> "prototype":
         """Сформировать ОСВ по транзакциям."""
-        from Src.Models.osv_row_model import osv_row_model
-
         p_start = common.parse_date(start_date)
         p_end = common.parse_date(end_date)
         d_start = p_start.date() if hasattr(p_start, "date") else p_start

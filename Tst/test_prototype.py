@@ -1,4 +1,5 @@
 import sys
+import datetime
 from pathlib import Path
 import pytest
 
@@ -7,6 +8,7 @@ if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
 from main import app
+from Src.Core.common import common
 from Src.Dtos.filter_type_enum import filter_type_enum
 from Src.Dtos.filter_dto import filter_dto, filter_item_dto
 from Src.Logics.prototype import prototype
@@ -71,8 +73,6 @@ class TestFilterDto:
         assert dto.name == "Мука"
 
     def test_parse_date_helper(self):
-        import datetime
-        from Src.Core.common import common
         now = datetime.datetime.now()
         today = datetime.date.today()
         assert common.parse_date(now) == now
@@ -236,7 +236,6 @@ class TestPrototypeOsv:
         assert filtered_osv[0].storage.name == "Склад 1"
 
     def test_create_osv_with_period_and_start_balance(self):
-        import datetime
         wh = storage_model(name="Основной склад")
         rng = range_model(name="кг")
         nom = make_nomenclature(name="Мука", range_unit=rng)
@@ -315,7 +314,6 @@ class TestPrototypeApi:
     def test_osv_api_with_period(self):
         wh = list(self.storage.storages.values())[0]
         nom = list(self.storage.nomenclatures.values())[0]
-        import datetime
         d_old = datetime.datetime(2025, 12, 1, 10, 0, 0)
         d_new = datetime.datetime(2026, 1, 15, 10, 0, 0)
         tx1 = transaction_model(storage=wh, nomenclature=nom, range_unit=nom.range, value=100.0, period=d_old)

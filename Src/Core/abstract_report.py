@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from urllib.parse import quote
+from flask import Response
 from Src.Core.abstract_model import abstract_model
 from Src.Core.exception import argument_exception
 from Src.Core.validator import validator
@@ -48,9 +50,6 @@ class abstract_report(ABC):
         """
         Полиморфное построение HTTP-ответа без процедурных ветвлений.
         """
-        from flask import Response
-        from urllib.parse import quote
-
         data = bytes(result.binary) if self.is_attachment else result.text
         headers = {}
         if self.is_attachment:
