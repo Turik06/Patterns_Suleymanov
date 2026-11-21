@@ -1,9 +1,13 @@
+import pytest
+from Src.Core.exception import argument_exception
 from Src.Logics.storage_manager import storage_manager
 from Src.Models.settings_model import settings_model
 from Src.Logics.convertor import convertor
+from Src.Logics.mapping_factory import mapping_factory
 from Src.Models.range_model import range_model
 from Src.Models.recipe_model import recipe_model
 from Src.Dtos.nomenclature_dto import nomenclature_dto
+from Src.Dtos.range_dto import range_dto
 
 
 def test_deserialize_single_range():
@@ -100,7 +104,6 @@ def test_domain_model_from_dto_factory():
     manager.build()
     orig = manager.data[storage_manager.range_key()][0]
 
-    from Src.Dtos.range_dto import range_dto
     dto = range_dto().from_domain_model(orig)
     restored = range_model.from_dto(dto)
 
@@ -111,11 +114,6 @@ def test_domain_model_from_dto_factory():
 
 def test_mapping_factory_to_model_invalid_resolver():
     """Проверить, что некорректный тип resolver вызывает argument_exception"""
-    import pytest
-    from Src.Logics.mapping_factory import mapping_factory
-    from Src.Dtos.range_dto import range_dto
-    from Src.Core.exception import argument_exception
-
     mf = mapping_factory()
     dto = range_dto()
     with pytest.raises(argument_exception):

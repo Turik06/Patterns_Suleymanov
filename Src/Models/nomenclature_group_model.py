@@ -7,15 +7,25 @@ class nomenclature_group_model(name_id):
     Категория для объединения позиций номенклатуры (например, "Мясо", "Овощи", "Молочные продукты").
     """
 
-    def __init__(self, name=""):
-        """
-        Конструктор группы номенклатуры.
-
-        Параметры:
-            name: Наименование группы (до 50 символов)
-        """
+    def __init__(self, name="", parent=None):
         super().__init__()
+        self.__parent = None
         self.name = name
+        self.parent = parent
+
+    @property
+    def parent(self):
+        return self.__parent
+
+    @parent.setter
+    def parent(self, val):
+        self.__parent = val
+
+    def references(self) -> list:
+        if self.__parent is not None:
+            return [self.__parent]
+        return []
+
 
     @staticmethod
     def create_grocery():

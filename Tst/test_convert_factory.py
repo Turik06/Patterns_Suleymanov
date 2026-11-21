@@ -1,4 +1,5 @@
 import io
+import os
 import json
 import pytest
 from datetime import date, datetime
@@ -325,8 +326,6 @@ class TestConvertFactory:
         Описание: Проверяет требование № 5 технического задания (наличие JSON-файлов в репозитории).
         """
         # Arrange (Подготовка)
-        import os
-
         files_to_check = [
             "Dumps/storage_data.json",
             "Dumps/recipes.json",
