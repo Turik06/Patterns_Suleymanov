@@ -9,10 +9,21 @@ from Src.Logics.storage_manager import storage_manager
 from Src.Logics.convertor import convertor
 from Src.Logics.entity_service import entity_service
 from Src.Logics.prototype import prototype
+from Src.Core.exception import argument_exception, operation_exception
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 app = api.app
 app.json.ensure_ascii = False
+
+
+@app.errorhandler(argument_exception)
+def handle_argument_exception(ex):
+    return jsonify({"error": str(ex)}), 400
+
+
+@app.errorhandler(operation_exception)
+def handle_operation_exception(ex):
+    return jsonify({"error": str(ex)}), 500
 
 # Инициализация синглтонов хранилища и настроек
 settings = settings_manager()
@@ -249,17 +260,39 @@ def get_default_entity_report(param1: str = None, param2: str = None):
     return report.create_response(result_dto, f"{target_type}_{target_id}_default")
 
 
+@app.route("/api/filter/<domain_type>/fields", methods=["GET"])
+def get_filter_fields(domain_type: str):
+    """Список полей, по которым можно фильтровать сущность."""
+    category = storage.resolve_category(domain_type)
+    if not category or category not in storage.data:
+        return jsonify({"error": f"Неизвестный тип сущности '{domain_type}'"}), 400
+
+    items = storage.data[category]
+    fields = prototype.get_filterable_fields(items)
+    return jsonify({
+        "domain_type": domain_type,
+        "category": category,
+        "fields": fields
+    }), 200
+
+
 @app.route("/api/filter/<domain_type>", methods=["POST"])
 def filter_domain_entities(domain_type: str):
     category = storage.resolve_category(domain_type)
     if not category or category not in storage.data:
         return jsonify({"error": f"Неизвестный тип сущности '{domain_type}'"}), 400
 
-    payload = request.get_json(silent=True) or {}
-    if not isinstance(payload, dict):
+    payload = request.get_json(silent=True)
+    if payload is not None and not isinstance(payload, dict):
         return jsonify({"error": "Ожидается JSON объект параметров фильтрации"}), 400
+    if payload is None:
+        payload = {}
 
-    f_dto = filter_dto.from_dict(payload)
+    try:
+        f_dto = filter_dto.from_dict(payload)
+    except (ValueError, argument_exception) as ex:
+        return jsonify({"error": str(ex)}), 400
+
     items = storage.data[category]
     filtered_pr = prototype(items).clone(f_dto)
 
@@ -271,14 +304,20 @@ def filter_domain_entities(domain_type: str):
 @app.route("/api/osv", methods=["POST"])
 @app.route("/api/turnarounds", methods=["POST"])
 def get_osv_report():
-    payload = request.get_json(silent=True) or {}
-    if not isinstance(payload, dict):
+    payload = request.get_json(silent=True)
+    if payload is not None and not isinstance(payload, dict):
+        return jsonify({"error": "Ожидается JSON объект параметров фильтрации"}), 400
+    if payload is None:
         payload = {}
 
-    f_dto = filter_dto.from_dict(payload)
+    try:
+        f_dto = filter_dto.from_dict(payload)
+    except (ValueError, argument_exception) as ex:
+        return jsonify({"error": str(ex)}), 400
+
     transactions = storage.data.get(storage.transaction_key(), [])
     filtered_pr = prototype(transactions).clone(f_dto)
-    osv_pr = filtered_pr.create_osv()
+    osv_pr = filtered_pr.create_osv(start_date=f_dto.start_date, end_date=f_dto.end_date)
 
     rows = [row.to_dict() for row in osv_pr.data]
     return jsonify(rows), 200

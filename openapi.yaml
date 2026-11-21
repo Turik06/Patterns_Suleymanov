@@ -231,7 +231,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/FilterDto'
       responses:
         '200':
           description: Список отфильтрованных сущностей
@@ -243,6 +243,10 @@ paths:
                   type: object
         '400':
           description: Некорректный тип сущности или неверные параметры фильтра
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
 
   /api/osv:
     post:
@@ -254,7 +258,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/FilterDto'
       responses:
         '200':
           description: Строки оборотно-сальдовой ведомости
@@ -263,7 +267,13 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '#/components/schemas/OsvRowDto'
+        '400':
+          description: Некорректные параметры фильтрации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
 
   /api/turnarounds:
     post:
@@ -275,7 +285,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/FilterDto'
       responses:
         '200':
           description: Строки оборотно-сальдовой ведомости
@@ -284,7 +294,111 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '#/components/schemas/OsvRowDto'
+        '400':
+          description: Некорректные параметры фильтрации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+
+components:
+  schemas:
+    FilterTypeEnum:
+      type: string
+      enum:
+        - EQUALS
+        - LIKE
+      description: Тип операции фильтрации (EQUALS - точное совпадение, LIKE - вхождение строки)
+
+    FilterItemDto:
+      type: object
+      required:
+        - field_name
+        - value
+      properties:
+        field_name:
+          type: string
+          description: Имя поля для фильтрации
+          example: name
+        filter_type:
+          $ref: '#/components/schemas/FilterTypeEnum'
+        value:
+          description: Искомое значение для сравнения
+          example: "Мука"
+
+    FilterDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Наименование для быстрой фильтрации
+          example: "Мука"
+        unique_code:
+          type: string
+          description: Уникальный код для быстрой фильтрации
+          example: "b1a7d6e4-44b3-4613-8a3b-179836561cf2"
+        filter_type:
+          $ref: '#/components/schemas/FilterTypeEnum'
+        filters:
+          type: array
+          description: Список дополнительных критериев фильтрации
+          items:
+            $ref: '#/components/schemas/FilterItemDto'
+        start_date:
+          type: string
+          format: date-time
+          description: Начальная дата периода для ОСВ (ISO 8601)
+          example: "2026-01-01T00:00:00"
+        end_date:
+          type: string
+          format: date-time
+          description: Конечная дата периода для ОСВ (ISO 8601)
+          example: "2026-01-31T23:59:59"
+
+    OsvRowDto:
+      type: object
+      properties:
+        storage:
+          type: string
+          description: Наименование склада
+          example: "Основной склад"
+        nomenclature:
+          type: string
+          description: Наименование номенклатуры
+          example: "Мука пшеничная"
+        range:
+          type: string
+          description: Наименование единицы измерения
+          example: "кг"
+        start_balance:
+          type: number
+          format: float
+          description: Начальный остаток (сальдо на начало периода)
+          example: 0.0
+        incoming:
+          type: number
+          format: float
+          description: Оборот по приходу за период
+          example: 100.0
+        outgoing:
+          type: number
+          format: float
+          description: Оборот по расходу за период
+          example: 30.0
+        final_balance:
+          type: number
+          format: float
+          description: Конечный остаток (сальдо на конец периода)
+          example: 70.0
+
+    ErrorDto:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Сообщение об ошибке
+          example: "Ожидается JSON объект параметров фильтрации"
 
 
 
