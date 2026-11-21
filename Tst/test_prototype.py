@@ -333,10 +333,6 @@ class TestPrototypeApi:
         assert target["start_balance"] >= 100.0
         assert target["incoming"] >= 50.0
 
-    def test_turnarounds_alias_api_endpoint(self):
-        response = self.client.post("/api/turnarounds", json={})
-        assert response.status_code == 200
-
     def test_get_filter_fields_api_endpoint(self):
         response = self.client.get("/api/filter/range/fields")
         assert response.status_code == 200

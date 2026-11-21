@@ -302,7 +302,6 @@ def filter_domain_entities(domain_type: str):
 
 
 @app.route("/api/osv", methods=["POST"])
-@app.route("/api/turnarounds", methods=["POST"])
 def get_osv_report():
     payload = request.get_json(silent=True)
     if payload is not None and not isinstance(payload, dict):
