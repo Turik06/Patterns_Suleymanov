@@ -34,8 +34,12 @@ class TestFilterTypeEnum:
         assert filter_type_enum.from_string(filter_type_enum.LIKE) == filter_type_enum.LIKE
 
     def test_from_string_default(self):
-        assert filter_type_enum.from_string("unknown") == filter_type_enum.EQUALS
         assert filter_type_enum.from_string(None) == filter_type_enum.EQUALS
+        assert filter_type_enum.from_string("") == filter_type_enum.EQUALS
+        with pytest.raises(ValueError):
+            filter_type_enum.from_string("unknown")
+        with pytest.raises(ValueError):
+            filter_type_enum.from_string("DISLIKE")
 
 
 class TestFilterDto:
@@ -65,6 +69,21 @@ class TestFilterDto:
         nom = make_nomenclature(name="Мука")
         dto = filter_dto.from_domain_model(nom)
         assert dto.name == "Мука"
+
+    def test_parse_date_helper(self):
+        import datetime
+        from Src.Core.common import common
+        now = datetime.datetime.now()
+        today = datetime.date.today()
+        assert common.parse_date(now) == now
+        assert common.parse_date(today) == today
+        assert common.parse_date("2026-01-15") == datetime.datetime(2026, 1, 15, 0, 0)
+        assert common.parse_date(None) is None
+        assert common.parse_date("") is None
+        assert common.parse_date("invalid") is None
+        assert common.parse_date(123) is None
+        # Проверяем статический метод самого DTO
+        assert filter_dto.parse_date("2026-01-15") == datetime.datetime(2026, 1, 15, 0, 0)
 
 
 class TestPrototypeLogic:
@@ -133,6 +152,48 @@ class TestPrototypeLogic:
         assert len(cloned) == 1
         assert cloned[0].name == "Перец"
 
+    def test_prototype_filter_by_value_and_conversion_factor(self):
+        gram = range_model(name="грамм", conversion_factor=1)
+        kg = range_model(name="килограмм", conversion_factor=1000, base_range=gram)
+        pr = prototype([gram, kg])
+
+        # Фильтрация по value числом
+        f_val = filter_dto(filters=[filter_item_dto("value", filter_type_enum.EQUALS, 1000)])
+        assert len(pr.clone(f_val)) == 1
+        assert pr.clone(f_val)[0].name == "килограмм"
+
+        # Фильтрация по conversion_factor строкой
+        f_str = filter_dto(filters=[filter_item_dto("conversion_factor", filter_type_enum.EQUALS, "1000")])
+        assert len(pr.clone(f_str)) == 1
+        assert pr.clone(f_str)[0].name == "килограмм"
+
+    def test_prototype_filter_dotted_path(self):
+        gram = range_model(name="грамм", conversion_factor=1)
+        kg = range_model(name="килограмм", conversion_factor=1000, base_range=gram)
+        pr = prototype([gram, kg])
+
+        # Фильтрация по вложенному свойству base_range.name
+        f_nested = filter_dto(filters=[filter_item_dto("base_range.name", filter_type_enum.EQUALS, "грамм")])
+        assert len(pr.clone(f_nested)) == 1
+        assert pr.clone(f_nested)[0].name == "килограмм"
+
+        # Фильтрация по вложенному свойству base_range.value
+        f_nested_val = filter_dto(filters=[filter_item_dto("base_range.value", filter_type_enum.EQUALS, 1)])
+        assert len(pr.clone(f_nested_val)) == 1
+        assert pr.clone(f_nested_val)[0].name == "килограмм"
+
+    def test_prototype_get_filterable_fields(self):
+        gram = range_model(name="грамм", conversion_factor=1)
+        kg = range_model(name="килограмм", conversion_factor=1000, base_range=gram)
+        pr = prototype([gram, kg])
+
+        fields = pr.filterable_fields
+        assert "name" in fields
+        assert "value" in fields
+        assert "conversion_factor" in fields
+        assert "base_range.name" in fields
+        assert "base_range.value" in fields
+
 
 class TestPrototypeOsv:
     """Тесты формирования оборотно-сальдовой ведомости"""
@@ -174,6 +235,34 @@ class TestPrototypeOsv:
         assert len(filtered_osv) == 1
         assert filtered_osv[0].storage.name == "Склад 1"
 
+    def test_create_osv_with_period_and_start_balance(self):
+        import datetime
+        wh = storage_model(name="Основной склад")
+        rng = range_model(name="кг")
+        nom = make_nomenclature(name="Мука", range_unit=rng)
+
+        d1 = datetime.datetime(2026, 1, 10, 10, 0, 0)
+        d2 = datetime.datetime(2026, 1, 15, 12, 0, 0)
+        d3 = datetime.datetime(2026, 1, 20, 14, 0, 0)
+        d4 = datetime.datetime(2026, 2, 5, 10, 0, 0)
+
+        # до периода (входящее сальдо)
+        tx1 = transaction_model(storage=wh, nomenclature=nom, range_unit=rng, value=100.0, period=d1)
+        # в периоде (приход и расход)
+        tx2 = transaction_model(storage=wh, nomenclature=nom, range_unit=rng, value=50.0, period=d2)
+        tx3 = transaction_model(storage=wh, nomenclature=nom, range_unit=rng, value=-30.0, period=d3)
+        # после периода
+        tx4 = transaction_model(storage=wh, nomenclature=nom, range_unit=rng, value=200.0, period=d4)
+
+        pr = prototype([tx1, tx2, tx3, tx4])
+        osv = pr.create_osv(start_date="2026-01-12", end_date="2026-01-31")
+        assert len(osv) == 1
+        row = osv[0]
+        assert row.start_balance == 100.0
+        assert row.incoming == 50.0
+        assert row.outgoing == 30.0
+        assert row.final_balance == 120.0
+
 
 class TestPrototypeApi:
     """Тесты REST API для фильтрации и ОСВ"""
@@ -197,6 +286,14 @@ class TestPrototypeApi:
         response = self.client.post("/api/filter/unknown_category", json={})
         assert response.status_code == 400
 
+    def test_filter_api_invalid_payload_returns_400(self):
+        response = self.client.post("/api/filter/nomenclature", json=[1, 2, 3])
+        assert response.status_code == 400
+
+    def test_filter_api_invalid_operation_returns_400(self):
+        response = self.client.post("/api/filter/nomenclature", json={"name": "мука", "filter_type": "UNKNOWN"})
+        assert response.status_code == 400
+
     def test_osv_api_endpoint(self):
         wh = list(self.storage.storages.values())[0]
         nom = list(self.storage.nomenclatures.values())[0]
@@ -211,6 +308,71 @@ class TestPrototypeApi:
         assert "incoming" in data[0]
         assert "final_balance" in data[0]
 
+    def test_osv_api_invalid_payload_returns_400(self):
+        response = self.client.post("/api/osv", json=[1, 2, 3])
+        assert response.status_code == 400
+
+    def test_osv_api_with_period(self):
+        wh = list(self.storage.storages.values())[0]
+        nom = list(self.storage.nomenclatures.values())[0]
+        import datetime
+        d_old = datetime.datetime(2025, 12, 1, 10, 0, 0)
+        d_new = datetime.datetime(2026, 1, 15, 10, 0, 0)
+        tx1 = transaction_model(storage=wh, nomenclature=nom, range_unit=nom.range, value=100.0, period=d_old)
+        tx2 = transaction_model(storage=wh, nomenclature=nom, range_unit=nom.range, value=50.0, period=d_new)
+        self.storage.save_entity(tx1)
+        self.storage.save_entity(tx2)
+
+        payload = {"start_date": "2026-01-01", "end_date": "2026-01-31"}
+        response = self.client.post("/api/osv", json=payload)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        target = next((item for item in data if item["nomenclature"] == nom.name), None)
+        assert target is not None
+        assert target["start_balance"] >= 100.0
+        assert target["incoming"] >= 50.0
+
     def test_turnarounds_alias_api_endpoint(self):
         response = self.client.post("/api/turnarounds", json={})
         assert response.status_code == 200
+
+    def test_get_filter_fields_api_endpoint(self):
+        response = self.client.get("/api/filter/range/fields")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert "fields" in data
+        assert "value" in data["fields"]
+        assert "conversion_factor" in data["fields"]
+        assert "base_range.name" in data["fields"]
+
+    def test_get_filter_fields_unknown_domain_returns_400(self):
+        response = self.client.get("/api/filter/unknown_entity/fields")
+        assert response.status_code == 400
+
+    def test_filter_api_endpoint_by_value(self):
+        payload = {
+            "filters": [
+                {"field_name": "value", "filter_type": "EQUALS", "value": 1000}
+            ]
+        }
+        response = self.client.post("/api/filter/range", json=payload)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) >= 1
+        names = [x.get("name") for x in data]
+        assert "килограмм" in names or "литр" in names
+
+    def test_filter_api_endpoint_by_nested_path(self):
+        payload = {
+            "filters": [
+                {"field_name": "base_range.name", "filter_type": "EQUALS", "value": "грамм"}
+            ]
+        }
+        response = self.client.post("/api/filter/range", json=payload)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        names = [x.get("name") for x in data]
+        assert "килограмм" in names

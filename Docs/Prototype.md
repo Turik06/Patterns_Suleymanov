@@ -14,9 +14,12 @@ classDiagram
     class prototype {
         -list _data
         +data: list
+        +filterable_fields: list
         +clone(filter_model: filter_dto) prototype
-        +create_osv() prototype
+        +create_osv(start_date=None, end_date=None) prototype
+        +_resolve_nested_path(source, parts: list)$ list
         +_extract_values(obj, field_name: str, visited: set)$ list
+        +get_filterable_fields(source, max_depth=2)$ list
     }
 
     class filter_type_enum {
@@ -43,10 +46,14 @@ classDiagram
         -str _unique_code
         -filter_type_enum _filter_type
         -list _filters
+        -datetime _start_date
+        -datetime _end_date
         +name: str
         +unique_code: str
         +filter_type: filter_type_enum
         +filters: list
+        +start_date: datetime
+        +end_date: datetime
         +all_filters: list
         +add(item: filter_item_dto) void
         +to_dict() dict
@@ -257,3 +264,17 @@ sequenceDiagram
     deactivate ProtoOsv
     deactivate Flask
 ```
+
+---
+
+## 4. Как работает фильтрация и почему поля не захардкожены
+
+1. **Нет жестких списков полей в коде:**
+   - DTO фильтрации один для всех сущностей. В нем нет списков разрешенных полей.
+   - Если передать поле через точку (например, `base_range.name` или `rows.nomenclature.name`), метод `_resolve_nested_path` сам достает значение из вложенных объектов или списков. Если в модели переименуют свойство, фильтрация не сломается.
+   - Если передать просто `name`, то значение проверяется как в самом объекте, так и во всех связанных объектах через `references()`.
+
+2. **Работа с любыми полями и числами:**
+   - Можно фильтровать по любым полям модели, включая `value` (коэффициент пересчета), `conversion_factor` и т.д.
+   - В `is_match` поддержано сравнение чисел: если пришло число или строка с числом, они сравниваются как числа.
+
