@@ -226,7 +226,7 @@ class storage_manager(abstract_manager):
 
     @property
     def transactions(self) -> dict:
-        """Словарь складских транзакций {id: transaction_model}"""
+        """Складские транзакции."""
         return self._transactions
 
     @staticmethod
