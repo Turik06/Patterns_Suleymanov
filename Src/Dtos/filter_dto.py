@@ -40,12 +40,34 @@ class filter_item_dto:
         if val is None or self.value is None:
             return False
 
+        d_val = common.parse_date(val)
+        d_target = common.parse_date(self.value)
+        if d_val is not None and d_target is not None:
+            if self.filter_type == filter_type_enum.EQUALS:
+                return d_val == d_target
+            if self.filter_type == filter_type_enum.LESS_THAN:
+                return d_val < d_target
+            if self.filter_type == filter_type_enum.LESS_EQUALS:
+                return d_val <= d_target
+            if self.filter_type == filter_type_enum.GREATER_THAN:
+                return d_val > d_target
+            if self.filter_type == filter_type_enum.GREATER_EQUALS:
+                return d_val >= d_target
+
         # если оба значения числа, сравниваем как числа
         try:
             num_val = float(val)
             num_target = float(self.value)
             if self.filter_type == filter_type_enum.EQUALS:
                 return num_val == num_target
+            if self.filter_type == filter_type_enum.LESS_THAN:
+                return num_val < num_target
+            if self.filter_type == filter_type_enum.LESS_EQUALS:
+                return num_val <= num_target
+            if self.filter_type == filter_type_enum.GREATER_THAN:
+                return num_val > num_target
+            if self.filter_type == filter_type_enum.GREATER_EQUALS:
+                return num_val >= num_target
         except (ValueError, TypeError):
             pass
 
