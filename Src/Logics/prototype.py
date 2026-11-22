@@ -2,7 +2,6 @@ from Src.Core.abstract_prototype import abstract_prototype
 from Src.Core.common import common
 from Src.Dtos.filter_dto import filter_dto
 from Src.Core.abstract_model import name_id
-from Src.Models.osv_row_model import osv_row_model
 
 
 class prototype(abstract_prototype):
@@ -152,56 +151,3 @@ class prototype(abstract_prototype):
                 filtered.append(obj)
 
         return prototype(filtered)
-
-    def create_osv(self, start_date=None, end_date=None) -> "prototype":
-        """Сформировать ОСВ по транзакциям."""
-        p_start = common.parse_date(start_date)
-        p_end = common.parse_date(end_date)
-        d_start = p_start.date() if hasattr(p_start, "date") else p_start
-        d_end = p_end.date() if hasattr(p_end, "date") else p_end
-
-        grouped = {}
-        for tr in self._data:
-            storage = getattr(tr, "storage", None)
-            nom = getattr(tr, "nomenclature", None)
-            rng = getattr(tr, "range", None)
-            val = float(getattr(tr, "value", 0.0))
-            period = getattr(tr, "period", None)
-            tr_date = period.date() if hasattr(period, "date") else period
-
-            key = (getattr(storage, "id", None), getattr(nom, "id", None), getattr(rng, "id", None))
-            if key not in grouped:
-                grouped[key] = {
-                    "storage": storage,
-                    "nomenclature": nom,
-                    "range": rng,
-                    "start_balance": 0.0,
-                    "incoming": 0.0,
-                    "outgoing": 0.0,
-                }
-
-            if d_start and tr_date and tr_date < d_start:
-                # до периода - начальный остаток
-                grouped[key]["start_balance"] += val
-            elif d_end and tr_date and tr_date > d_end:
-                # после периода - пропускаем
-                continue
-            else:
-                # внутри периода - обороты
-                if val > 0:
-                    grouped[key]["incoming"] += val
-                else:
-                    grouped[key]["outgoing"] += abs(val)
-
-        rows = [
-            osv_row_model(
-                storage=item["storage"],
-                nomenclature=item["nomenclature"],
-                range_unit=item["range"],
-                start_balance=item["start_balance"],
-                incoming=item["incoming"],
-                outgoing=item["outgoing"],
-            )
-            for item in grouped.values()
-        ]
-        return prototype(rows)

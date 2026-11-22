@@ -9,6 +9,7 @@ from Src.Logics.storage_manager import storage_manager
 from Src.Logics.convertor import convertor
 from Src.Logics.entity_service import entity_service
 from Src.Logics.prototype import prototype
+from Src.Logics.osv_service import osv_service
 from Src.Core.exception import argument_exception, operation_exception
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
@@ -314,12 +315,9 @@ def get_osv_report():
     except (ValueError, argument_exception) as ex:
         return jsonify({"error": str(ex)}), 400
 
-    transactions = storage.data.get(storage.transaction_key(), [])
-    filtered_pr = prototype(transactions).clone(f_dto)
-    osv_pr = filtered_pr.create_osv(start_date=f_dto.start_date, end_date=f_dto.end_date)
-
-    rows = [row.to_dict() for row in osv_pr.data]
-    return jsonify(rows), 200
+    service = osv_service(storage)
+    rows = service.build_osv(f_dto)
+    return jsonify([row.to_dict() for row in rows]), 200
 
 
 api.add_api('openapi.yaml')
