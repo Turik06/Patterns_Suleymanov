@@ -18,6 +18,7 @@ from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.range_model import range_model
 from Src.Models.recipe_model import recipe_model
 from Src.Models.recipe_row_model import recipe_row_model
+from Src.Models.storage_model import storage_model
 
 
 @pytest.fixture
@@ -384,7 +385,6 @@ def test_universal_report_any_model_ocp_compliance():
     Любая новая модель (например, storage_model) может формировать отчеты
     без необходимости модификации abstract_report или классов отчетов.
     """
-    from Src.Models.storage_model import storage_model
     store = storage_model(name="Центральный склад", address="ул. Ленина, 1")
     factory = report_factory()
 

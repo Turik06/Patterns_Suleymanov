@@ -1,3 +1,4 @@
+from datetime import datetime, date
 from Src.Core.validator import argument_exception
 
 
@@ -5,6 +6,16 @@ class common:
     """
     Набор общих статических методов.
     """
+
+    @staticmethod
+    def parse_date(val):
+        """Парсит дату из строки или возвращает date/datetime."""
+        if isinstance(val, (datetime, date)):
+            return val
+        try:
+            return datetime.fromisoformat(val.strip())
+        except (ValueError, TypeError, AttributeError):
+            return None
 
     @staticmethod
     def get_fields(source, is_common: bool = False) -> list:

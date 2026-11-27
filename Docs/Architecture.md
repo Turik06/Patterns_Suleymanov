@@ -132,6 +132,7 @@ classDiagram
         -dict _nomenclatures
         -dict _groups
         -dict _recipes
+        -dict _transactions
         -bool __is_initialized
         +__new__(cls) storage_manager
         +first_start() void
@@ -147,11 +148,13 @@ classDiagram
         +add_nomenclature(item) bool
         +add_group(item) bool
         +add_recipe(item) bool
+        +add_transaction(item) bool
         +storages: dict
         +ranges: dict
         +nomenclatures: dict
         +groups: dict
         +recipes: dict
+        +transactions: dict
         +data: dict
         +is_initialized: bool
         +is_loaded: bool
@@ -232,6 +235,64 @@ classDiagram
         +to_json(obj: Any, indent: int) str
     }
 
+    class abstract_prototype {
+        <<abstract>>
+        +clone(filter) abstract_prototype*
+    }
+
+    class prototype {
+        -list _data
+        +data: list
+        +clone(filter_model: filter_dto) prototype
+        +create_osv() prototype
+    }
+
+    class filter_type_enum {
+        <<enumeration>>
+        +EQUALS: str
+        +LIKE: str
+    }
+
+    class filter_item_dto {
+        -str _field_name
+        -filter_type_enum _filter_type
+        -Any _value
+        +is_match(val) bool
+    }
+
+    class filter_dto {
+        -str _name
+        -str _unique_code
+        -filter_type_enum _filter_type
+        -list _filters
+        +all_filters: list
+    }
+
+    class transaction_model {
+        -storage_model __storage
+        -nomenclature_model __nomenclature
+        -range_model __range
+        -float __value
+        -datetime __period
+        +value: float
+        +storage: storage_model
+        +nomenclature: nomenclature_model
+        +range: range_model
+        +period: datetime
+        +references() list
+    }
+
+    class osv_row_model {
+        +storage: storage_model
+        +nomenclature: nomenclature_model
+        +range: range_model
+        +start_balance: float
+        +incoming: float
+        +outgoing: float
+        +final_balance: float
+        +references() list
+    }
+
     name_id <|-- range_model
     name_id <|-- nomenclature_group_model
     name_id <|-- storage_model
@@ -240,6 +301,15 @@ classDiagram
     name_id <|-- settings_model
     name_id <|-- recipe_row_model
     name_id <|-- recipe_model
+    name_id <|-- transaction_model
+    name_id <|-- osv_row_model
+
+    abstract_prototype <|-- prototype
+    prototype ..> filter_dto : clone
+    prototype ..> osv_row_model : create_osv
+    filter_dto *-- filter_item_dto : filters
+    filter_dto o-- filter_type_enum : filter_type
+    filter_item_dto o-- filter_type_enum : filter_type
 
     abstract_manager <|-- settings_manager
     abstract_manager <|-- storage_manager
@@ -270,6 +340,15 @@ classDiagram
     storage_manager o-- nomenclature_group_model : _groups
     storage_manager o-- nomenclature_model : _nomenclatures
     storage_manager o-- recipe_model : _recipes
+    storage_manager o-- transaction_model : _transactions
+
+    transaction_model o-- storage_model : storage
+    transaction_model o-- nomenclature_model : nomenclature
+    transaction_model o-- range_model : range
+
+    osv_row_model o-- storage_model : storage
+    osv_row_model o-- nomenclature_model : nomenclature
+    osv_row_model o-- range_model : range
 
     recipe_model *-- recipe_row_model : rows
     recipe_model o-- nomenclature_model : dish
@@ -285,6 +364,7 @@ classDiagram
 ## Архитектура подсистем
 * [Связи доменных моделей и рекурсия (EntityTree)](./EntityTree.md)
 * [Диаграммы последовательности (SequenceDiagrams)](./SequenceDiagrams.md)
+* [Паттерн Прототип, фильтрация данных и ОСВ (Prototype)](./Prototype.md)
 * [Варианты использования (UseCase)](./UseCase.md)
 * [Архитектура подсистемы сериализации в JSON (JsonSerialization)](./JsonSerialization.md)
 * [Архитектура подсистемы отчетов (Abstract Factory & Template Method)](./ReportFactory.md)

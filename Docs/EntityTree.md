@@ -58,8 +58,47 @@ graph TD
     Nomenclature[Номенклатура: Мука] -->|group| Group[Группа: Бакалея]
     Nomenclature -->|range| Range[Единица: Грамм]
 
+
     RecipeRow[Строка рецепта] -->|nomenclature| Nomenclature
     Recipe[Рецепт] -->|rows| RecipeRow
 ```
 
 Конвертер `reference_convertor` находит эти ссылки через свойства (`@property`) и передает их в фабрику для формирования словарей.
+
+---
+
+## 4. Иерархия групп номенклатуры
+
+Вложенность групп через `parent`:
+
+```mermaid
+graph LR
+    Ingredients["Ингредиенты"]
+    Grocery["Бакалея"] -->|parent| Ingredients
+    Flour["Мука"] -->|group| Grocery
+```
+
+---
+
+## 5. Складские транзакции и ОСВ
+
+Связи транзакций и строк ведомости со справочниками:
+
+```mermaid
+flowchart TD
+    Tx["Транзакция"]
+    OSV["Строка ОСВ"]
+
+    Wh["Склад"]
+    Nom["Номенклатура"]
+    Rng["Единица измерения"]
+
+    Tx -->|storage| Wh
+    Tx -->|nomenclature| Nom
+    Tx -->|range| Rng
+
+    OSV -->|storage| Wh
+    OSV -->|nomenclature| Nom
+    OSV -->|range| Rng
+```
+
