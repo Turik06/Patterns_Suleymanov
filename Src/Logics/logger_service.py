@@ -41,8 +41,10 @@ class logger_service(abstract_observabile):
             return
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        details = f" {params}" if params is not None else ""
-        line = f"[{now}] [{event_types}]{details}"
+        description = event_type.events().get(event_types, "")
+        desc_part = f" {description}" if description else ""
+        details = f" | {params}" if params is not None else ""
+        line = f"[{now}] | [{event_types}]{desc_part}{details}"
 
         print(line)
         log_dir = os.path.dirname(self.__log_file)

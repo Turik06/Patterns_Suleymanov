@@ -25,3 +25,16 @@ class event_type:
     def web_call() -> str:
         """Вызов web метода"""
         return "web_call"
+
+    @staticmethod
+    def events() -> dict:
+        """Словарь зарегистрированных событий и их описаний"""
+        result = {}
+        for name in dir(event_type):
+            if name.startswith("_") or name == "events":
+                continue
+            method = getattr(event_type, name)
+            if callable(method):
+                doc = method.__doc__.strip().split("\n")[0] if method.__doc__ else name
+                result[method()] = doc
+        return result
