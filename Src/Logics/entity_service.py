@@ -5,6 +5,8 @@ from Src.Models.nomenclature_model import nomenclature_model
 from Src.Models.recipe_model import recipe_model
 from Src.Logics.convertor import convertor
 from Src.Logics.mapping_factory import mapping_factory
+from Src.Core.event_type import event_type
+from Src.Logics.observer import observer
 
 
 class entity_service:
@@ -90,6 +92,7 @@ class entity_service:
         entity = catalog.get(unique_code)
         if not entity:
             raise LookupError(f"Сущность '{unique_code}' не найдена")
+        observer.create(event_type.crud_operation(), {"action": "read", "entity_type": entity_type, "id": unique_code})
         return entity
 
     def create_entity(self, entity_type: str, payload: dict, worker=None):
@@ -117,6 +120,7 @@ class entity_service:
             raise ValueError(f"Сущность '{model.unique_code}' уже существует")
 
         self.__storage.save_entity(model)
+        observer.create(event_type.crud_operation(), {"action": "create", "entity_type": entity_type, "id": model.unique_code})
         return model
 
     def update_entity(self, entity_type: str, unique_code: str, payload: dict):
@@ -164,6 +168,7 @@ class entity_service:
             if repo is not None:
                 repo.registry(entity)
 
+        observer.create(event_type.crud_operation(), {"action": "update", "entity_type": entity_type, "id": entity.unique_code, "fields": list(fields_to_update.keys())})
         return entity
 
     def delete_entity(self, entity_type: str, unique_code: str):
@@ -188,4 +193,5 @@ class entity_service:
             raise PermissionError(f"Нельзя удалить сущность '{unique_code}', так как она связана с другими", ref_names)
 
         self.__storage.delete_entity(entity_type, unique_code)
+        observer.create(event_type.crud_operation(), {"action": "delete", "entity_type": entity_type, "id": unique_code})
         return True

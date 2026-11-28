@@ -9,6 +9,8 @@ from Src.Models.nomenclature_group_model import nomenclature_group_model
 from Src.Models.recipe_model import recipe_model
 from Src.Models.transaction_model import transaction_model
 from Src.Logics.storage_reposity import storage_repository
+from Src.Core.event_type import event_type
+from Src.Logics.observer import observer
 
 
 class storage_dict(dict):
@@ -150,6 +152,7 @@ class storage_manager(abstract_manager):
         self._storages[item.id] = item
         if self.__repository is not None:
             self.__repository.registry(item)
+        observer.create(event_type.storage_operation(), {"operation": "add_storage", "id": item.id, "name": getattr(item, "name", "")})
         return True
 
     def add_range(self, item: range_model) -> bool:
@@ -197,6 +200,7 @@ class storage_manager(abstract_manager):
         self._transactions[item.id] = item
         if self.__repository is not None:
             self.__repository.registry(item)
+        observer.create(event_type.storage_operation(), {"operation": "add_transaction", "id": item.id, "value": item.value})
         return True
 
     @property

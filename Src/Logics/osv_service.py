@@ -4,6 +4,8 @@ from Src.Dtos.filter_type_enum import filter_type_enum
 from Src.Logics.prototype import prototype
 from Src.Logics.storage_manager import storage_manager
 from Src.Models.osv_row_model import osv_row_model
+from Src.Core.event_type import event_type
+from Src.Logics.observer import observer
 
 
 class osv_service:
@@ -111,6 +113,7 @@ class osv_service:
         if filter_item and filter_item.all_filters:
             rows = prototype(rows).clone(filter_item).data
 
+        observer.create(event_type.storage_operation(), {"operation": "build_osv", "rows": len(rows)})
         return rows
 
     def get_osv_response(self, filter_item: filter_dto = None):

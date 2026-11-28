@@ -11,10 +11,26 @@ from Src.Logics.entity_service import entity_service
 from Src.Logics.prototype import prototype
 from Src.Logics.osv_service import osv_service
 from Src.Core.exception import argument_exception, operation_exception
+from Src.Core.event_type import event_type
+from Src.Logics.observer import observer
+from Src.Logics.logger_service import logger_service
 
 api = connexion.FlaskApp(__name__, specification_dir="./")
 app = api.app
 app.json.ensure_ascii = False
+
+logger = logger_service()
+
+
+@app.after_request
+def log_web_call(response):
+    """Логирование вызова web-метода"""
+    observer.create(event_type.web_call(), {
+        "method": request.method,
+        "path": request.path,
+        "status": response.status_code
+    })
+    return response
 
 
 @app.errorhandler(argument_exception)
