@@ -10,9 +10,12 @@ from Src.Dtos.report_type_enum import report_type_enum
 from Src.Dtos.response_format_dto import response_format_dto
 from Src.Logics.convertor import convertor
 from Src.Logics.mapping_factory import mapping_factory
+from Src.Core.abstract_observabile import abstract_observabile
+from Src.Core.event_type import event_type
+from Src.Logics.observer import observer
 
 
-class settings_manager(abstract_manager):
+class settings_manager(abstract_manager, abstract_observabile):
     """
     Менеджер для работы с настройками приложения.
     Реализует шаблон Singleton и загрузку данных через интроспекцию моделей.
@@ -38,6 +41,7 @@ class settings_manager(abstract_manager):
         if not hasattr(self, "_settings") or self._settings is None:
             self._settings = settings_model()
             self.__data = {}
+            observer.add(self)
 
     def load(self, file_name: str = "") -> None:
         """
@@ -52,11 +56,13 @@ class settings_manager(abstract_manager):
 
         try:
             with open(full_file_name, "r", encoding="utf-8") as file:
+                observer.create(event_type.load_settings())
                 self.__data = json.load(file)
 
             self.is_loaded = self.build()
             if not self.is_loaded:
                 self._settings = self.__create_default_data()
+                observer.create(event_type.change_settings())
 
         except operation_exception:
             raise
@@ -162,3 +168,8 @@ class settings_manager(abstract_manager):
     def settings(self) -> settings_model:
         """Объект настроек settings_model."""
         return self._settings
+
+    def handler(self, event_types: str, params: object = None):
+        """Обработка сообщений"""
+        if event_types == event_type.load_settings():
+            print(f"Настройки {event_types}")
